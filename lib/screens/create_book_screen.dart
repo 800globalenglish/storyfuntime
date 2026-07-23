@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'characters_step_screen.dart';
+import 'book_detail_screen.dart';
 
 class CreateBookScreen extends StatefulWidget {
-  const CreateBookScreen({super.key});
+  final List<String>? preSelectedCharacterIds;
+
+  const CreateBookScreen({super.key, this.preSelectedCharacterIds});
 
   @override
   State<CreateBookScreen> createState() => _CreateBookScreenState();
@@ -37,11 +40,26 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
         title: _titleController.text.trim(),
         theme: _themeController.text.trim(),
       );
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => CharactersStepScreen(bookId: book.id)),
+
+      final preSelected = widget.preSelectedCharacterIds;
+      if (preSelected != null && preSelected.isNotEmpty) {
+        await _apiService.copyCharactersToBook(
+          bookId: book.id,
+          characterIds: preSelected,
         );
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => BookDetailScreen(bookId: book.id)),
+          );
+        }
+      } else {
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => CharactersStepScreen(bookId: book.id)),
+          );
+        }
       }
       return;
     } catch (e) {

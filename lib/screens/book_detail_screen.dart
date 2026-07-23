@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'avatar_gallery_screen.dart';
+import 'choose_different_character_screen.dart';
+import 'character_picker_screen.dart';
 import '../models/book.dart';
 import '../services/api_service.dart';
 import 'generate_story_screen.dart';
 import 'record_voice_screen.dart';
-import 'add_character_screen.dart';
 import 'book_reader_screen.dart';
 
 class BookDetailScreen extends StatefulWidget {
@@ -70,7 +71,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   Future<void> _goToAddCharacter() async {
     final saved = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => AddCharacterScreen(bookId: widget.bookId)),
+      MaterialPageRoute(builder: (context) => CharacterPickerScreen(bookId: widget.bookId)),
     );
     if (saved == true) _refresh();
   }
@@ -140,7 +141,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     }
   }
 
-  Future<void> _showCharacterOptions(String characterId, String name, String? cartoonAvatarUrl) async {
+  Future<void> _showCharacterOptions(String characterId, String name, String? cartoonAvatarUrl, String userId, {String? currentAvatarUrl}) async {
+    final bookId = widget.bookId;
     final action = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
@@ -161,11 +163,15 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, 'regenerate'),
-            child: const Text('Regenerate Avatar'),
+            child: const Text('Regenerate Character'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, 'gallery'),
-            child: const Text('View Gallery'),
+            child: const Text('View Characters'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'swap'),
+            child: const Text('Choose Different'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, 'delete'),
@@ -175,12 +181,14 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       ),
     );
 
+    if (!mounted) return;
+
     if (action == 'regenerate') {
       final instructionsController = TextEditingController(text: _lastAvatarInstructions[characterId] ?? '');
       final proceed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Regenerate Avatar'),
+          title: const Text('Regenerate Character'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -232,7 +240,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         // Immediate feedback so we know the tap registered at all
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Regenerating avatar...'), duration: Duration(seconds: 2)),
+            const SnackBar(content: Text('Regenerating character...'), duration: Duration(seconds: 2)),
           );
         }
 
@@ -251,7 +259,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
             _regeneratingAvatarCharacterId = null;
           });
           if (mounted) {
-            await _showCharacterOptions(characterId, name, updatedCharacter.cartoonAvatarUrl);
+            await _showCharacterOptions(characterId, name, updatedCharacter.cartoonAvatarUrl, userId);
           }
           return;
         } catch (e) {
@@ -274,10 +282,26 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           builder: (context) => AvatarGalleryScreen(
             characterId: characterId,
             characterName: name,
+            userId: userId,
+            currentAvatarUrl: currentAvatarUrl ?? cartoonAvatarUrl,
+            bookId: bookId,
           ),
         ),
       );
       if (selected == true) {
+        _refresh();
+      }
+    } else if (action == 'swap') {
+      final swapped = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChooseDifferentCharacterScreen(
+            bookId: bookId,
+            currentCharacterId: characterId,
+          ),
+        ),
+      );
+      if (swapped == true) {
         _refresh();
       }
     } else if (action == 'delete') {
@@ -446,7 +470,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                         Padding(
                           padding: const EdgeInsets.only(right: 12),
                           child: GestureDetector(
-                            onTap: () => _showCharacterOptions(character.id, character.name, character.cartoonAvatarUrl),
+                            onTap: () => _showCharacterOptions(character.id, character.name, character.cartoonAvatarUrl, book.userId),
                             child: Column(
                               children: [
                                 Stack(

@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'dart:typed_data';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
 
@@ -21,16 +22,19 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
   String _gender = 'boy';
   String _ageRange = '0-2';
   XFile? _pickedImage;
+  Uint8List? _pickedImageBytes;
   bool _isSaving = false;
   String? _errorMessage;
   String? _avatarUrl;
   String? _characterId;
 
-  Future<void> _pickImage() async {
-    final image = await _picker.pickImage(source: ImageSource.gallery);
+  Future<void> _pickImage(ImageSource source) async {
+    final image = await _picker.pickImage(source: source);
     if (image != null) {
+      final bytes = await image.readAsBytes();
       setState(() {
         _pickedImage = image;
+        _pickedImageBytes = bytes;
         _errorMessage = null;
       });
     }
@@ -108,6 +112,39 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (_characterId == null) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _pickImage(ImageSource.camera),
+                      icon: const Icon(Icons.camera_alt),
+                      label: const Text('Take Photo'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _pickImage(ImageSource.gallery),
+                      icon: const Icon(Icons.photo_library),
+                      label: const Text('Open Gallery'),
+                    ),
+                  ),
+                ],
+              ),
+              if (_pickedImageBytes != null) ...[
+                const SizedBox(height: 16),
+                Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.memory(
+                      _pickedImageBytes!,
+                      height: 220,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
               TextField(
                 controller: _nameController,
                 decoration: const InputDecoration(
@@ -191,24 +228,9 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                 },
               ),
               const SizedBox(height: 16),
-              if (_pickedImage == null)
-                ElevatedButton.icon(
-                  onPressed: _pickImage,
-                  icon: const Icon(Icons.photo_library),
-                  label: const Text('Choose a Photo'),
-                )
-              else ...[
-                Text('Selected: ${_pickedImage!.name}'),
-                const SizedBox(height: 8),
-                OutlinedButton(
-                  onPressed: _pickImage,
-                  child: const Text('Choose Different Photo'),
-                ),
-              ],
-              const SizedBox(height: 16),
             ],
             if (_avatarUrl != null) ...[
-              const Text('Here\'s the cartoon avatar:'),
+              const Text('Here\'s your character:'),
               const SizedBox(height: 12),
               Center(
                 child: SizedBox(
@@ -244,7 +266,7 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
             else ...[
               ElevatedButton(
                 onPressed: _generate,
-                child: Text(_avatarUrl == null ? 'Generate Avatar' : 'Regenerate'),
+                child: Text(_avatarUrl == null ? 'Generate Character' : 'Regenerate'),
               ),
               if (_avatarUrl != null) ...[
                 const SizedBox(height: 12),
