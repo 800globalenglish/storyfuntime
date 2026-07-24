@@ -429,4 +429,15 @@ class ApiService {
       throw Exception('Failed to apply template: ${response.statusCode} ${response.body}');
     }
   }
+
+  Future<Book> generateVideo({required String bookId}) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/books/$bookId/generate-video'),
+    );
+    if (response.statusCode == 200) {
+      return Book.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to generate video: ${response.statusCode} ${response.body}');
+    }
+  }
 }

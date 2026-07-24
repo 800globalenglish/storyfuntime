@@ -3,6 +3,7 @@ import 'avatar_gallery_screen.dart';
 import 'choose_different_character_screen.dart';
 import 'character_picker_screen.dart';
 import 'apply_template_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/book.dart';
 import '../services/api_service.dart';
 import 'generate_story_screen.dart';
@@ -26,6 +27,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   String? _regeneratingTextPageId;
 
   String? _regeneratingAvatarCharacterId;
+  bool _isGeneratingVideo = false;
 
   final Map<String, String> _lastAvatarInstructions = {};
 
@@ -90,6 +92,39 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       MaterialPageRoute(builder: (context) => ApplyTemplateScreen(bookId: widget.bookId)),
     );
     _refresh();
+  }
+
+  Future<void> _generateVideo() async {
+    setState(() {
+      _isGeneratingVideo = true;
+    });
+    try {
+      await _apiService.generateVideo(bookId: widget.bookId);
+      _refresh();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to generate video: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGeneratingVideo = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _watchVideo(String videoUrl) async {
+    final uri = Uri.parse('http://localhost:5220$videoUrl');
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open the video.')),
+        );
+      }
+    }
   }
 
   Future<void> _editPageText(String pageId, String currentText) async {
@@ -367,6 +402,31 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     }
   }
 
+  Future<void> _generateAllScenes(List<dynamic> pages) async {
+    final pagesNeedingScenes = pages.where((p) => p.cartoonImageUrl == null).toList();
+    if (pagesNeedingScenes.isEmpty) return;
+
+    for (final page in pagesNeedingScenes) {
+      setState(() {
+        _generatingScenePageId = page.id;
+      });
+      try {
+        await _apiService.generateScene(pageId: page.id, extraInstructions: null);
+        _refresh();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed on page ${page.pageNumber}: $e')),
+          );
+        }
+      }
+    }
+
+    setState(() {
+      _generatingScenePageId = null;
+    });
+  }
+
   Future<void> _generateScene(String pageId, String? currentSceneUrl) async {
     final instructionsController = TextEditingController(text: _lastSceneInstructions[pageId] ?? '');
     final proceed = await showDialog<bool>(
@@ -547,10 +607,41 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 ),
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
+                  onPressed: _generatingScenePageId != null
+                      ? null
+                      : () => _generateAllScenes(book.pages),
+                  icon: const Icon(Icons.auto_fix_high),
+                  label: Text(_generatingScenePageId != null
+                      ? 'Generating scenes...'
+                      : 'Generate All Scenes'),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
                   onPressed: _goToApplyTemplate,
                   icon: const Icon(Icons.auto_stories),
                   label: const Text('Use a Story Template'),
                 ),
+                const SizedBox(height: 12),
+                if (_isGeneratingVideo)
+                  const Column(
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 8),
+                      Text('Making your video... this can take a minute.'),
+                    ],
+                  )
+                else if (book.videoUrl != null)
+                  ElevatedButton.icon(
+                    onPressed: () => _watchVideo(book.videoUrl!),
+                    icon: const Icon(Icons.play_circle_outline),
+                    label: const Text('Watch / Download Video'),
+                  )
+                else
+                  OutlinedButton.icon(
+                    onPressed: _generateVideo,
+                    icon: const Icon(Icons.movie_creation_outlined),
+                    label: const Text('Generate Video'),
+                  ),
                 const SizedBox(height: 24),
                 Text('Pages', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
