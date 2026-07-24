@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'avatar_gallery_screen.dart';
 import 'choose_different_character_screen.dart';
 import 'character_picker_screen.dart';
+import 'apply_template_screen.dart';
 import '../models/book.dart';
 import '../services/api_service.dart';
 import 'generate_story_screen.dart';
@@ -81,6 +82,14 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       context,
       MaterialPageRoute(builder: (context) => BookReaderScreen(bookId: widget.bookId)),
     );
+  }
+
+  Future<void> _goToApplyTemplate() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ApplyTemplateScreen(bookId: widget.bookId)),
+    );
+    _refresh();
   }
 
   Future<void> _editPageText(String pageId, String currentText) async {
@@ -535,6 +544,12 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   onPressed: _goToReadBook,
                   icon: const Icon(Icons.menu_book),
                   label: const Text('Read Book'),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: _goToApplyTemplate,
+                  icon: const Icon(Icons.auto_stories),
+                  label: const Text('Use a Story Template'),
                 ),
                 const SizedBox(height: 24),
                 Text('Pages', style: Theme.of(context).textTheme.titleMedium),

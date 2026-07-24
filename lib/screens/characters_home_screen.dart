@@ -42,6 +42,18 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
     });
   }
 
+  /// Groups characters that share the exact same avatar image (i.e. copies
+  /// of the same person) into one tile, so the same face doesn't show
+  /// multiple times just because it's used in several books.
+  List<List<Character>> _groupCharacters(List<Character> characters) {
+    final Map<String, List<Character>> groups = {};
+    for (final character in characters) {
+      final key = character.cartoonAvatarUrl ?? 'no-avatar-${character.id}';
+      groups.putIfAbsent(key, () => []).add(character);
+    }
+    return groups.values.toList();
+  }
+
   Future<void> _takePhoto() async {
     try {
       final libraryBookId = await _apiService.getLibraryBookId(userId: 'test-user-1');
@@ -152,6 +164,8 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
             );
           }
 
+          final groups = _groupCharacters(characters);
+
           return GridView.builder(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -160,9 +174,11 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
               mainAxisSpacing: 12,
               childAspectRatio: 0.8,
             ),
-            itemCount: characters.length,
+            itemCount: groups.length,
             itemBuilder: (context, index) {
-              final character = characters[index];
+              final group = groups[index];
+              final character = group.first;
+              final storyCount = group.length;
               final isSelected = _selectedIds.contains(character.id);
 
               return GestureDetector(
@@ -214,6 +230,22 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
                               ),
                             ),
                           ),
+                          if (storyCount > 1)
+                            Positioned(
+                              bottom: 6,
+                              right: 6,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: Colors.deepPurple,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  'in $storyCount stories',
+                                  style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ),
@@ -242,9 +274,9 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: _goToNewBook,
-            style: _selectedIds.isNotEmpty
-                ? ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white)
-                : null,
+                  style: _selectedIds.isNotEmpty
+                      ? ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white)
+                      : null,
                   icon: const Icon(Icons.auto_stories),
                   label: Text('New Book (${_selectedIds.length})'),
                 ),

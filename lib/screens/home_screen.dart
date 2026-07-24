@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'stories_list_screen.dart';
 import 'characters_home_screen.dart';
+import 'template_admin_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -43,6 +44,16 @@ class HomeScreen extends StatelessWidget {
                   icon: const Icon(Icons.people, size: 32),
                   label: const Text('New Story', style: TextStyle(fontSize: 20)),
                 ),
+              ),
+              const SizedBox(height: 32),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const TemplateAdminScreen()),
+                  );
+                },
+                child: const Text('Manage Story Templates'),
               ),
             ],
           ),
