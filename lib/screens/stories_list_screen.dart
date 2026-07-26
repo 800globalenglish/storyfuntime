@@ -3,6 +3,7 @@ import '../models/book.dart';
 import '../services/api_service.dart';
 import 'create_book_screen.dart';
 import 'book_detail_screen.dart';
+import 'book_summary_screen.dart';
 
 class StoriesListScreen extends StatefulWidget {
   const StoriesListScreen({super.key});
@@ -73,10 +74,20 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
   }
 
   Future<void> _goToBookDetail(String bookId) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => BookDetailScreen(bookId: bookId)),
-    );
+    final book = await _apiService.getBook(id: bookId);
+    if (!mounted) return;
+
+    if (book.pages.isEmpty) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => BookDetailScreen(bookId: bookId)),
+      );
+    } else {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => BookSummaryScreen(bookId: bookId)),
+      );
+    }
     _refresh();
   }
 

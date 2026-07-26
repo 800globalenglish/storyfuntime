@@ -94,6 +94,21 @@ class ApiService {
     }
   }
 
+  Future<Book> updateBook({required String bookId, required String title, required String theme}) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/books/$bookId'),
+      headers: await _authHeaders(),
+      body: jsonEncode({'title': title, 'theme': theme}),
+    );
+
+    _handleUnauthorized(response);
+    if (response.statusCode == 200) {
+      return Book.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to update book: ${response.statusCode}');
+    }
+  }
+
   Future<List<String>> generateScript({
     required String bookId,
     int pageCount = 5,

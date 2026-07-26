@@ -4,12 +4,10 @@ import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
 
 class _AgeStage {
-  final String asset;
   final String label;
   final String ageRange;
   final bool isChild;
   const _AgeStage({
-    required this.asset,
     required this.label,
     required this.ageRange,
     required this.isChild,
@@ -32,13 +30,16 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
   final _instructionsController = TextEditingController();
 
   final List<_AgeStage> _ageStages = const [
-    _AgeStage(asset: 'age_01_sm.png', label: 'Baby', ageRange: '0-2', isChild: true),
-    _AgeStage(asset: 'age_02_sm.png', label: 'Child', ageRange: '3-9', isChild: true),
-    _AgeStage(asset: 'age_03_sm.png', label: 'Teenager', ageRange: '10-18', isChild: true),
-    _AgeStage(asset: 'age_04_sm.png', label: 'Young Adult', ageRange: '19-39', isChild: false),
-    _AgeStage(asset: 'age_05_sm.png', label: 'Adult', ageRange: '40-65', isChild: false),
-    _AgeStage(asset: 'age_06_sm.png', label: 'Senior', ageRange: '66-80', isChild: false),
-    _AgeStage(asset: 'age_07_sm.png', label: 'Elder', ageRange: '81+', isChild: false),
+    _AgeStage(label: 'Infant', ageRange: '0-1', isChild: true),
+    _AgeStage(label: 'Toddler', ageRange: '2-5', isChild: true),
+    _AgeStage(label: 'Child', ageRange: '6-10', isChild: true),
+    _AgeStage(label: 'Preteen', ageRange: '11-15', isChild: true),
+    _AgeStage(label: 'Teenager', ageRange: '16-21', isChild: true),
+    _AgeStage(label: 'Young Adult', ageRange: '22-35', isChild: false),
+    _AgeStage(label: 'Adult', ageRange: '36-45', isChild: false),
+    _AgeStage(label: 'Middle-Aged', ageRange: '46-65', isChild: false),
+    _AgeStage(label: 'Senior', ageRange: '66-80', isChild: false),
+    _AgeStage(label: 'Elder', ageRange: '81-115', isChild: false),
   ];
 
   String _characterType = 'Human'; // 'Human' or 'Pet'
@@ -174,29 +175,6 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
     );
   }
 
-  Widget _buildAgeStageOption(int index) {
-    final stage = _ageStages[index];
-    final selected = _ageStageIndex == index;
-    return GestureDetector(
-      onTap: () => setState(() => _ageStageIndex = index),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6),
-        child: Container(
-          padding: const EdgeInsets.all(3),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: selected ? Colors.deepPurple : Colors.transparent,
-              width: 3,
-            ),
-          ),
-          child: ClipOval(
-            child: Image.asset('assets/images/${stage.asset}', width: 35, height: 35, fit: BoxFit.cover),
-          ),
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -264,26 +242,37 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
               ),
               const SizedBox(height: 20),
               Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 24,
+                  runSpacing: 16,
                   children: [
                     _buildGenderOption('female', 'female.png', 'Female'),
-                    const SizedBox(width: 32),
                     _buildGenderOption('male', 'male.png', 'Male'),
+                    if (_characterType == 'Human')
+                      SizedBox(
+                        width: 130,
+                        child: DropdownButtonFormField<int>(
+                          value: _ageStageIndex,
+                          decoration: const InputDecoration(
+                            labelText: 'Age',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          items: [
+                            for (int i = 0; i < _ageStages.length; i++)
+                              DropdownMenuItem(
+                                value: i,
+                                child: Text(_ageStages[i].ageRange),
+                              ),
+                          ],
+                          onChanged: (value) => setState(() => _ageStageIndex = value ?? 0),
+                        ),
+                      ),
                   ],
                 ),
               ),
-              if (_characterType == 'Human') ...[
-                const SizedBox(height: 20),
-                const Text('Age', style: TextStyle(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 8),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: List.generate(_ageStages.length, _buildAgeStageOption),
-                  ),
-                ),
-              ],
               const SizedBox(height: 20),
             ],
             if (_avatarUrl != null) ...[

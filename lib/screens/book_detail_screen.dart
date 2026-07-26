@@ -3,13 +3,14 @@ import 'avatar_gallery_screen.dart';
 import 'choose_different_character_screen.dart';
 import 'character_picker_screen.dart';
 import 'apply_template_screen.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../models/book.dart';
 import '../services/api_service.dart';
-import 'generate_story_screen.dart';
-import 'record_voice_screen.dart';
-import 'book_reader_screen.dart';
+import 'creator_wizard_screen.dart';
 
+/// Screen 1 of the book flow: setup. Shown for a book that has no pages
+/// yet. Lets the person add characters, then either generate a story
+/// (inline form right here, no separate screen) or apply a story
+/// template. Either path hands off to CreatorWizardScreen once pages exist.
 class BookDetailScreen extends StatefulWidget {
   final String bookId;
 
@@ -22,21 +23,29 @@ class BookDetailScreen extends StatefulWidget {
 class _BookDetailScreenState extends State<BookDetailScreen> {
   final _apiService = ApiService();
   late Future<Book> _bookFuture;
-  String? _generatingScenePageId;
-
-  String? _regeneratingTextPageId;
-
   String? _regeneratingAvatarCharacterId;
-  bool _isGeneratingVideo = false;
 
   final Map<String, String> _lastAvatarInstructions = {};
 
-  final Map<String, String> _lastSceneInstructions = {};
+  bool _showGenerateForm = false;
+  bool _formFieldsInitialized = false;
+  final _titleController = TextEditingController();
+  final _themeController = TextEditingController();
+  int _sceneCount = 5;
+  bool _isGenerating = false;
+  String? _generateError;
 
   @override
   void initState() {
     super.initState();
     _loadBook();
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _themeController.dispose();
+    super.dispose();
   }
 
   void _loadBook() {
@@ -46,29 +55,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   void _refresh() {
     setState(() {
       _loadBook();
+      _formFieldsInitialized = false;
     });
-  }
-
-  Future<void> _goToGenerateStory() async {
-    final saved = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => GenerateStoryScreen(bookId: widget.bookId)),
-    );
-    if (saved == true) _refresh();
-  }
-
-  Future<void> _goToRecordVoice(String pageId, int pageNumber, String scriptText) async {
-    final saved = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => RecordVoiceScreen(
-          pageId: pageId,
-          pageNumber: pageNumber,
-          scriptText: scriptText,
-        ),
-      ),
-    );
-    if (saved == true) _refresh();
   }
 
   Future<void> _goToAddCharacter() async {
@@ -79,109 +67,63 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     if (saved == true) _refresh();
   }
 
-  void _goToReadBook() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => BookReaderScreen(bookId: widget.bookId)),
-    );
-  }
-
   Future<void> _goToApplyTemplate() async {
     await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => ApplyTemplateScreen(bookId: widget.bookId)),
     );
-    _refresh();
-  }
+    if (!mounted) return;
 
-  Future<void> _generateVideo() async {
-    setState(() {
-      _isGeneratingVideo = true;
-    });
-    try {
-      await _apiService.generateVideo(bookId: widget.bookId);
+    final updatedBook = await _apiService.getBook(id: widget.bookId);
+    if (!mounted) return;
+
+    if (updatedBook.pages.isNotEmpty) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => CreatorWizardScreen(bookId: widget.bookId)),
+      );
+    } else {
       _refresh();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to generate video: $e')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isGeneratingVideo = false;
-        });
-      }
     }
   }
 
-  Future<void> _watchVideo(String videoUrl) async {
-    final uri = Uri.parse('http://localhost:5220$videoUrl');
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open the video.')),
-        );
-      }
+  Future<void> _generateStory() async {
+    if (_titleController.text.trim().isEmpty || _themeController.text.trim().isEmpty) {
+      setState(() => _generateError = 'Please fill in both the title and theme.');
+      return;
     }
-  }
 
-  Future<void> _editPageText(String pageId, String currentText) async {
-    final controller = TextEditingController(text: currentText);
-    final newText = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Edit Page Text'),
-        content: TextField(
-          controller: controller,
-          maxLines: null,
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-
-    if (newText != null && newText.isNotEmpty && newText != currentText) {
-      try {
-        await _apiService.updatePageText(pageId: pageId, scriptText: newText);
-        _refresh();
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to save: $e')),
-          );
-        }
-      }
-    }
-  }
-
-  Future<void> _regeneratePageText(String pageId) async {
     setState(() {
-      _regeneratingTextPageId = pageId;
+      _isGenerating = true;
+      _generateError = null;
     });
+
     try {
-      await _apiService.regeneratePageText(pageId: pageId);
-      _refresh();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to regenerate text: $e')),
+      await _apiService.updateBook(
+        bookId: widget.bookId,
+        title: _titleController.text.trim(),
+        theme: _themeController.text.trim(),
+      );
+
+      final pages = await _apiService.generateScript(bookId: widget.bookId, pageCount: _sceneCount);
+      for (int i = 0; i < pages.length; i++) {
+        await _apiService.addPage(
+          bookId: widget.bookId,
+          pageNumber: i + 1,
+          scriptText: pages[i],
         );
       }
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => CreatorWizardScreen(bookId: widget.bookId)),
+        );
+      }
+    } catch (e) {
+      setState(() => _generateError = 'Failed to generate story: $e');
     } finally {
-      setState(() {
-        _regeneratingTextPageId = null;
-      });
+      if (mounted) setState(() => _isGenerating = false);
     }
   }
 
@@ -196,7 +138,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           width: 280,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.network('http://localhost:5220$cartoonAvatarUrl?v=${DateTime.now().millisecondsSinceEpoch}'),
+            child: Image.network('${ApiService.baseUrl}$cartoonAvatarUrl?v=${DateTime.now().millisecondsSinceEpoch}'),
           ),
         )
             : const Text('What would you like to do?'),
@@ -242,7 +184,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: Image.network(
-                      'http://localhost:5220$cartoonAvatarUrl?v=${DateTime.now().millisecondsSinceEpoch}',
+                      '${ApiService.baseUrl}$cartoonAvatarUrl?v=${DateTime.now().millisecondsSinceEpoch}',
                     ),
                   ),
                 ),
@@ -274,29 +216,18 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       );
 
       if (proceed == true) {
-        debugPrint('[Regenerate] Button tapped for characterId=$characterId'); // LOG 1
-
         _lastAvatarInstructions[characterId] = instructionsController.text.trim();
         setState(() {
           _regeneratingAvatarCharacterId = characterId;
         });
 
-        // Immediate feedback so we know the tap registered at all
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Regenerating character...'), duration: Duration(seconds: 2)),
-          );
-        }
-
         try {
-          debugPrint('[Regenerate] Calling API...'); // LOG 2
           final updatedCharacter = await _apiService.regenerateCharacterAvatar(
             characterId: characterId,
             extraInstructions: instructionsController.text.trim().isEmpty
                 ? null
                 : instructionsController.text.trim(),
           );
-          debugPrint('[Regenerate] API returned. New cartoonAvatarUrl=${updatedCharacter.cartoonAvatarUrl}'); // LOG 3
 
           _refresh();
           setState(() {
@@ -307,7 +238,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           }
           return;
         } catch (e) {
-          debugPrint('[Regenerate] ERROR: $e'); // LOG 4
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Failed to regenerate: $e')),
@@ -361,146 +291,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     }
   }
 
-  void _viewScene(String cartoonImageUrl) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        child: Stack(
-          children: [
-            Image.network(
-              'http://localhost:5220$cartoonImageUrl?v=${DateTime.now().millisecondsSinceEpoch}',
-            ),
-            Positioned(
-              top: 4,
-              right: 4,
-              child: IconButton(
-                icon: const Icon(Icons.close),
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.black54,
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _revertScene(String pageId) async {
-    try {
-      await _apiService.revertScene(pageId: pageId);
-      _refresh();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to revert: $e')),
-        );
-      }
-    }
-  }
-
-  Future<void> _generateAllScenes(List<dynamic> pages) async {
-    final pagesNeedingScenes = pages.where((p) => p.cartoonImageUrl == null).toList();
-    if (pagesNeedingScenes.isEmpty) return;
-
-    for (final page in pagesNeedingScenes) {
-      setState(() {
-        _generatingScenePageId = page.id;
-      });
-      try {
-        await _apiService.generateScene(pageId: page.id, extraInstructions: null);
-        _refresh();
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed on page ${page.pageNumber}: $e')),
-          );
-        }
-      }
-    }
-
-    setState(() {
-      _generatingScenePageId = null;
-    });
-  }
-
-  Future<void> _generateScene(String pageId, String? currentSceneUrl) async {
-    final instructionsController = TextEditingController(text: _lastSceneInstructions[pageId] ?? '');
-    final proceed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Generate Scene'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (currentSceneUrl != null) ...[
-              SizedBox(
-                width: 240,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    'http://localhost:5220$currentSceneUrl?v=${DateTime.now().millisecondsSinceEpoch}',
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-            TextField(
-              controller: instructionsController,
-              autofocus: true,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'Optional instructions',
-                hintText: 'e.g. add a hat, make it daytime',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Generate'),
-          ),
-        ],
-      ),
-    );
-
-    if (proceed != true) return;
-
-    _lastSceneInstructions[pageId] = instructionsController.text.trim();
-
-    setState(() {
-      _generatingScenePageId = pageId;
-    });
-    try {
-      await _apiService.generateScene(
-        pageId: pageId,
-        extraInstructions: instructionsController.text.trim().isEmpty
-            ? null
-            : instructionsController.text.trim(),
-      );
-      _refresh();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Scene generation failed: $e')),
-        );
-      }
-    } finally {
-      setState(() {
-        _generatingScenePageId = null;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -515,6 +305,11 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
           final book = snapshot.data!;
+          if (!_formFieldsInitialized) {
+            _titleController.text = book.title == 'My Story' ? '' : book.title;
+            _themeController.text = book.theme == 'draft' ? '' : book.theme;
+            _formFieldsInitialized = true;
+          }
           return Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
@@ -546,7 +341,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                     CircleAvatar(
                                       radius: 28,
                                       backgroundImage: character.cartoonAvatarUrl != null
-                                          ? NetworkImage('http://localhost:5220${character.cartoonAvatarUrl}?v=${DateTime.now().millisecondsSinceEpoch}')
+                                          ? NetworkImage('${ApiService.baseUrl}${character.cartoonAvatarUrl}?v=${DateTime.now().millisecondsSinceEpoch}')
                                           : null,
                                       child: character.cartoonAvatarUrl == null
                                           ? const Icon(Icons.person)
@@ -586,158 +381,73 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
                 Row(
                   children: [
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: _goToGenerateStory,
+                        onPressed: _showGenerateForm
+                            ? null
+                            : () => setState(() => _showGenerateForm = true),
                         icon: const Icon(Icons.auto_awesome),
                         label: const Text('Generate Story'),
                       ),
                     ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _goToApplyTemplate,
+                        icon: const Icon(Icons.auto_stories),
+                        label: const Text('Story Templates'),
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                ElevatedButton.icon(
-                  onPressed: _goToReadBook,
-                  icon: const Icon(Icons.menu_book),
-                  label: const Text('Read Book'),
-                ),
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  onPressed: _generatingScenePageId != null
-                      ? null
-                      : () => _generateAllScenes(book.pages),
-                  icon: const Icon(Icons.auto_fix_high),
-                  label: Text(_generatingScenePageId != null
-                      ? 'Generating scenes...'
-                      : 'Generate All Scenes'),
-                ),
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  onPressed: _goToApplyTemplate,
-                  icon: const Icon(Icons.auto_stories),
-                  label: const Text('Use a Story Template'),
-                ),
-                const SizedBox(height: 12),
-                if (_isGeneratingVideo)
-                  const Column(
+                if (_showGenerateForm) ...[
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _titleController,
+                    decoration: const InputDecoration(
+                      labelText: 'Book Title',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
                     children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 8),
-                      Text('Making your video... this can take a minute.'),
+                      const Text('# Scenes'),
+                      const SizedBox(width: 12),
+                      DropdownButton<int>(
+                        value: _sceneCount,
+                        items: [for (int i = 1; i <= 10; i++) DropdownMenuItem(value: i, child: Text('$i'))],
+                        onChanged: _isGenerating ? null : (value) => setState(() => _sceneCount = value ?? 5),
+                      ),
                     ],
-                  )
-                else if (book.videoUrl != null)
-                  ElevatedButton.icon(
-                    onPressed: () => _watchVideo(book.videoUrl!),
-                    icon: const Icon(Icons.play_circle_outline),
-                    label: const Text('Watch / Download Video'),
-                  )
-                else
-                  OutlinedButton.icon(
-                    onPressed: _generateVideo,
-                    icon: const Icon(Icons.movie_creation_outlined),
-                    label: const Text('Generate Video'),
                   ),
-                const SizedBox(height: 24),
-                Text('Pages', style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 8),
-                Expanded(
-                  child: book.pages.isEmpty
-                      ? const Text('No pages yet.')
-                      : ListView.builder(
-                    itemCount: book.pages.length,
-                    itemBuilder: (context, index) {
-                      final page = book.pages[index];
-                      final hasAudio = page.audioUrl != null;
-                      final hasScene = page.cartoonImageUrl != null;
-                      final isGeneratingThisScene = _generatingScenePageId == page.id;
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  CircleAvatar(child: Text('${page.pageNumber}')),
-                                  const SizedBox(width: 12),
-                                  Expanded(child: Text(page.scriptText)),
-                                  _regeneratingTextPageId == page.id
-                                      ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  )
-                                      : PopupMenuButton<String>(
-                                    icon: const Icon(Icons.more_vert, size: 20),
-                                    onSelected: (value) {
-                                      if (value == 'edit') {
-                                        _editPageText(page.id, page.scriptText);
-                                      } else if (value == 'regenerate') {
-                                        _regeneratePageText(page.id);
-                                      }
-                                    },
-                                    itemBuilder: (context) => [
-                                      const PopupMenuItem(value: 'edit', child: Text('Edit text')),
-                                      const PopupMenuItem(value: 'regenerate', child: Text('Regenerate text')),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  TextButton.icon(
-                                    onPressed: () => _goToRecordVoice(page.id, page.pageNumber, page.scriptText),
-                                    icon: Icon(
-                                      hasAudio ? Icons.check_circle : Icons.mic_none,
-                                      color: hasAudio ? Colors.green : null,
-                                    ),
-                                    label: Text(hasAudio ? 'Voice recorded' : 'Record voice'),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  isGeneratingThisScene
-                                      ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  )
-                                      : TextButton.icon(
-                                    onPressed: book.characters.isEmpty
-                                        ? null
-                                        : () => _generateScene(page.id, page.cartoonImageUrl),
-                                    icon: Icon(
-                                      hasScene ? Icons.check_circle : Icons.auto_fix_high,
-                                      color: hasScene ? Colors.green : null,
-                                    ),
-                                    label: Text(hasScene ? 'Scene made' : 'Generate scene'),
-                                  ),
-                                  if (hasScene)
-                                    IconButton(
-                                      icon: const Icon(Icons.visibility_outlined),
-                                      tooltip: 'View scene',
-                                      onPressed: () => _viewScene(page.cartoonImageUrl!),
-                                    ),
-                                  if (page.previousCartoonImageUrl != null)
-                                    IconButton(
-                                      icon: const Icon(Icons.undo),
-                                      tooltip: 'Revert to previous scene',
-                                      onPressed: () => _revertScene(page.id),
-                                    ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _themeController,
+                    decoration: const InputDecoration(
+                      labelText: 'Theme',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
-                ),
+                  if (_generateError != null) ...[
+                    const SizedBox(height: 8),
+                    Text(_generateError!, style: const TextStyle(color: Colors.red)),
+                  ],
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _isGenerating ? null : _generateStory,
+                    child: _isGenerating
+                        ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                        : const Text('Generate'),
+                  ),
+                ],
               ],
             ),
           );

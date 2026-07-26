@@ -16,9 +16,44 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
   final _titleController = TextEditingController();
   final _themeController = TextEditingController();
   final _apiService = ApiService();
-
   bool _isSubmitting = false;
   String? _resultMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    final preSelected = widget.preSelectedCharacterIds;
+    if (preSelected != null && preSelected.isNotEmpty) {
+      // Characters were already chosen - skip asking for title/theme here,
+      // that's handled on Book Details via "Generate Story" instead.
+      _isSubmitting = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _createWithDefaults(preSelected));
+    }
+  }
+
+  Future<void> _createWithDefaults(List<String> characterIds) async {
+    try {
+      final book = await _apiService.createBook(
+        title: 'My Story',
+        theme: 'draft',
+      );
+      await _apiService.copyCharactersToBook(
+        bookId: book.id,
+        characterIds: characterIds,
+      );
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => BookDetailScreen(bookId: book.id)),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isSubmitting = false;
+        _resultMessage = 'Error: $e';
+      });
+    }
+  }
 
   Future<void> _submit() async {
     if (_titleController.text.trim().isEmpty ||
@@ -74,6 +109,14 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final preSelected = widget.preSelectedCharacterIds;
+    if (preSelected != null && preSelected.isNotEmpty) {
+      // Auto-creating in the background - just show a spinner.
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text('Create a Story Book')),
       body: Padding(

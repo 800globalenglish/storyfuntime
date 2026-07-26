@@ -14,6 +14,8 @@ class AuthService {
   static const _userIdKey = 'auth_user_id';
   static const _emailKey = 'auth_email';
   static const _usernameKey = 'auth_username';
+  static const _emailVerifiedKey = 'auth_email_verified';
+  static const _createdAtKey = 'auth_created_at';
 
   /// Creates a new account and logs the person in.
   /// [referredByUsername] is optional — if it matches an existing
@@ -68,6 +70,8 @@ class AuthService {
     await _storage.write(key: _userIdKey, value: data['userId'] as String);
     await _storage.write(key: _emailKey, value: data['email'] as String);
     await _storage.write(key: _usernameKey, value: data['username'] as String);
+    await _storage.write(key: _emailVerifiedKey, value: (data['emailVerified'] as bool).toString());
+    await _storage.write(key: _createdAtKey, value: data['createdAt'] as String);
   }
 
   String _messageFor(http.Response response) {
@@ -88,6 +92,8 @@ class AuthService {
     await _storage.delete(key: _userIdKey);
     await _storage.delete(key: _emailKey);
     await _storage.delete(key: _usernameKey);
+    await _storage.delete(key: _emailVerifiedKey);
+    await _storage.delete(key: _createdAtKey);
   }
 
   /// The signed-in person's user ID, or null if nobody is logged in.
@@ -98,6 +104,55 @@ class AuthService {
 
   /// The signed-in person's username, or null if nobody is logged in.
   Future<String?> getUsername() => _storage.read(key: _usernameKey);
+
+  /// Whether the signed-in person's email is verified (last known value —
+  /// call [refreshVerificationStatus] to check the server for updates).
+  Future<bool> isEmailVerified() async {
+    final value = await _storage.read(key: _emailVerifiedKey);
+    return value == 'true';
+  }
+
+  /// When the account was created, or null if nobody is logged in.
+  Future<DateTime?> getCreatedAt() async {
+    final value = await _storage.read(key: _createdAtKey);
+    return value == null ? null : DateTime.tryParse(value);
+  }
+
+  /// Asks the server for the current verification status and updates
+  /// what's saved locally. Call this after the person might have clicked
+  /// the verification link (e.g. when the app resumes).
+  Future<bool> refreshVerificationStatus() async {
+    final token = await getToken();
+    if (token == null) return false;
+
+    final response = await http.get(
+      Uri.parse('${ApiService.baseUrl}/auth/me'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode != 200) return await isEmailVerified();
+
+    final data = jsonDecode(response.body);
+    final verified = data['emailVerified'] as bool;
+    await _storage.write(key: _emailVerifiedKey, value: verified.toString());
+    return verified;
+  }
+
+  /// Asks the server to send a fresh verification email.
+  /// Throws an [AuthException] with a friendly message on failure.
+  Future<void> resendVerificationEmail() async {
+    final token = await getToken();
+    if (token == null) throw AuthException('You need to be logged in to do that.');
+
+    final response = await http.post(
+      Uri.parse('${ApiService.baseUrl}/auth/resend-verification'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode != 200) {
+      throw AuthException(_messageFor(response));
+    }
+  }
 
   /// The raw JWT to attach to authenticated API calls, or null if
   /// nobody is logged in.
