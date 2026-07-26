@@ -5,7 +5,6 @@ import 'book_reader_screen.dart';
 class AvatarGalleryScreen extends StatefulWidget {
   final String characterId;
   final String characterName;
-  final String userId;
   final String? currentAvatarUrl;
   final String bookId;
 
@@ -13,7 +12,6 @@ class AvatarGalleryScreen extends StatefulWidget {
     super.key,
     required this.characterId,
     required this.characterName,
-    required this.userId,
     required this.bookId,
     this.currentAvatarUrl,
   });
@@ -32,7 +30,7 @@ class _AvatarGalleryScreenState extends State<AvatarGalleryScreen> {
   void initState() {
     super.initState();
     _loadHistory();
-    _statsFuture = _apiService.getUserStats(userId: widget.userId);
+    _statsFuture = _apiService.getUserStats();
   }
 
   void _loadHistory() {
@@ -93,7 +91,7 @@ class _AvatarGalleryScreenState extends State<AvatarGalleryScreen> {
       setState(() {
         _busyUrl = null;
         _loadHistory();
-        _statsFuture = _apiService.getUserStats(userId: widget.userId);
+        _statsFuture = _apiService.getUserStats();
       });
     } catch (e) {
       final message = e.toString().contains('currently selected')

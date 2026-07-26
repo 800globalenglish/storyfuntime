@@ -3,6 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
 
+class _AgeStage {
+  final String asset;
+  final String label;
+  final String ageRange;
+  final bool isChild;
+  const _AgeStage({
+    required this.asset,
+    required this.label,
+    required this.ageRange,
+    required this.isChild,
+  });
+}
+
 class AddCharacterScreen extends StatefulWidget {
   final String bookId;
 
@@ -18,15 +31,48 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
   final _nameController = TextEditingController();
   final _instructionsController = TextEditingController();
 
-  String _role = 'Grandchild';
-  String _gender = 'boy';
-  String _ageRange = '0-2';
+  final List<_AgeStage> _ageStages = const [
+    _AgeStage(asset: 'age_01_sm.png', label: 'Baby', ageRange: '0-2', isChild: true),
+    _AgeStage(asset: 'age_02_sm.png', label: 'Child', ageRange: '3-9', isChild: true),
+    _AgeStage(asset: 'age_03_sm.png', label: 'Teenager', ageRange: '10-18', isChild: true),
+    _AgeStage(asset: 'age_04_sm.png', label: 'Young Adult', ageRange: '19-39', isChild: false),
+    _AgeStage(asset: 'age_05_sm.png', label: 'Adult', ageRange: '40-65', isChild: false),
+    _AgeStage(asset: 'age_06_sm.png', label: 'Senior', ageRange: '66-80', isChild: false),
+    _AgeStage(asset: 'age_07_sm.png', label: 'Elder', ageRange: '81+', isChild: false),
+  ];
+
+  String _characterType = 'Human'; // 'Human' or 'Pet'
+  String _genderSelection = 'female'; // 'male' or 'female'
+  int _ageStageIndex = 0;
+
   XFile? _pickedImage;
   Uint8List? _pickedImageBytes;
   bool _isSaving = false;
   String? _errorMessage;
   String? _avatarUrl;
   String? _characterId;
+
+  // Translates the current selections into the exact strings the backend expects.
+  String get _resolvedRole {
+    if (_characterType == 'Pet') return 'Pet';
+    return _ageStages[_ageStageIndex].label;
+  }
+
+  String get _resolvedGender {
+    if (_characterType == 'Pet') {
+      return _genderSelection == 'male' ? 'male animal' : 'female animal';
+    }
+    final isChild = _ageStages[_ageStageIndex].isChild;
+    if (isChild) {
+      return _genderSelection == 'male' ? 'boy' : 'girl';
+    }
+    return _genderSelection == 'male' ? 'man' : 'woman';
+  }
+
+  String get _resolvedAgeRange {
+    if (_characterType == 'Pet') return 'N/A';
+    return _ageStages[_ageStageIndex].ageRange;
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     final image = await _picker.pickImage(source: source);
@@ -67,9 +113,9 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
         final character = await _apiService.addCharacter(
           bookId: widget.bookId,
           name: _nameController.text.trim(),
-          role: _role,
-          gender: _gender,
-          ageRange: _ageRange,
+          role: _resolvedRole,
+          gender: _resolvedGender,
+          ageRange: _resolvedAgeRange,
           extraInstructions: _instructionsController.text.trim().isEmpty
               ? null
               : _instructionsController.text.trim(),
@@ -100,6 +146,56 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
         _isSaving = false;
       });
     }
+  }
+
+  Widget _buildGenderOption(String value, String asset, String label) {
+    final selected = _genderSelection == value;
+    return GestureDetector(
+      onTap: () => setState(() => _genderSelection = value),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: selected ? Colors.deepPurple : Colors.transparent,
+                width: 3,
+              ),
+            ),
+            child: ClipOval(
+              child: Image.asset('assets/images/$asset', width: 50, height: 50, fit: BoxFit.cover),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(label, style: TextStyle(fontWeight: selected ? FontWeight.bold : FontWeight.normal)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAgeStageOption(int index) {
+    final stage = _ageStages[index];
+    final selected = _ageStageIndex == index;
+    return GestureDetector(
+      onTap: () => setState(() => _ageStageIndex = index),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        child: Container(
+          padding: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: selected ? Colors.deepPurple : Colors.transparent,
+              width: 3,
+            ),
+          ),
+          child: ClipOval(
+            child: Image.asset('assets/images/${stage.asset}', width: 35, height: 35, fit: BoxFit.cover),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -153,81 +249,42 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                   hintText: 'e.g. Grandma, Buddy',
                 ),
               ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                initialValue: _role,
-                decoration: const InputDecoration(
-                  labelText: 'Role',
-                  border: OutlineInputBorder(),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'Grandma', child: Text('Grandma')),
-                  DropdownMenuItem(value: 'Grandpa', child: Text('Grandpa')),
-                  DropdownMenuItem(value: 'Grandchild', child: Text('Grandchild')),
-                  DropdownMenuItem(value: 'Pet', child: Text('Pet')),
-                  DropdownMenuItem(value: 'Other', child: Text('Other')),
-                ],
-                onChanged: (value) {
-                  setState(() {
-                    _role = value ?? 'Grandchild';
-                    _gender = _role == 'Pet' ? 'male animal' : 'boy';
-                    _ageRange = _role == 'Grandma' || _role == 'Grandpa' ? '40-50' : '0-2';
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              if (_role != 'Pet')
-                DropdownButtonFormField<String>(
-                  initialValue: _ageRange,
-                  decoration: const InputDecoration(
-                    labelText: 'Age',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: (_role == 'Grandma' || _role == 'Grandpa')
-                      ? const [
-                    DropdownMenuItem(value: '40-50', child: Text('40-50')),
-                    DropdownMenuItem(value: '51-65', child: Text('51-65')),
-                    DropdownMenuItem(value: '66-80', child: Text('66-80')),
-                    DropdownMenuItem(value: '81+', child: Text('81+')),
-                  ]
-                      : const [
-                    DropdownMenuItem(value: '0-2', child: Text('0-2 (baby/toddler)')),
-                    DropdownMenuItem(value: '3-5', child: Text('3-5')),
-                    DropdownMenuItem(value: '6-9', child: Text('6-9')),
-                    DropdownMenuItem(value: '10-13', child: Text('10-13')),
-                    DropdownMenuItem(value: '14-18', child: Text('14-18')),
+              const SizedBox(height: 20),
+              Center(
+                child: SegmentedButton<String>(
+                  segments: const [
+                    ButtonSegment(value: 'Human', label: Text('Human')),
+                    ButtonSegment(value: 'Pet', label: Text('Pet')),
                   ],
-                  onChanged: (value) {
-                    setState(() {
-                      _ageRange = value ?? '0-2';
-                    });
+                  selected: {_characterType},
+                  onSelectionChanged: (newSelection) {
+                    setState(() => _characterType = newSelection.first);
                   },
                 ),
-              if (_role != 'Pet') const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                initialValue: _gender,
-                decoration: const InputDecoration(
-                  labelText: 'Gender',
-                  border: OutlineInputBorder(),
-                ),
-                items: _role == 'Pet'
-                    ? const [
-                        DropdownMenuItem(value: 'male animal', child: Text('Male')),
-                        DropdownMenuItem(value: 'female animal', child: Text('Female')),
-                      ]
-                    : const [
-                        DropdownMenuItem(value: 'boy', child: Text('Boy')),
-                        DropdownMenuItem(value: 'girl', child: Text('Girl')),
-                        DropdownMenuItem(value: 'man', child: Text('Man')),
-                        DropdownMenuItem(value: 'woman', child: Text('Woman')),
-                      ],
-                onChanged: (value) {
-                  setState(() {
-                    _gender = value ?? (_role == 'Pet' ? 'male animal' : 'boy');
-                  });
-                },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
+              Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildGenderOption('female', 'female.png', 'Female'),
+                    const SizedBox(width: 32),
+                    _buildGenderOption('male', 'male.png', 'Male'),
+                  ],
+                ),
+              ),
+              if (_characterType == 'Human') ...[
+                const SizedBox(height: 20),
+                const Text('Age', style: TextStyle(fontWeight: FontWeight.w600)),
+                const SizedBox(height: 8),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: List.generate(_ageStages.length, _buildAgeStageOption),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 20),
             ],
             if (_avatarUrl != null) ...[
               const Text('Here\'s your character:'),
@@ -238,7 +295,7 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: Image.network(
-                      'http://localhost:5220$_avatarUrl?v=${DateTime.now().millisecondsSinceEpoch}',
+                      '${ApiService.baseUrl}$_avatarUrl?v=${DateTime.now().millisecondsSinceEpoch}',
                     ),
                   ),
                 ),

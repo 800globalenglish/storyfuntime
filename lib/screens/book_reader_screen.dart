@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../models/book.dart';
 import '../services/api_service.dart';
@@ -39,7 +39,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
     setState(() {
       _isPlaying = true;
     });
-    await _audioPlayer.play(UrlSource('http://localhost:5220$audioUrl'));
+    await _audioPlayer.play(UrlSource('${ApiService.baseUrl}$audioUrl'));
     _audioPlayer.onPlayerComplete.listen((_) {
       if (mounted) setState(() => _isPlaying = false);
     });
@@ -106,7 +106,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                                 ? ClipRRect(
                                     borderRadius: BorderRadius.circular(16),
                               child: Image.network(
-                                'http://localhost:5220${page.cartoonImageUrl}?v=${DateTime.now().millisecondsSinceEpoch}',
+                                '${ApiService.baseUrl}${page.cartoonImageUrl}?v=${DateTime.now().millisecondsSinceEpoch}',
                                 fit: BoxFit.contain,
                               ),
                                   )

@@ -26,7 +26,7 @@ class _ApplyTemplateScreenState extends State<ApplyTemplateScreen> {
   void initState() {
     super.initState();
     _templatesFuture = _apiService.getStoryTemplates();
-    _charactersFuture = _apiService.getAllCharactersForUser(userId: 'test-user-1');
+    _charactersFuture = _apiService.getAllCharactersForUser();
   }
 
   void _selectTemplate(StoryTemplate template) {
@@ -166,10 +166,10 @@ class _ApplyTemplateScreenState extends State<ApplyTemplateScreen> {
                       onPressed: _isSubmitting ? null : _apply,
                       child: _isSubmitting
                           ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                           : const Text('Apply Template'),
                     ),
                   ],

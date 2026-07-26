@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../models/book.dart';
 import '../services/api_service.dart';
 import 'record_voice_screen.dart';
@@ -56,7 +56,7 @@ class _PagesStepScreenState extends State<PagesStepScreen> {
         child: Stack(
           children: [
             Image.network(
-              'http://localhost:5220$cartoonImageUrl?v=${DateTime.now().millisecondsSinceEpoch}',
+              '${ApiService.baseUrl}$cartoonImageUrl?v=${DateTime.now().millisecondsSinceEpoch}',
             ),
             Positioned(
               top: 4,
@@ -104,7 +104,7 @@ class _PagesStepScreenState extends State<PagesStepScreen> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: Image.network(
-                    'http://localhost:5220$currentSceneUrl?v=${DateTime.now().millisecondsSinceEpoch}',
+                    '${ApiService.baseUrl}$currentSceneUrl?v=${DateTime.now().millisecondsSinceEpoch}',
                   ),
                 ),
               ),

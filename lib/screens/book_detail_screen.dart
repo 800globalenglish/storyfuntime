@@ -326,7 +326,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           builder: (context) => AvatarGalleryScreen(
             characterId: characterId,
             characterName: name,
-            userId: userId,
             currentAvatarUrl: currentAvatarUrl ?? cartoonAvatarUrl,
             bookId: bookId,
           ),
@@ -649,95 +648,95 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   child: book.pages.isEmpty
                       ? const Text('No pages yet.')
                       : ListView.builder(
-                          itemCount: book.pages.length,
-                          itemBuilder: (context, index) {
-                            final page = book.pages[index];
-                            final hasAudio = page.audioUrl != null;
-                            final hasScene = page.cartoonImageUrl != null;
-                            final isGeneratingThisScene = _generatingScenePageId == page.id;
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              child: Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        CircleAvatar(child: Text('${page.pageNumber}')),
-                                        const SizedBox(width: 12),
-                                        Expanded(child: Text(page.scriptText)),
-                                        _regeneratingTextPageId == page.id
-                                            ? const SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: CircularProgressIndicator(strokeWidth: 2),
-                                        )
-                                            : PopupMenuButton<String>(
-                                          icon: const Icon(Icons.more_vert, size: 20),
-                                          onSelected: (value) {
-                                            if (value == 'edit') {
-                                              _editPageText(page.id, page.scriptText);
-                                            } else if (value == 'regenerate') {
-                                              _regeneratePageText(page.id);
-                                            }
-                                          },
-                                          itemBuilder: (context) => [
-                                            const PopupMenuItem(value: 'edit', child: Text('Edit text')),
-                                            const PopupMenuItem(value: 'regenerate', child: Text('Regenerate text')),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        TextButton.icon(
-                                          onPressed: () => _goToRecordVoice(page.id, page.pageNumber, page.scriptText),
-                                          icon: Icon(
-                                            hasAudio ? Icons.check_circle : Icons.mic_none,
-                                            color: hasAudio ? Colors.green : null,
-                                          ),
-                                          label: Text(hasAudio ? 'Voice recorded' : 'Record voice'),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        isGeneratingThisScene
-                                            ? const SizedBox(
-                                                width: 20,
-                                                height: 20,
-                                                child: CircularProgressIndicator(strokeWidth: 2),
-                                              )
-                                            : TextButton.icon(
-                                          onPressed: book.characters.isEmpty
-                                              ? null
-                                              : () => _generateScene(page.id, page.cartoonImageUrl),
-                                                icon: Icon(
-                                                  hasScene ? Icons.check_circle : Icons.auto_fix_high,
-                                                  color: hasScene ? Colors.green : null,
-                                                ),
-                                          label: Text(hasScene ? 'Scene made' : 'Generate scene'),
-                                        ),
-                                        if (hasScene)
-                                          IconButton(
-                                            icon: const Icon(Icons.visibility_outlined),
-                                            tooltip: 'View scene',
-                                            onPressed: () => _viewScene(page.cartoonImageUrl!),
-                                          ),
-                                        if (page.previousCartoonImageUrl != null)
-                                          IconButton(
-                                            icon: const Icon(Icons.undo),
-                                            tooltip: 'Revert to previous scene',
-                                            onPressed: () => _revertScene(page.id),
-                                          ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                    itemCount: book.pages.length,
+                    itemBuilder: (context, index) {
+                      final page = book.pages[index];
+                      final hasAudio = page.audioUrl != null;
+                      final hasScene = page.cartoonImageUrl != null;
+                      final isGeneratingThisScene = _generatingScenePageId == page.id;
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  CircleAvatar(child: Text('${page.pageNumber}')),
+                                  const SizedBox(width: 12),
+                                  Expanded(child: Text(page.scriptText)),
+                                  _regeneratingTextPageId == page.id
+                                      ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                      : PopupMenuButton<String>(
+                                    icon: const Icon(Icons.more_vert, size: 20),
+                                    onSelected: (value) {
+                                      if (value == 'edit') {
+                                        _editPageText(page.id, page.scriptText);
+                                      } else if (value == 'regenerate') {
+                                        _regeneratePageText(page.id);
+                                      }
+                                    },
+                                    itemBuilder: (context) => [
+                                      const PopupMenuItem(value: 'edit', child: Text('Edit text')),
+                                      const PopupMenuItem(value: 'regenerate', child: Text('Regenerate text')),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            );
-                          },
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  TextButton.icon(
+                                    onPressed: () => _goToRecordVoice(page.id, page.pageNumber, page.scriptText),
+                                    icon: Icon(
+                                      hasAudio ? Icons.check_circle : Icons.mic_none,
+                                      color: hasAudio ? Colors.green : null,
+                                    ),
+                                    label: Text(hasAudio ? 'Voice recorded' : 'Record voice'),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  isGeneratingThisScene
+                                      ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                      : TextButton.icon(
+                                    onPressed: book.characters.isEmpty
+                                        ? null
+                                        : () => _generateScene(page.id, page.cartoonImageUrl),
+                                    icon: Icon(
+                                      hasScene ? Icons.check_circle : Icons.auto_fix_high,
+                                      color: hasScene ? Colors.green : null,
+                                    ),
+                                    label: Text(hasScene ? 'Scene made' : 'Generate scene'),
+                                  ),
+                                  if (hasScene)
+                                    IconButton(
+                                      icon: const Icon(Icons.visibility_outlined),
+                                      tooltip: 'View scene',
+                                      onPressed: () => _viewScene(page.cartoonImageUrl!),
+                                    ),
+                                  if (page.previousCartoonImageUrl != null)
+                                    IconButton(
+                                      icon: const Icon(Icons.undo),
+                                      tooltip: 'Revert to previous scene',
+                                      onPressed: () => _revertScene(page.id),
+                                    ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
+                      );
+                    },
+                  ),
                 ),
               ],
             ),

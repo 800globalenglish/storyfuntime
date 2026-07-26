@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
 
@@ -116,7 +116,7 @@ class _UploadPhotoScreenState extends State<UploadPhotoScreen> {
             if (_cartoonImageUrl != null) ...[
               const Text('Here\'s the cartoon version:'),
               const SizedBox(height: 12),
-              Image.network('http://localhost:5220$_cartoonImageUrl'),
+              Image.network('${ApiService.baseUrl}$_cartoonImageUrl'),
             ],
             if (_errorMessage != null) ...[
               const SizedBox(height: 16),

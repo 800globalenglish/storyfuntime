@@ -22,7 +22,7 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
   }
 
   void _loadBooks() {
-    _booksFuture = _apiService.getBooks(userId: 'test-user-1');
+    _booksFuture = _apiService.getBooks();
   }
 
   Future<void> _refresh() async {
@@ -121,8 +121,8 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
                   subtitle: Text('${book.theme} - ${book.status}'),
                   leading: thumbnailUrl != null
                       ? CircleAvatar(
-                          backgroundImage: NetworkImage('http://localhost:5220$thumbnailUrl'),
-                        )
+                    backgroundImage: NetworkImage('http://localhost:5220$thumbnailUrl'),
+                  )
                       : const CircleAvatar(child: Icon(Icons.menu_book)),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete_outline),

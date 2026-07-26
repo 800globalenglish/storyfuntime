@@ -23,7 +23,7 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
   }
 
   void _loadCharacters() {
-    _charactersFuture = _apiService.getAllCharactersForUser(userId: 'test-user-1');
+    _charactersFuture = _apiService.getAllCharactersForUser();
   }
 
   void _refresh() {
@@ -56,7 +56,7 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
 
   Future<void> _takePhoto() async {
     try {
-      final libraryBookId = await _apiService.getLibraryBookId(userId: 'test-user-1');
+      final libraryBookId = await _apiService.getLibraryBookId();
       if (mounted) {
         await Navigator.push(
           context,
@@ -193,13 +193,13 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
                             borderRadius: BorderRadius.circular(12),
                             child: character.cartoonAvatarUrl != null
                                 ? Image.network(
-                                    'http://localhost:5220${character.cartoonAvatarUrl}',
-                                    fit: BoxFit.cover,
-                                  )
+                              'http://localhost:5220${character.cartoonAvatarUrl}',
+                              fit: BoxFit.cover,
+                            )
                                 : Container(
-                                    color: Colors.grey.shade300,
-                                    child: const Icon(Icons.person, size: 48),
-                                  ),
+                              color: Colors.grey.shade300,
+                              child: const Icon(Icons.person, size: 48),
+                            ),
                           ),
                           Positioned.fill(
                             child: Container(

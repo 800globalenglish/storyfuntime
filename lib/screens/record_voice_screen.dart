@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:record/record.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../services/api_service.dart';
@@ -8,6 +8,7 @@ class RecordVoiceScreen extends StatefulWidget {
   final String pageId;
   final int pageNumber;
   final String scriptText;
+
 
   const RecordVoiceScreen({
     super.key,
@@ -78,8 +79,15 @@ class _RecordVoiceScreenState extends State<RecordVoiceScreen> {
     }
   }
 
-  Future<void> _playRecording() async {
+  Future<void> _togglePlayback() async {
     if (_recordingPath == null) return;
+
+    if (_isPlaying) {
+      await _audioPlayer.pause();
+      if (mounted) setState(() => _isPlaying = false);
+      return;
+    }
+
     setState(() {
       _isPlaying = true;
     });
@@ -135,19 +143,20 @@ class _RecordVoiceScreenState extends State<RecordVoiceScreen> {
               const SizedBox(height: 16),
             ],
             Center(
-              child: GestureDetector(
-                onTap: _isRecording ? _stopRecording : _startRecording,
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _isRecording ? Colors.red : Theme.of(context).colorScheme.primary,
-                  ),
-                  child: Icon(
-                    _isRecording ? Icons.stop : Icons.mic,
-                    color: Colors.white,
-                    size: 40,
+              child: Material(
+                color: _isRecording ? Colors.red : Theme.of(context).colorScheme.primary,
+                shape: const CircleBorder(),
+                child: InkWell(
+                  onTap: _isRecording ? _stopRecording : _startRecording,
+                  customBorder: const CircleBorder(),
+                  child: SizedBox(
+                    width: 100,
+                    height: 100,
+                    child: Icon(
+                      _isRecording ? Icons.stop : Icons.mic,
+                      color: Colors.white,
+                      size: 40,
+                    ),
                   ),
                 ),
               ),
@@ -159,9 +168,9 @@ class _RecordVoiceScreenState extends State<RecordVoiceScreen> {
             if (_hasRecording) ...[
               const SizedBox(height: 32),
               ElevatedButton.icon(
-                onPressed: _isPlaying ? null : _playRecording,
-                icon: const Icon(Icons.play_arrow),
-                label: const Text('Play back'),
+                onPressed: _togglePlayback,
+                icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
+                label: Text(_isPlaying ? 'Pause' : 'Play back'),
               ),
               const SizedBox(height: 12),
               ElevatedButton.icon(

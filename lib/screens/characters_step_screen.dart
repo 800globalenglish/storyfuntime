@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../models/book.dart';
 import '../services/api_service.dart';
 import 'add_character_screen.dart';
@@ -85,7 +85,7 @@ class _CharactersStepScreenState extends State<CharactersStepScreen> {
                             CircleAvatar(
                               radius: 36,
                               backgroundImage: character.cartoonAvatarUrl != null
-                                  ? NetworkImage('http://localhost:5220${character.cartoonAvatarUrl}?v=${DateTime.now().millisecondsSinceEpoch}')
+                                  ? NetworkImage('${ApiService.baseUrl}${character.cartoonAvatarUrl}?v=${DateTime.now().millisecondsSinceEpoch}')
                                   : null,
                               child: character.cartoonAvatarUrl == null
                                   ? const Icon(Icons.person)

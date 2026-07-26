@@ -21,7 +21,7 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
   @override
   void initState() {
     super.initState();
-    _charactersFuture = _apiService.getAllCharactersForUser(userId: 'test-user-1');
+    _charactersFuture = _apiService.getAllCharactersForUser();
   }
 
   void _toggle(String id) {
@@ -114,13 +114,13 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
                             borderRadius: BorderRadius.circular(12),
                             child: character.cartoonAvatarUrl != null
                                 ? Image.network(
-                                    'http://localhost:5220${character.cartoonAvatarUrl}',
-                                    fit: BoxFit.cover,
-                                  )
+                              'http://localhost:5220${character.cartoonAvatarUrl}',
+                              fit: BoxFit.cover,
+                            )
                                 : Container(
-                                    color: Colors.grey.shade300,
-                                    child: const Icon(Icons.person, size: 48),
-                                  ),
+                              color: Colors.grey.shade300,
+                              child: const Icon(Icons.person, size: 48),
+                            ),
                           ),
                           Positioned.fill(
                             child: Container(
@@ -158,10 +158,10 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
             onPressed: _isSubmitting ? null : _next,
             child: _isSubmitting
                 ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
                 : Text('Next (${_selectedIds.length} selected)'),
           ),
         ),

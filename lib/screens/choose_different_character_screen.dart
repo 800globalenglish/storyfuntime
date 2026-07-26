@@ -25,7 +25,7 @@ class _ChooseDifferentCharacterScreenState extends State<ChooseDifferentCharacte
   @override
   void initState() {
     super.initState();
-    _charactersFuture = _apiService.getAllCharactersForUser(userId: 'test-user-1');
+    _charactersFuture = _apiService.getAllCharactersForUser();
   }
 
   Future<void> _swap() async {
@@ -108,13 +108,13 @@ class _ChooseDifferentCharacterScreenState extends State<ChooseDifferentCharacte
                             borderRadius: BorderRadius.circular(12),
                             child: character.cartoonAvatarUrl != null
                                 ? Image.network(
-                                    'http://localhost:5220${character.cartoonAvatarUrl}',
-                                    fit: BoxFit.cover,
-                                  )
+                              'http://localhost:5220${character.cartoonAvatarUrl}',
+                              fit: BoxFit.cover,
+                            )
                                 : Container(
-                                    color: Colors.grey.shade300,
-                                    child: const Icon(Icons.person, size: 48),
-                                  ),
+                              color: Colors.grey.shade300,
+                              child: const Icon(Icons.person, size: 48),
+                            ),
                           ),
                           Positioned.fill(
                             child: Container(
@@ -152,10 +152,10 @@ class _ChooseDifferentCharacterScreenState extends State<ChooseDifferentCharacte
             onPressed: (_selectedId == null || _isSubmitting) ? null : _swap,
             child: _isSubmitting
                 ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
                 : const Text('Swap Character'),
           ),
         ),

@@ -36,7 +36,6 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
 
     try {
       final book = await _apiService.createBook(
-        userId: 'test-user-1',
         title: _titleController.text.trim(),
         theme: _themeController.text.trim(),
       );

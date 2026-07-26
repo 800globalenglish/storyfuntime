@@ -1,28 +1,63 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../main.dart';
 import '../models/book.dart';
 import '../models/book_page.dart';
 import '../models/character.dart';
 import '../models/story_template.dart';
+import '../screens/login_screen.dart';
+import 'auth_service.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:5220';
+  static const String baseUrl = 'https://localhost:7217';
+
+  final _authService = AuthService();
+
+  /// Builds standard headers for an authenticated JSON request.
+  Future<Map<String, String>> _authHeaders() async {
+    final token = await _authService.getToken();
+    return {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
+
+  /// Just the Authorization header, for multipart requests (which set
+  /// their own Content-Type).
+  Future<Map<String, String>> _authOnlyHeader() async {
+    final token = await _authService.getToken();
+    return {
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
+
+  /// If the server says the session is no longer valid, clear the saved
+  /// login and send the person back to the login screen.
+  void _handleUnauthorized(http.Response response) {
+    if (response.statusCode == 401) {
+      _authService.logout();
+      navigatorKey.currentState?.pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+            (route) => false,
+      );
+    }
+  }
 
   Future<Book> createBook({
-    required String userId,
     required String title,
     required String theme,
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/books'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _authHeaders(),
       body: jsonEncode({
-        'userId': userId,
         'title': title,
         'theme': theme,
       }),
     );
 
+    _handleUnauthorized(response);
     if (response.statusCode == 201) {
       return Book.fromJson(jsonDecode(response.body));
     } else {
@@ -30,11 +65,13 @@ class ApiService {
     }
   }
 
-  Future<List<Book>> getBooks({required String userId}) async {
+  Future<List<Book>> getBooks() async {
     final response = await http.get(
-      Uri.parse('$baseUrl/books?userId=$userId'),
+      Uri.parse('$baseUrl/books'),
+      headers: await _authHeaders(),
     );
 
+    _handleUnauthorized(response);
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((json) => Book.fromJson(json)).toList();
@@ -46,8 +83,10 @@ class ApiService {
   Future<Book> getBook({required String id}) async {
     final response = await http.get(
       Uri.parse('$baseUrl/books/$id'),
+      headers: await _authHeaders(),
     );
 
+    _handleUnauthorized(response);
     if (response.statusCode == 200) {
       return Book.fromJson(jsonDecode(response.body));
     } else {
@@ -61,10 +100,11 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/books/$bookId/generate-script'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _authHeaders(),
       body: jsonEncode({'pageCount': pageCount}),
     );
 
+    _handleUnauthorized(response);
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return List<String>.from(data['pages']);
@@ -80,7 +120,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/books/$bookId/pages'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _authHeaders(),
       body: jsonEncode({
         'pageNumber': pageNumber,
         'scriptText': scriptText,
@@ -90,6 +130,7 @@ class ApiService {
       }),
     );
 
+    _handleUnauthorized(response);
     if (response.statusCode == 201) {
       return BookPage.fromJson(jsonDecode(response.body));
     } else {
@@ -103,6 +144,7 @@ class ApiService {
   }) async {
     final uri = Uri.parse('$baseUrl/pages/$pageId/audio');
     final request = http.MultipartRequest('POST', uri);
+    request.headers.addAll(await _authOnlyHeader());
     request.files.add(
       http.MultipartFile.fromBytes('audio', audioBytes, filename: 'recording.webm'),
     );
@@ -110,6 +152,7 @@ class ApiService {
     final streamedResponse = await request.send();
     final response = await http.Response.fromStream(streamedResponse);
 
+    _handleUnauthorized(response);
     if (response.statusCode == 200) {
       return BookPage.fromJson(jsonDecode(response.body));
     } else {
@@ -124,6 +167,7 @@ class ApiService {
   }) async {
     final uri = Uri.parse('$baseUrl/pages/$pageId/photo');
     final request = http.MultipartRequest('POST', uri);
+    request.headers.addAll(await _authOnlyHeader());
     request.files.add(
       http.MultipartFile.fromBytes('photo', photoBytes, filename: fileName),
     );
@@ -131,6 +175,7 @@ class ApiService {
     final streamedResponse = await request.send();
     final response = await http.Response.fromStream(streamedResponse);
 
+    _handleUnauthorized(response);
     if (response.statusCode == 200) {
       return BookPage.fromJson(jsonDecode(response.body));
     } else {
@@ -150,6 +195,7 @@ class ApiService {
   }) async {
     final uri = Uri.parse('$baseUrl/books/$bookId/characters');
     final request = http.MultipartRequest('POST', uri);
+    request.headers.addAll(await _authOnlyHeader());
     request.fields['name'] = name;
     request.fields['role'] = role;
     request.fields['gender'] = gender;
@@ -162,6 +208,7 @@ class ApiService {
     final streamedResponse = await request.send();
     final response = await http.Response.fromStream(streamedResponse);
 
+    _handleUnauthorized(response);
     if (response.statusCode == 201) {
       return Character.fromJson(jsonDecode(response.body));
     } else {
@@ -172,10 +219,11 @@ class ApiService {
   Future<BookPage> generateScene({required String pageId, String? extraInstructions}) async {
     final response = await http.post(
       Uri.parse('$baseUrl/pages/$pageId/generate-scene'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _authHeaders(),
       body: jsonEncode({'extraInstructions': extraInstructions}),
     );
 
+    _handleUnauthorized(response);
     if (response.statusCode == 200) {
       return BookPage.fromJson(jsonDecode(response.body));
     } else {
@@ -186,8 +234,10 @@ class ApiService {
   Future<void> deleteBook({required String bookId}) async {
     final response = await http.delete(
       Uri.parse('$baseUrl/books/$bookId'),
+      headers: await _authHeaders(),
     );
 
+    _handleUnauthorized(response);
     if (response.statusCode != 204) {
       throw Exception('Failed to delete book: ${response.statusCode}');
     }
@@ -196,10 +246,11 @@ class ApiService {
   Future<BookPage> updatePageText({required String pageId, required String scriptText}) async {
     final response = await http.put(
       Uri.parse('$baseUrl/pages/$pageId'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _authHeaders(),
       body: jsonEncode({'scriptText': scriptText}),
     );
 
+    _handleUnauthorized(response);
     if (response.statusCode == 200) {
       return BookPage.fromJson(jsonDecode(response.body));
     } else {
@@ -207,11 +258,14 @@ class ApiService {
     }
   }
 
-  Future<BookPage> regeneratePageText({required String pageId}) async {
+  Future<BookPage> regeneratePageText({required String pageId, String? extraInstructions}) async {
     final response = await http.post(
       Uri.parse('$baseUrl/pages/$pageId/regenerate-text'),
+      headers: await _authHeaders(),
+      body: jsonEncode({'extraInstructions': extraInstructions}),
     );
 
+    _handleUnauthorized(response);
     if (response.statusCode == 200) {
       return BookPage.fromJson(jsonDecode(response.body));
     } else {
@@ -222,8 +276,10 @@ class ApiService {
   Future<void> deleteCharacter({required String characterId}) async {
     final response = await http.delete(
       Uri.parse('$baseUrl/characters/$characterId'),
+      headers: await _authHeaders(),
     );
 
+    _handleUnauthorized(response);
     if (response.statusCode != 204) {
       throw Exception('Failed to delete character: ${response.statusCode}');
     }
@@ -232,10 +288,11 @@ class ApiService {
   Future<Character> regenerateCharacterAvatar({required String characterId, String? extraInstructions}) async {
     final response = await http.post(
       Uri.parse('$baseUrl/characters/$characterId/regenerate-avatar'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _authHeaders(),
       body: jsonEncode({'extraInstructions': extraInstructions}),
     );
 
+    _handleUnauthorized(response);
     if (response.statusCode == 200) {
       return Character.fromJson(jsonDecode(response.body));
     } else {
@@ -246,8 +303,10 @@ class ApiService {
   Future<List<Map<String, dynamic>>> getAvatarHistory({required String characterId}) async {
     final response = await http.get(
       Uri.parse('$baseUrl/characters/$characterId/avatar-history'),
+      headers: await _authHeaders(),
     );
 
+    _handleUnauthorized(response);
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
       return data.cast<Map<String, dynamic>>();
@@ -259,10 +318,11 @@ class ApiService {
   Future<Character> selectAvatar({required String characterId, required String url}) async {
     final response = await http.post(
       Uri.parse('$baseUrl/characters/$characterId/select-avatar'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _authHeaders(),
       body: jsonEncode({'url': url}),
     );
 
+    _handleUnauthorized(response);
     if (response.statusCode == 200) {
       return Character.fromJson(jsonDecode(response.body));
     } else {
@@ -270,11 +330,13 @@ class ApiService {
     }
   }
 
-  Future<Map<String, int>> getUserStats({required String userId}) async {
+  Future<Map<String, int>> getUserStats() async {
     final response = await http.get(
-      Uri.parse('$baseUrl/users/$userId/stats'),
+      Uri.parse('$baseUrl/users/me/stats'),
+      headers: await _authHeaders(),
     );
 
+    _handleUnauthorized(response);
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return {
@@ -289,18 +351,22 @@ class ApiService {
   Future<void> deleteAvatarHistoryEntry({required String characterId, required String historyId}) async {
     final response = await http.delete(
       Uri.parse('$baseUrl/characters/$characterId/avatar-history/$historyId'),
+      headers: await _authHeaders(),
     );
 
+    _handleUnauthorized(response);
     if (response.statusCode != 204) {
       throw Exception('Failed to delete avatar: ${response.statusCode} ${response.body}');
     }
   }
 
-  Future<String> getLibraryBookId({required String userId}) async {
+  Future<String> getLibraryBookId() async {
     final response = await http.get(
-      Uri.parse('$baseUrl/users/$userId/library-book'),
+      Uri.parse('$baseUrl/users/me/library-book'),
+      headers: await _authHeaders(),
     );
 
+    _handleUnauthorized(response);
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return data['bookId'] as String;
@@ -309,11 +375,13 @@ class ApiService {
     }
   }
 
-  Future<List<Character>> getAllCharactersForUser({required String userId}) async {
+  Future<List<Character>> getAllCharactersForUser() async {
     final response = await http.get(
-      Uri.parse('$baseUrl/users/$userId/characters'),
+      Uri.parse('$baseUrl/users/me/characters'),
+      headers: await _authHeaders(),
     );
 
+    _handleUnauthorized(response);
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((json) => Character.fromJson(json)).toList();
@@ -325,10 +393,11 @@ class ApiService {
   Future<void> copyCharactersToBook({required String bookId, required List<String> characterIds}) async {
     final response = await http.post(
       Uri.parse('$baseUrl/books/$bookId/characters/copy'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _authHeaders(),
       body: jsonEncode({'characterIds': characterIds}),
     );
 
+    _handleUnauthorized(response);
     if (response.statusCode != 200) {
       throw Exception('Failed to copy characters: ${response.statusCode} ${response.body}');
     }
@@ -337,8 +406,10 @@ class ApiService {
   Future<void> deleteAllPages({required String bookId}) async {
     final response = await http.delete(
       Uri.parse('$baseUrl/books/$bookId/pages'),
+      headers: await _authHeaders(),
     );
 
+    _handleUnauthorized(response);
     if (response.statusCode != 204) {
       throw Exception('Failed to delete pages: ${response.statusCode}');
     }
@@ -347,14 +418,18 @@ class ApiService {
   Future<BookPage> revertScene({required String pageId}) async {
     final response = await http.post(
       Uri.parse('$baseUrl/pages/$pageId/revert-scene'),
+      headers: await _authHeaders(),
     );
 
+    _handleUnauthorized(response);
     if (response.statusCode == 200) {
       return BookPage.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('Failed to revert scene: ${response.statusCode}');
     }
   }
+
+  // --- Story templates: shared/global data, not tied to one user ---
 
   Future<List<StoryTemplate>> getStoryTemplates() async {
     final response = await http.get(Uri.parse('$baseUrl/story-templates'));
@@ -422,9 +497,10 @@ class ApiService {
   Future<void> applyTemplate({required String bookId, required String templateId, required Map<String, String> roleToCharacterId}) async {
     final response = await http.post(
       Uri.parse('$baseUrl/books/$bookId/apply-template/$templateId'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _authHeaders(),
       body: jsonEncode({'roleToCharacterId': roleToCharacterId}),
     );
+    _handleUnauthorized(response);
     if (response.statusCode != 200) {
       throw Exception('Failed to apply template: ${response.statusCode} ${response.body}');
     }
@@ -433,7 +509,9 @@ class ApiService {
   Future<Book> generateVideo({required String bookId}) async {
     final response = await http.post(
       Uri.parse('$baseUrl/books/$bookId/generate-video'),
+      headers: await _authHeaders(),
     );
+    _handleUnauthorized(response);
     if (response.statusCode == 200) {
       return Book.fromJson(jsonDecode(response.body));
     } else {
