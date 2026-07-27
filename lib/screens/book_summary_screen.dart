@@ -141,12 +141,15 @@ class _BookSummaryScreenState extends State<BookSummaryScreen> {
                         _watchVideo(book.videoUrl!);
                       } else if (value == 'download') {
                         _downloadVideo();
+                      } else if (value == 'regenerate') {
+                        _generateVideo();
                       }
                     },
                     itemBuilder: (context) => const [
                       PopupMenuItem(value: 'share', child: Row(children: [Icon(Icons.share), SizedBox(width: 12), Text('Share')])),
                       PopupMenuItem(value: 'watch', child: Row(children: [Icon(Icons.play_circle_outline), SizedBox(width: 12), Text('Watch')])),
                       PopupMenuItem(value: 'download', child: Row(children: [Icon(Icons.download), SizedBox(width: 12), Text('Download')])),
+                      PopupMenuItem(value: 'regenerate', child: Row(children: [Icon(Icons.refresh), SizedBox(width: 12), Text('Regenerate Video')])),
                     ],
                     child: IgnorePointer(
                       child: ElevatedButton.icon(

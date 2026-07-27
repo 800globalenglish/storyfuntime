@@ -21,6 +21,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
   final _apiService = ApiService();
   late Future<Book> _bookFuture;
   String? _generatingScenePageId;
+  bool _isBulkGenerating = false;
   String? _regeneratingTextPageId;
   bool _isGeneratingVideo = false;
   bool _instructionsHidden = false;
@@ -154,7 +155,21 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
         ),
       ),
     );
-    if (saved == true) _refresh();
+    if (saved != true) return;
+
+    _refresh();
+
+    // Chain straight into the next page that still needs a voice recording,
+    // instead of dropping back to the main screen after every single save.
+    if (!mounted) return;
+    final freshBook = await _apiService.getBook(id: widget.bookId);
+    final remaining = freshBook.pages
+        .where((p) => p.pageNumber > pageNumber && p.audioUrl == null)
+        .toList();
+    if (remaining.isNotEmpty && mounted) {
+      final next = remaining.first;
+      await _goToRecordVoice(next.id, next.pageNumber, next.scriptText);
+    }
   }
 
   Future<void> _editPageText(String pageId, String currentText) async {
@@ -293,6 +308,13 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
     final pagesNeedingScenes = pages.where((p) => p.cartoonImageUrl == null).toList();
     if (pagesNeedingScenes.isEmpty) return;
 
+    // Books with a lot of pages generate a lot of back-to-back AI requests,
+    // which can trip rate limits - a small breather between pages keeps
+    // large batches reliable without slowing down typical small books.
+    final isLargeBatch = pagesNeedingScenes.length > 9;
+
+    setState(() => _isBulkGenerating = true);
+
     for (final page in pagesNeedingScenes) {
       setState(() {
         _generatingScenePageId = page.id;
@@ -307,10 +329,14 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
           );
         }
       }
+      if (isLargeBatch && page != pagesNeedingScenes.last) {
+        await Future.delayed(const Duration(seconds: 3));
+      }
     }
 
     setState(() {
       _generatingScenePageId = null;
+      _isBulkGenerating = false;
     });
   }
 
@@ -443,12 +469,15 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                                         _openVideo(book.videoUrl!);
                                       } else if (value == 'download') {
                                         _downloadVideo();
+                                      } else if (value == 'regenerate') {
+                                        _generateVideo();
                                       }
                                     },
                                     itemBuilder: (context) => const [
                                       PopupMenuItem(value: 'share', child: Row(children: [Icon(Icons.share), SizedBox(width: 12), Text('Share')])),
                                       PopupMenuItem(value: 'watch', child: Row(children: [Icon(Icons.play_circle_outline), SizedBox(width: 12), Text('Watch')])),
                                       PopupMenuItem(value: 'download', child: Row(children: [Icon(Icons.download), SizedBox(width: 12), Text('Download')])),
+                                      PopupMenuItem(value: 'regenerate', child: Row(children: [Icon(Icons.refresh), SizedBox(width: 12), Text('Regenerate Video')])),
                                     ],
                                     child: IgnorePointer(
                                       child: OutlinedButton.icon(
@@ -508,6 +537,22 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                   ),
                 ],
                 const SizedBox(height: 16),
+                if (_isBulkGenerating)
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF9C4),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFFBC02D)),
+                    ),
+                    child: const Text(
+                      'Please wait while the magic happens :-)',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                    ),
+                  ),
                 Expanded(
                   child: book.pages.isEmpty
                       ? const Text('No pages yet.')

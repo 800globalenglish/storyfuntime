@@ -5,6 +5,7 @@ import 'stories_list_screen.dart';
 import 'characters_home_screen.dart';
 import 'template_admin_screen.dart';
 import 'login_screen.dart';
+import 'add_character_screen.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
 
@@ -28,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isSendingEmail = false;
   Timer? _bannerTimer;
   bool? _hasBooks;
+  bool? _hasCharacters;
 
   @override
   void initState() {
@@ -37,6 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     _checkVerificationStatus();
     _loadHasBooks();
+    _loadHasCharacters();
   }
 
   Future<void> _loadHasBooks() async {
@@ -48,12 +51,44 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _loadHasCharacters() async {
+    try {
+      final characters = await _apiService.getAllCharactersForUser();
+      if (mounted) setState(() => _hasCharacters = characters.isNotEmpty);
+    } catch (_) {
+      if (mounted) setState(() => _hasCharacters = true);
+    }
+  }
+
   Future<void> _goToNewStory() async {
     await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const CharactersHomeScreen()),
     );
     _loadHasBooks();
+    _loadHasCharacters();
+  }
+
+  /// For a brand-new account with no characters yet at all - skips straight
+  /// into creating the first one, instead of landing on a Characters screen
+  /// that would just show its own "create first character" button.
+  Future<void> _goToCreateFirstCharacter() async {
+    try {
+      final libraryBookId = await _apiService.getLibraryBookId();
+      if (!mounted) return;
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => AddCharacterScreen(bookId: libraryBookId)),
+      );
+      _loadHasBooks();
+      _loadHasCharacters();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to start: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -176,8 +211,25 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                     const SizedBox(height: 24),
-                    if (_hasBooks == null)
+                    if (_hasBooks == null || _hasCharacters == null)
                       const CircularProgressIndicator()
+                    else if (_hasBooks == false && _hasCharacters == false)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 100,
+                        child: ElevatedButton(
+                          onPressed: _goToCreateFirstCharacter,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text(
+                            'Create First Character',
+                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      )
                     else if (_hasBooks == false)
                       SizedBox(
                         width: double.infinity,
