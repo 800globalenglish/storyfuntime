@@ -168,5 +168,6 @@
   "forgot_password_title": "Reset your password",
   "send_reset_link": "Send Link",
   "reset_email_sent_if_exists": "If an account exists, a password reset email has been sent.",
-  "forgot_password_link": "Forgot password?"
+  "forgot_password_link": "Forgot password?",
+  "back_to_login": "Back to Login"
 }

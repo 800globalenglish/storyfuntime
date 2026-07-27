@@ -168,5 +168,6 @@
   "forgot_password_title": "Restablece tu contraseña",
   "send_reset_link": "Enviar Enlace",
   "reset_email_sent_if_exists": "Si existe una cuenta, se ha enviado un correo para restablecer la contraseña.",
-  "forgot_password_link": "¿Olvidaste tu contraseña?"
+  "forgot_password_link": "¿Olvidaste tu contraseña?",
+  "back_to_login": "Volver a Iniciar Sesión"
 }

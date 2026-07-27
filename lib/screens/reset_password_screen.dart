@@ -137,6 +137,18 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           : Text(AppStrings.t('reset_password_button'), style: const TextStyle(fontSize: 18)),
                     ),
                   ),
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: _isSubmitting
+                        ? null
+                        : () {
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(builder: (context) => const LoginScreen()),
+                              (route) => false,
+                            );
+                          },
+                    child: Text(AppStrings.t('back_to_login')),
+                  ),
                 ],
               ),
             ),
