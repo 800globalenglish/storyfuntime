@@ -2,10 +2,18 @@ import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'services/auth_service.dart';
+import 'services/app_strings.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
-void main() {
+/// Captured from a shared invite link like storyfuntime.com/go/?ref=username.
+/// Read once at startup and used to pre-fill the signup form.
+String? pendingReferralUsername;
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  pendingReferralUsername = Uri.base.queryParameters['ref'];
+  await AppStrings.init();
   runApp(const StoryFunTimeApp());
 }
 
@@ -28,7 +36,7 @@ class StoryFunTimeApp extends StatelessWidget {
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 600),
-              child: child,
+              child: LanguageAware(child: child!),
             ),
           ),
         );

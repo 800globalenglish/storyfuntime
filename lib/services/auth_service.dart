@@ -154,6 +154,25 @@ class AuthService {
     }
   }
 
+  /// Fetches how many bonus credits this person has earned, and the list
+  /// of everyone who signed up using their invite.
+  Future<ReferralSummary> getMyReferrals() async {
+    final token = await getToken();
+    if (token == null) throw AuthException('You need to be logged in to do that.');
+
+    final response = await http.get(
+      Uri.parse('${ApiService.baseUrl}/users/me/referrals'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode != 200) {
+      throw AuthException(_messageFor(response));
+    }
+
+    final data = jsonDecode(response.body);
+    return ReferralSummary.fromJson(data);
+  }
+
   /// The raw JWT to attach to authenticated API calls, or null if
   /// nobody is logged in.
   Future<String?> getToken() => _storage.read(key: _tokenKey);
@@ -169,4 +188,36 @@ class AuthException implements Exception {
 
   @override
   String toString() => message;
+}
+
+/// One friend who joined using an invite.
+class Referral {
+  final String username;
+  final DateTime joinedAt;
+
+  Referral({required this.username, required this.joinedAt});
+
+  factory Referral.fromJson(Map<String, dynamic> json) {
+    return Referral(
+      username: json['username'] as String,
+      joinedAt: DateTime.parse(json['joinedAt'] as String),
+    );
+  }
+}
+
+/// Bonus credits earned plus the full list of people invited.
+class ReferralSummary {
+  final int bonusCredits;
+  final List<Referral> referrals;
+
+  ReferralSummary({required this.bonusCredits, required this.referrals});
+
+  factory ReferralSummary.fromJson(Map<String, dynamic> json) {
+    return ReferralSummary(
+      bonusCredits: json['bonusCredits'] as int,
+      referrals: (json['referrals'] as List)
+          .map((r) => Referral.fromJson(r as Map<String, dynamic>))
+          .toList(),
+    );
+  }
 }

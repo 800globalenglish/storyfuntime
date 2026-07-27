@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/book.dart';
@@ -22,6 +23,8 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
   late Future<Book> _bookFuture;
   String? _generatingScenePageId;
   bool _isBulkGenerating = false;
+  bool _showTimeToRecord = false;
+  Timer? _timeToRecordTimer;
   String? _regeneratingTextPageId;
   bool _isGeneratingVideo = false;
   bool _instructionsHidden = false;
@@ -33,6 +36,12 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
     super.initState();
     _loadBook();
     _loadInstructionsPref();
+  }
+
+  @override
+  void dispose() {
+    _timeToRecordTimer?.cancel();
+    super.dispose();
   }
 
   void _loadBook() {
@@ -337,6 +346,12 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
     setState(() {
       _generatingScenePageId = null;
       _isBulkGenerating = false;
+      _showTimeToRecord = true;
+    });
+
+    _timeToRecordTimer?.cancel();
+    _timeToRecordTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) setState(() => _showTimeToRecord = false);
     });
   }
 
@@ -549,6 +564,22 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                     ),
                     child: const Text(
                       'Please wait while the magic happens :-)',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                if (_showTimeToRecord)
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDCEDC8),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFF7CB342)),
+                    ),
+                    child: const Text(
+                      'Time to Record',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                     ),

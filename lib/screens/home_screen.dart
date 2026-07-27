@@ -1,13 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'stories_list_screen.dart';
 import 'characters_home_screen.dart';
 import 'template_admin_screen.dart';
 import 'login_screen.dart';
 import 'add_character_screen.dart';
+import 'my_invites_screen.dart';
+import 'language_settings_screen.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
+import '../services/app_strings.dart';
 
 /// How long a new, unverified account gets to explore before the
 /// reminder banner shows up.
@@ -40,6 +42,12 @@ class _HomeScreenState extends State<HomeScreen> {
     _checkVerificationStatus();
     _loadHasBooks();
     _loadHasCharacters();
+    // Rebuild this screen whenever the language changes elsewhere in the app.
+    AppStrings.languageCode.addListener(_onLanguageChanged);
+  }
+
+  void _onLanguageChanged() {
+    if (mounted) setState(() {});
   }
 
   Future<void> _loadHasBooks() async {
@@ -93,6 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    AppStrings.languageCode.removeListener(_onLanguageChanged);
     _bannerTimer?.cancel();
     super.dispose();
   }
@@ -124,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
       await _authService.resendVerificationEmail();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Verification email sent — check your inbox!')),
+          SnackBar(content: Text(AppStrings.t('verification_email_sent'))),
         );
       }
     } on AuthException catch (e) {
@@ -145,23 +154,25 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _copyUsername(BuildContext context) {
-    if (_username == null) return;
-    Clipboard.setData(ClipboardData(text: _username!));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Username copied — share it to invite a friend!')),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('StoryFunTime'),
+        title: Text(AppStrings.t('app_title')),
         actions: [
           IconButton(
+            icon: const Icon(Icons.language),
+            tooltip: 'Language',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LanguageSettingsScreen()),
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.logout),
-            tooltip: 'Log out',
+            tooltip: AppStrings.t('log_out_tooltip'),
             onPressed: () => _logout(context),
           ),
         ],
@@ -170,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           if (_showVerifyBanner)
             MaterialBanner(
-              content: const Text('Please verify your email so you don\'t lose access to your stories.'),
+              content: Text(AppStrings.t('verify_email_banner')),
               leading: const Icon(Icons.mark_email_unread_outlined),
               actions: [
                 TextButton(
@@ -181,11 +192,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     height: 16,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                      : const Text('Resend email'),
+                      : Text(AppStrings.t('resend_email')),
                 ),
                 TextButton(
                   onPressed: () => setState(() => _showVerifyBanner = false),
-                  child: const Text('Dismiss'),
+                  child: Text(AppStrings.t('dismiss')),
                 ),
               ],
             ),
@@ -203,10 +214,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (_username != null) ...[
                       const SizedBox(height: 12),
                       GestureDetector(
-                        onTap: () => _copyUsername(context),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const MyInvitesScreen()),
+                          );
+                        },
                         child: Chip(
                           avatar: const Icon(Icons.person_add_alt, size: 18),
-                          label: Text('Invite friends with: $_username'),
+                          label: Text('${AppStrings.t('invite_friends_with')} $_username'),
                         ),
                       ),
                     ],
@@ -223,9 +239,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             backgroundColor: Colors.red,
                             foregroundColor: Colors.white,
                           ),
-                          child: const Text(
-                            'Create First Character',
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          child: Text(
+                            AppStrings.t('create_first_character'),
+                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -240,9 +256,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             backgroundColor: Colors.red,
                             foregroundColor: Colors.white,
                           ),
-                          child: const Text(
-                            'Create your first story',
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          child: Text(
+                            AppStrings.t('create_your_first_story'),
+                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -259,7 +275,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               );
                             },
                             icon: const Icon(Icons.menu_book, size: 32),
-                            label: const Text('Go to Stories', style: TextStyle(fontSize: 20)),
+                            label: Text(AppStrings.t('go_to_stories'), style: const TextStyle(fontSize: 20)),
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -269,7 +285,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: ElevatedButton.icon(
                             onPressed: _goToNewStory,
                             icon: const Icon(Icons.people, size: 32),
-                            label: const Text('New Story', style: TextStyle(fontSize: 20)),
+                            label: Text(AppStrings.t('new_story'), style: const TextStyle(fontSize: 20)),
                           ),
                         ),
                       ],
@@ -282,7 +298,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             MaterialPageRoute(builder: (context) => const TemplateAdminScreen()),
                           );
                         },
-                        child: const Text('Manage Story Templates'),
+                        child: Text(AppStrings.t('manage_story_templates')),
                       ),
                     ],
                   ],

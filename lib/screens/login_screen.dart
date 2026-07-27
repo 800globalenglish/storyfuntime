@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../services/app_strings.dart';
+import '../main.dart';
 import 'home_screen.dart';
+import 'language_settings_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -22,7 +25,25 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _errorMessage;
 
   @override
+  void initState() {
+    super.initState();
+    // Arriving via a shared invite link (storyfuntime.com/go/?ref=username) -
+    // pre-fill it and go straight into signup mode.
+    if (pendingReferralUsername != null && pendingReferralUsername!.isNotEmpty) {
+      _referredByController.text = pendingReferralUsername!;
+      _isSignupMode = true;
+    }
+    // Rebuild this screen whenever the language changes elsewhere in the app.
+    AppStrings.languageCode.addListener(_onLanguageChanged);
+  }
+
+  void _onLanguageChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
   void dispose() {
+    AppStrings.languageCode.removeListener(_onLanguageChanged);
     _emailController.dispose();
     _usernameController.dispose();
     _referredByController.dispose();
@@ -63,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } on AuthException catch (e) {
       setState(() => _errorMessage = e.message);
     } catch (e) {
-      setState(() => _errorMessage = 'Couldn\'t reach the server. Please check your connection and try again.');
+      setState(() => _errorMessage = AppStrings.t('could_not_reach_server'));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -72,7 +93,21 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('StoryFunTime')),
+      appBar: AppBar(
+        title: Text(AppStrings.t('app_title')),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.language),
+            tooltip: 'Language',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LanguageSettingsScreen()),
+              );
+            },
+          ),
+        ],
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -89,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    _isSignupMode ? 'Create your account' : 'Welcome back',
+                    _isSignupMode ? AppStrings.t('create_account_title') : AppStrings.t('welcome_back'),
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
@@ -99,14 +134,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     keyboardType: _isSignupMode ? TextInputType.emailAddress : TextInputType.text,
                     autocorrect: false,
                     decoration: InputDecoration(
-                      labelText: _isSignupMode ? 'Email' : 'Email or Username',
+                      labelText: _isSignupMode ? AppStrings.t('email_label') : AppStrings.t('email_or_username_label'),
                       border: const OutlineInputBorder(),
                     ),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return _isSignupMode ? 'Please enter your email' : 'Please enter your email or username';
+                        return _isSignupMode ? AppStrings.t('please_enter_email') : AppStrings.t('please_enter_email_or_username');
                       }
-                      if (_isSignupMode && !value.contains('@')) return 'Please enter a valid email';
+                      if (_isSignupMode && !value.contains('@')) return AppStrings.t('please_enter_valid_email');
                       return null;
                     },
                   ),
@@ -115,12 +150,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       controller: _usernameController,
                       autocorrect: false,
-                      decoration: const InputDecoration(
-                        labelText: 'Username',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: AppStrings.t('username_label'),
+                        border: const OutlineInputBorder(),
                       ),
                       validator: (value) {
-                        if (value == null || value.trim().isEmpty) return 'Please choose a username';
+                        if (value == null || value.trim().isEmpty) return AppStrings.t('please_choose_username');
                         return null;
                       },
                     ),
@@ -128,10 +163,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       controller: _referredByController,
                       autocorrect: false,
-                      decoration: const InputDecoration(
-                        labelText: 'Invited by (optional)',
-                        hintText: "Friend's username",
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: AppStrings.t('invited_by_label'),
+                        hintText: AppStrings.t('invited_by_hint'),
+                        border: const OutlineInputBorder(),
                       ),
                     ),
                   ],
@@ -139,13 +174,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextFormField(
                     controller: _passwordController,
                     obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: AppStrings.t('password_label'),
+                      border: const OutlineInputBorder(),
                     ),
                     validator: (value) {
-                      if (value == null || value.isEmpty) return 'Please enter your password';
-                      if (_isSignupMode && value.length < 8) return 'Password must be at least 8 characters';
+                      if (value == null || value.isEmpty) return AppStrings.t('please_enter_password');
+                      if (_isSignupMode && value.length < 8) return AppStrings.t('password_min_length');
                       return null;
                     },
                     onFieldSubmitted: (_) => _submit(),
@@ -170,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2.5),
                       )
                           : Text(
-                        _isSignupMode ? 'Create Account' : 'Log In',
+                        _isSignupMode ? AppStrings.t('create_account_button') : AppStrings.t('log_in_button'),
                         style: const TextStyle(fontSize: 18),
                       ),
                     ),
@@ -187,8 +222,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                     child: Text(
                       _isSignupMode
-                          ? 'Already have an account? Log In'
-                          : 'New here? Create an account',
+                          ? AppStrings.t('already_have_account')
+                          : AppStrings.t('new_here'),
                     ),
                   ),
                 ],

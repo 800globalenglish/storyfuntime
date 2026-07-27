@@ -18,6 +18,12 @@ class ApiService {
       ? 'https://api.storyfuntime.com'
       : 'https://localhost:7217';
 
+  // The app's own public address (not the API) - used to build shareable
+  // invite links like storyfuntime.com/go/?ref=username.
+  static const String webAppUrl = kReleaseMode
+      ? 'https://storyfuntime.com/go'
+      : 'http://localhost:7217';
+
   final _authService = AuthService();
 
   /// Builds standard headers for an authenticated JSON request.
