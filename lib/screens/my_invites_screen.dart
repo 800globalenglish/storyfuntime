@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
+import '../services/app_strings.dart';
 
 class MyInvitesScreen extends StatefulWidget {
   const MyInvitesScreen({super.key});
@@ -22,6 +23,17 @@ class _MyInvitesScreenState extends State<MyInvitesScreen> {
     _authService.getUsername().then((value) {
       if (mounted) setState(() => _username = value);
     });
+    AppStrings.languageCode.addListener(_onLanguageChanged);
+  }
+
+  void _onLanguageChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    AppStrings.languageCode.removeListener(_onLanguageChanged);
+    super.dispose();
   }
 
   void _refresh() {
@@ -35,7 +47,7 @@ class _MyInvitesScreenState extends State<MyInvitesScreen> {
     final link = '${ApiService.webAppUrl}/?ref=$_username';
     Clipboard.setData(ClipboardData(text: link));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Invite link copied — share it with a friend!')),
+      SnackBar(content: Text(AppStrings.t('invite_link_copied'))),
     );
   }
 
@@ -47,7 +59,7 @@ class _MyInvitesScreenState extends State<MyInvitesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('My Invites')),
+      appBar: AppBar(title: Text(AppStrings.t('my_invites_title'))),
       body: RefreshIndicator(
         onRefresh: () async => _refresh(),
         child: FutureBuilder<ReferralSummary>(
@@ -57,7 +69,7 @@ class _MyInvitesScreenState extends State<MyInvitesScreen> {
               return const Center(child: CircularProgressIndicator());
             }
             if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
+              return Center(child: Text('${AppStrings.t('error_prefix')} ${snapshot.error}'));
             }
 
             final summary = snapshot.data!;
@@ -78,7 +90,7 @@ class _MyInvitesScreenState extends State<MyInvitesScreen> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                'Tap to copy your invite link',
+                                AppStrings.t('tap_to_copy_invite_link'),
                                 style: const TextStyle(fontWeight: FontWeight.w600),
                               ),
                             ),
@@ -100,12 +112,14 @@ class _MyInvitesScreenState extends State<MyInvitesScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          summary.bonusCredits == 1 ? 'Bonus Story Credit Earned' : 'Bonus Story Credits Earned',
+                          summary.bonusCredits == 1
+                              ? AppStrings.t('bonus_credit_earned_singular')
+                              : AppStrings.t('bonus_credits_earned_plural'),
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Earn 1 bonus credit for every friend who joins using your invite.',
+                          AppStrings.t('bonus_credit_explanation'),
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
@@ -114,12 +128,12 @@ class _MyInvitesScreenState extends State<MyInvitesScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                Text('Friends Who Joined', style: Theme.of(context).textTheme.titleMedium),
+                Text(AppStrings.t('friends_who_joined'), style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
                 if (summary.referrals.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
-                    child: Text('Nobody has joined using your invite yet — share your username to get started!'),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Text(AppStrings.t('nobody_joined_yet')),
                   )
                 else
                   for (final referral in summary.referrals)
@@ -128,7 +142,7 @@ class _MyInvitesScreenState extends State<MyInvitesScreen> {
                       child: ListTile(
                         leading: const CircleAvatar(child: Icon(Icons.person)),
                         title: Text(referral.username),
-                        subtitle: Text('Joined ${_formatDate(referral.joinedAt)}'),
+                        subtitle: Text('${AppStrings.t('joined_prefix')} ${_formatDate(referral.joinedAt)}'),
                       ),
                     ),
               ],

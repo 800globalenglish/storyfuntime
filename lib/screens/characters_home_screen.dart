@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/character.dart';
 import '../services/api_service.dart';
+import '../services/app_strings.dart';
 import 'add_character_screen.dart';
 import 'create_book_screen.dart';
 
@@ -20,6 +21,17 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
   void initState() {
     super.initState();
     _loadCharacters();
+    AppStrings.languageCode.addListener(_onLanguageChanged);
+  }
+
+  void _onLanguageChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    AppStrings.languageCode.removeListener(_onLanguageChanged);
+    super.dispose();
   }
 
   void _loadCharacters() {
@@ -67,7 +79,7 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to start: $e')),
+          SnackBar(content: Text('${AppStrings.t('failed_to_start')} $e')),
         );
       }
     }
@@ -78,16 +90,16 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
       final proceed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Create book without characters?'),
-          content: const Text('You haven\'t selected any characters. You can add them later, or go back and pick some now.'),
+          title: Text(AppStrings.t('create_book_without_characters_title')),
+          content: Text(AppStrings.t('create_book_without_characters_content')),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Go Back'),
+              child: Text(AppStrings.t('go_back')),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Create Anyway'),
+              child: Text(AppStrings.t('create_anyway')),
             ),
           ],
         ),
@@ -112,16 +124,16 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Delete $name?'),
-        content: const Text('This removes them entirely, including from any books they\'re in. This cannot be undone.'),
+        title: Text(AppStrings.t('delete_character_title').replaceFirst('{name}', name)),
+        content: Text(AppStrings.t('delete_character_content')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(AppStrings.t('cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text(AppStrings.t('delete'), style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -138,7 +150,7 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete: $e')),
+          SnackBar(content: Text('${AppStrings.t('failed_to_delete')} $e')),
         );
       }
     }
@@ -147,7 +159,7 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Characters')),
+      appBar: AppBar(title: Text(AppStrings.t('characters_title'))),
       body: FutureBuilder<List<Character>>(
         future: _charactersFuture,
         builder: (context, snapshot) {
@@ -155,7 +167,7 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(child: Text('${AppStrings.t('error_prefix')} ${snapshot.error}'));
           }
           final characters = snapshot.data ?? [];
           if (characters.isEmpty) {
@@ -171,9 +183,9 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,
                     ),
-                    child: const Text(
-                      'Create First Character',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    child: Text(
+                      AppStrings.t('create_first_character'),
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -259,7 +271,7 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Text(
-                                  'in $storyCount stories',
+                                  AppStrings.t('in_n_stories').replaceFirst('{count}', '$storyCount'),
                                   style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
                                 ),
                               ),
@@ -290,7 +302,7 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
                     child: OutlinedButton.icon(
                       onPressed: _takePhoto,
                       icon: const Icon(Icons.camera_alt),
-                      label: const Text('New Character'),
+                      label: Text(AppStrings.t('new_character')),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -301,7 +313,7 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
                           ? ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white)
                           : null,
                       icon: const Icon(Icons.auto_stories),
-                      label: Text('New Book (${_selectedIds.length})'),
+                      label: Text('${AppStrings.t('new_book')} (${_selectedIds.length})'),
                     ),
                   ),
                 ],

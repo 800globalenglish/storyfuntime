@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/book.dart';
 import '../services/api_service.dart';
+import '../services/app_strings.dart';
 import 'create_book_screen.dart';
 import 'book_detail_screen.dart';
 import 'book_summary_screen.dart';
@@ -20,6 +21,17 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
   void initState() {
     super.initState();
     _loadBooks();
+    AppStrings.languageCode.addListener(_onLanguageChanged);
+  }
+
+  void _onLanguageChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    AppStrings.languageCode.removeListener(_onLanguageChanged);
+    super.dispose();
   }
 
   void _loadBooks() {
@@ -44,16 +56,16 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete this book?'),
-        content: Text('"$title" and all its pages, characters, and recordings will be permanently deleted.'),
+        title: Text(AppStrings.t('delete_this_book_title')),
+        content: Text(AppStrings.t('delete_book_confirm').replaceFirst('{title}', title)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(AppStrings.t('cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text(AppStrings.t('delete'), style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -66,7 +78,7 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to delete: $e')),
+            SnackBar(content: Text('${AppStrings.t('failed_to_delete')} $e')),
           );
         }
       }
@@ -94,7 +106,7 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('My Story Books')),
+      appBar: AppBar(title: Text(AppStrings.t('my_story_books'))),
       body: RefreshIndicator(
         onRefresh: _refresh,
         child: FutureBuilder<List<Book>>(
@@ -104,7 +116,7 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
               return const Center(child: CircularProgressIndicator());
             }
             if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
+              return Center(child: Text('${AppStrings.t('error_prefix')} ${snapshot.error}'));
             }
             final books = snapshot.data ?? [];
             if (books.isEmpty) {
@@ -125,9 +137,9 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
                               backgroundColor: Colors.red,
                               foregroundColor: Colors.white,
                             ),
-                            child: const Text(
-                              'Create your first story',
-                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                            child: Text(
+                              AppStrings.t('create_your_first_story'),
+                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                               textAlign: TextAlign.center,
                             ),
                           ),

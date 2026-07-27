@@ -30,5 +30,35 @@
   "verify_email_banner": "Please verify your email so you don't lose access to your stories.",
   "resend_email": "Resend email",
   "dismiss": "Dismiss",
-  "verification_email_sent": "Verification email sent — check your inbox!"
+  "verification_email_sent": "Verification email sent — check your inbox!",
+
+  "my_story_books": "My Story Books",
+  "delete_this_book_title": "Delete this book?",
+  "delete_book_confirm": "\"{title}\" and all its pages, characters, and recordings will be permanently deleted.",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "failed_to_delete": "Failed to delete:",
+  "error_prefix": "Error:",
+
+  "characters_title": "Characters",
+  "failed_to_start": "Failed to start:",
+  "create_book_without_characters_title": "Create book without characters?",
+  "create_book_without_characters_content": "You haven't selected any characters. You can add them later, or go back and pick some now.",
+  "go_back": "Go Back",
+  "create_anyway": "Create Anyway",
+  "delete_character_title": "Delete {name}?",
+  "delete_character_content": "This removes them entirely, including from any books they're in. This cannot be undone.",
+  "in_n_stories": "in {count} stories",
+  "new_character": "New Character",
+  "new_book": "New Book",
+
+  "my_invites_title": "My Invites",
+  "invite_link_copied": "Invite link copied — share it with a friend!",
+  "tap_to_copy_invite_link": "Tap to copy your invite link",
+  "bonus_credit_earned_singular": "Bonus Story Credit Earned",
+  "bonus_credits_earned_plural": "Bonus Story Credits Earned",
+  "bonus_credit_explanation": "Earn 1 bonus credit for every friend who joins using your invite.",
+  "friends_who_joined": "Friends Who Joined",
+  "nobody_joined_yet": "Nobody has joined using your invite yet — share your username to get started!",
+  "joined_prefix": "Joined"
 }

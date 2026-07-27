@@ -30,5 +30,35 @@
   "verify_email_banner": "Por favor verifica tu correo electrónico para no perder acceso a tus historias.",
   "resend_email": "Reenviar correo",
   "dismiss": "Descartar",
-  "verification_email_sent": "Correo de verificación enviado — ¡revisa tu bandeja de entrada!"
+  "verification_email_sent": "Correo de verificación enviado — ¡revisa tu bandeja de entrada!",
+
+  "my_story_books": "Mis Libros de Historias",
+  "delete_this_book_title": "¿Eliminar este libro?",
+  "delete_book_confirm": "\"{title}\" y todas sus páginas, personajes y grabaciones se eliminarán permanentemente.",
+  "cancel": "Cancelar",
+  "delete": "Eliminar",
+  "failed_to_delete": "Error al eliminar:",
+  "error_prefix": "Error:",
+
+  "characters_title": "Personajes",
+  "failed_to_start": "Error al iniciar:",
+  "create_book_without_characters_title": "¿Crear libro sin personajes?",
+  "create_book_without_characters_content": "No has seleccionado ningún personaje. Puedes agregarlos después, o volver y elegir algunos ahora.",
+  "go_back": "Volver",
+  "create_anyway": "Crear de Todos Modos",
+  "delete_character_title": "¿Eliminar a {name}?",
+  "delete_character_content": "Esto lo elimina por completo, incluyendo de cualquier libro en el que aparezca. Esto no se puede deshacer.",
+  "in_n_stories": "en {count} historias",
+  "new_character": "Nuevo Personaje",
+  "new_book": "Nuevo Libro",
+
+  "my_invites_title": "Mis Invitaciones",
+  "invite_link_copied": "¡Enlace de invitación copiado — compártelo con un amigo!",
+  "tap_to_copy_invite_link": "Toca para copiar tu enlace de invitación",
+  "bonus_credit_earned_singular": "Crédito de Historia Bonus Ganado",
+  "bonus_credits_earned_plural": "Créditos de Historia Bonus Ganados",
+  "bonus_credit_explanation": "Gana 1 crédito bonus por cada amigo que se una usando tu invitación.",
+  "friends_who_joined": "Amigos que se Unieron",
+  "nobody_joined_yet": "Nadie se ha unido usando tu invitación todavía — ¡comparte tu usuario para empezar!",
+  "joined_prefix": "Se unió el"
 }

@@ -30,5 +30,35 @@
   "verify_email_banner": "请验证您的电子邮箱，以免失去访问您故事的权限。",
   "resend_email": "重新发送邮件",
   "dismiss": "关闭",
-  "verification_email_sent": "验证邮件已发送——请查收您的邮箱！"
+  "verification_email_sent": "验证邮件已发送——请查收您的邮箱！",
+
+  "my_story_books": "我的故事书",
+  "delete_this_book_title": "删除这本书？",
+  "delete_book_confirm": "\"{title}\"及其所有页面、角色和录音将被永久删除。",
+  "cancel": "取消",
+  "delete": "删除",
+  "failed_to_delete": "删除失败：",
+  "error_prefix": "错误：",
+
+  "characters_title": "角色",
+  "failed_to_start": "启动失败：",
+  "create_book_without_characters_title": "不添加角色创建书籍？",
+  "create_book_without_characters_content": "您还没有选择任何角色。您可以稍后添加，或返回现在选择一些。",
+  "go_back": "返回",
+  "create_anyway": "仍然创建",
+  "delete_character_title": "删除{name}？",
+  "delete_character_content": "这将彻底删除该角色，包括从其出现的所有书籍中删除。此操作无法撤销。",
+  "in_n_stories": "出现在{count}个故事中",
+  "new_character": "新角色",
+  "new_book": "新书",
+
+  "my_invites_title": "我的邀请",
+  "invite_link_copied": "邀请链接已复制——分享给朋友吧！",
+  "tap_to_copy_invite_link": "点击复制您的邀请链接",
+  "bonus_credit_earned_singular": "已获得奖励故事额度",
+  "bonus_credits_earned_plural": "已获得奖励故事额度",
+  "bonus_credit_explanation": "每有一位朋友通过您的邀请加入，您将获得1个奖励额度。",
+  "friends_who_joined": "已加入的朋友",
+  "nobody_joined_yet": "还没有人使用您的邀请加入——分享您的用户名开始吧！",
+  "joined_prefix": "加入于"
 }
