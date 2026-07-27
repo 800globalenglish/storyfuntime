@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/reset_password_screen.dart';
 import 'services/auth_service.dart';
 import 'services/app_strings.dart';
 
@@ -53,6 +54,13 @@ class AuthGate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // A password reset link takes priority over the normal login-check flow,
+    // whether or not the person happens to be logged in on this device.
+    final resetToken = Uri.base.queryParameters['resetToken'];
+    if (resetToken != null && resetToken.isNotEmpty) {
+      return ResetPasswordScreen(token: resetToken);
+    }
+
     return FutureBuilder<bool>(
       future: AuthService().isLoggedIn(),
       builder: (context, snapshot) {

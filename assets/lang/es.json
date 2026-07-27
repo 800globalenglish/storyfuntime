@@ -13,7 +13,7 @@
   "please_enter_valid_email": "Por favor ingresa un correo válido",
   "please_choose_username": "Por favor elige un nombre de usuario",
   "please_enter_password": "Por favor ingresa tu contraseña",
-  "password_min_length": "La contraseña debe tener al menos 8 caracteres",
+  "password_min_length": "La contraseña debe tener al menos 6 caracteres",
   "create_account_button": "Crear Cuenta",
   "log_in_button": "Iniciar Sesión",
   "already_have_account": "¿Ya tienes una cuenta? Inicia sesión",
@@ -156,5 +156,17 @@
   "choose_characters_title": "Elegir Personajes",
   "no_characters_yet_hint": "Aún no hay personajes. Ve a Personajes > Tomar Foto para crear uno primero.",
   "next_selected_prefix": "Siguiente",
-  "selected_suffix": "seleccionados"
+  "selected_suffix": "seleccionados",
+
+  "reset_password_title": "Restablecer Contraseña",
+  "enter_new_password_instruction": "Ingresa una nueva contraseña para tu cuenta.",
+  "new_password_label": "Nueva Contraseña",
+  "confirm_password_label": "Confirmar Contraseña",
+  "passwords_do_not_match": "Las contraseñas no coinciden.",
+  "reset_password_button": "Restablecer Contraseña",
+  "password_updated_success": "Contraseña actualizada — por favor inicia sesión con tu nueva contraseña.",
+  "forgot_password_title": "Restablece tu contraseña",
+  "send_reset_link": "Enviar Enlace",
+  "reset_email_sent_if_exists": "Si existe una cuenta, se ha enviado un correo para restablecer la contraseña.",
+  "forgot_password_link": "¿Olvidaste tu contraseña?"
 }

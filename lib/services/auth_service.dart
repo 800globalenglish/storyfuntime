@@ -154,6 +154,37 @@ class AuthService {
     }
   }
 
+  /// Requests a password reset email for the given email or username.
+  /// Always succeeds from the caller's point of view (the server doesn't
+  /// reveal whether an account actually exists), unless the request
+  /// itself fails to reach the server.
+  Future<void> forgotPassword(String emailOrUsername) async {
+    final response = await http.post(
+      Uri.parse('${ApiService.baseUrl}/auth/forgot-password'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'emailOrUsername': emailOrUsername}),
+    );
+
+    if (response.statusCode != 200) {
+      throw AuthException(_messageFor(response));
+    }
+  }
+
+  /// Sets a new password using the token from a reset email link.
+  /// Throws an [AuthException] with a friendly message on failure
+  /// (e.g. an expired or invalid link).
+  Future<void> resetPassword({required String token, required String newPassword}) async {
+    final response = await http.post(
+      Uri.parse('${ApiService.baseUrl}/auth/reset-password'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'token': token, 'newPassword': newPassword}),
+    );
+
+    if (response.statusCode != 200) {
+      throw AuthException(_messageFor(response));
+    }
+  }
+
   /// Fetches how many bonus credits this person has earned, and the list
   /// of everyone who signed up using their invite.
   Future<ReferralSummary> getMyReferrals() async {

@@ -13,7 +13,7 @@
   "please_enter_valid_email": "Please enter a valid email",
   "please_choose_username": "Please choose a username",
   "please_enter_password": "Please enter your password",
-  "password_min_length": "Password must be at least 8 characters",
+  "password_min_length": "Password must be at least 6 characters",
   "create_account_button": "Create Account",
   "log_in_button": "Log In",
   "already_have_account": "Already have an account? Log In",
@@ -156,5 +156,17 @@
   "choose_characters_title": "Choose Characters",
   "no_characters_yet_hint": "No characters yet. Go to Characters > Take Photo to make one first.",
   "next_selected_prefix": "Next",
-  "selected_suffix": "selected"
+  "selected_suffix": "selected",
+
+  "reset_password_title": "Reset Password",
+  "enter_new_password_instruction": "Enter a new password for your account.",
+  "new_password_label": "New Password",
+  "confirm_password_label": "Confirm Password",
+  "passwords_do_not_match": "Passwords don't match.",
+  "reset_password_button": "Reset Password",
+  "password_updated_success": "Password updated — please log in with your new password.",
+  "forgot_password_title": "Reset your password",
+  "send_reset_link": "Send Link",
+  "reset_email_sent_if_exists": "If an account exists, a password reset email has been sent.",
+  "forgot_password_link": "Forgot password?"
 }

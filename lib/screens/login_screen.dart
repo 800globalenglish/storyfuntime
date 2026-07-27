@@ -90,6 +90,52 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _showForgotPasswordDialog() async {
+    final controller = TextEditingController(text: _emailController.text.trim());
+    final submit = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppStrings.t('forgot_password_title')),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(
+            labelText: AppStrings.t('email_or_username_label'),
+            border: const OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(AppStrings.t('cancel')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(AppStrings.t('send_reset_link')),
+          ),
+        ],
+      ),
+    );
+
+    if (submit != true || controller.text.trim().isEmpty) return;
+    if (!mounted) return;
+
+    try {
+      await _authService.forgotPassword(controller.text.trim());
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppStrings.t('reset_email_sent_if_exists'))),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppStrings.t('reset_email_sent_if_exists'))),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -180,11 +226,20 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) return AppStrings.t('please_enter_password');
-                      if (_isSignupMode && value.length < 8) return AppStrings.t('password_min_length');
+                      if (_isSignupMode && value.length < 6) return AppStrings.t('password_min_length');
                       return null;
                     },
                     onFieldSubmitted: (_) => _submit(),
                   ),
+                  if (!_isSignupMode) ...[
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: _isSubmitting ? null : _showForgotPasswordDialog,
+                        child: Text(AppStrings.t('forgot_password_link')),
+                      ),
+                    ),
+                  ],
                   if (_errorMessage != null) ...[
                     const SizedBox(height: 16),
                     Text(
