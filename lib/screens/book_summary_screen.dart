@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/book.dart';
 import '../services/api_service.dart';
+import '../services/app_strings.dart';
 import 'creator_wizard_screen.dart';
 import 'book_reader_screen.dart';
 import 'video_player_screen.dart';
@@ -25,6 +26,17 @@ class _BookSummaryScreenState extends State<BookSummaryScreen> {
   void initState() {
     super.initState();
     _loadBook();
+    AppStrings.languageCode.addListener(_onLanguageChanged);
+  }
+
+  void _onLanguageChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    AppStrings.languageCode.removeListener(_onLanguageChanged);
+    super.dispose();
   }
 
   void _loadBook() {
@@ -62,7 +74,7 @@ class _BookSummaryScreenState extends State<BookSummaryScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to generate video: $e')),
+          SnackBar(content: Text('${AppStrings.t('failed_to_generate_video')} $e')),
         );
       }
     } finally {
@@ -86,7 +98,7 @@ class _BookSummaryScreenState extends State<BookSummaryScreen> {
     await Clipboard.setData(ClipboardData(text: fullUrl));
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Video link copied — paste it anywhere to share!')),
+        SnackBar(content: Text(AppStrings.t('video_link_copied'))),
       );
     }
   }
@@ -96,7 +108,7 @@ class _BookSummaryScreenState extends State<BookSummaryScreen> {
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not download video')),
+          SnackBar(content: Text(AppStrings.t('could_not_download_video'))),
         );
       }
     }
@@ -105,7 +117,7 @@ class _BookSummaryScreenState extends State<BookSummaryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Book')),
+      appBar: AppBar(title: Text(AppStrings.t('book_title_appbar'))),
       body: FutureBuilder<Book>(
         future: _bookFuture,
         builder: (context, snapshot) {
@@ -113,7 +125,7 @@ class _BookSummaryScreenState extends State<BookSummaryScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(child: Text('${AppStrings.t('error_prefix')} ${snapshot.error}'));
           }
           final book = snapshot.data!;
 
@@ -127,7 +139,7 @@ class _BookSummaryScreenState extends State<BookSummaryScreen> {
                 ElevatedButton.icon(
                   onPressed: _goToReadBook,
                   icon: const Icon(Icons.menu_book),
-                  label: const Text('Read Book'),
+                  label: Text(AppStrings.t('read_book')),
                 ),
                 const SizedBox(height: 12),
                 if (_isGeneratingVideo)
@@ -145,17 +157,17 @@ class _BookSummaryScreenState extends State<BookSummaryScreen> {
                         _generateVideo();
                       }
                     },
-                    itemBuilder: (context) => const [
-                      PopupMenuItem(value: 'share', child: Row(children: [Icon(Icons.share), SizedBox(width: 12), Text('Share')])),
-                      PopupMenuItem(value: 'watch', child: Row(children: [Icon(Icons.play_circle_outline), SizedBox(width: 12), Text('Watch')])),
-                      PopupMenuItem(value: 'download', child: Row(children: [Icon(Icons.download), SizedBox(width: 12), Text('Download')])),
-                      PopupMenuItem(value: 'regenerate', child: Row(children: [Icon(Icons.refresh), SizedBox(width: 12), Text('Regenerate Video')])),
+                    itemBuilder: (context) => [
+                      PopupMenuItem(value: 'share', child: Row(children: [const Icon(Icons.share), const SizedBox(width: 12), Text(AppStrings.t('share'))])),
+                      PopupMenuItem(value: 'watch', child: Row(children: [const Icon(Icons.play_circle_outline), const SizedBox(width: 12), Text(AppStrings.t('watch'))])),
+                      PopupMenuItem(value: 'download', child: Row(children: [const Icon(Icons.download), const SizedBox(width: 12), Text(AppStrings.t('download'))])),
+                      PopupMenuItem(value: 'regenerate', child: Row(children: [const Icon(Icons.refresh), const SizedBox(width: 12), Text(AppStrings.t('regenerate_video'))])),
                     ],
                     child: IgnorePointer(
                       child: ElevatedButton.icon(
                         onPressed: () {},
                         icon: const Icon(Icons.check_circle, color: Colors.green),
-                        label: const Text('Video Ready'),
+                        label: Text(AppStrings.t('video_ready')),
                       ),
                     ),
                   )
@@ -163,13 +175,13 @@ class _BookSummaryScreenState extends State<BookSummaryScreen> {
                   ElevatedButton.icon(
                     onPressed: _generateVideo,
                     icon: const Icon(Icons.movie_creation_outlined),
-                    label: const Text('Generate Video'),
+                    label: Text(AppStrings.t('generate_video')),
                   ),
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
                   onPressed: _goToChangeBook,
                   icon: const Icon(Icons.edit_outlined),
-                  label: const Text('Change Book'),
+                  label: Text(AppStrings.t('change_book')),
                 ),
               ],
             ),

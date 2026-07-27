@@ -5,6 +5,7 @@ import 'character_picker_screen.dart';
 import 'apply_template_screen.dart';
 import '../models/book.dart';
 import '../services/api_service.dart';
+import '../services/app_strings.dart';
 import 'creator_wizard_screen.dart';
 
 /// Screen 1 of the book flow: setup. Shown for a book that has no pages
@@ -39,10 +40,16 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   void initState() {
     super.initState();
     _loadBook();
+    AppStrings.languageCode.addListener(_onLanguageChanged);
+  }
+
+  void _onLanguageChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
+    AppStrings.languageCode.removeListener(_onLanguageChanged);
     _titleController.dispose();
     _themeController.dispose();
     super.dispose();
@@ -89,7 +96,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
   Future<void> _generateStory() async {
     if (_titleController.text.trim().isEmpty || _themeController.text.trim().isEmpty) {
-      setState(() => _generateError = 'Please fill in both the title and theme.');
+      setState(() => _generateError = AppStrings.t('please_fill_title_theme'));
       return;
     }
 
@@ -121,7 +128,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         );
       }
     } catch (e) {
-      setState(() => _generateError = 'Failed to generate story: $e');
+      setState(() => _generateError = '${AppStrings.t('failed_to_generate_story')} $e');
     } finally {
       if (mounted) setState(() => _isGenerating = false);
     }
@@ -141,27 +148,27 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
             child: Image.network('${ApiService.baseUrl}$cartoonAvatarUrl?v=${DateTime.now().millisecondsSinceEpoch}'),
           ),
         )
-            : const Text('What would you like to do?'),
+            : Text(AppStrings.t('what_would_you_like_to_do')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, 'cancel'),
-            child: const Text('Done'),
+            child: Text(AppStrings.t('done')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, 'regenerate'),
-            child: const Text('Regenerate Character'),
+            child: Text(AppStrings.t('regenerate_character')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, 'gallery'),
-            child: const Text('View Characters'),
+            child: Text(AppStrings.t('view_characters')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, 'swap'),
-            child: const Text('Choose Different'),
+            child: Text(AppStrings.t('choose_different')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, 'delete'),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text(AppStrings.t('delete'), style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -174,7 +181,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       final proceed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Regenerate Character'),
+          title: Text(AppStrings.t('regenerate_character')),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -194,10 +201,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 controller: instructionsController,
                 autofocus: true,
                 maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Optional instructions',
-                  hintText: 'e.g. make the hair darker, add glasses',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: AppStrings.t('optional_instructions'),
+                  hintText: AppStrings.t('regenerate_character_hint'),
+                  border: const OutlineInputBorder(),
                 ),
               ),
             ],
@@ -205,11 +212,11 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
+              child: Text(AppStrings.t('cancel')),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Regenerate'),
+              child: Text(AppStrings.t('regenerate')),
             ),
           ],
         ),
@@ -240,7 +247,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         } catch (e) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Failed to regenerate: $e')),
+              SnackBar(content: Text('${AppStrings.t('failed_to_regenerate')} $e')),
             );
           }
         } finally {
@@ -284,7 +291,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to delete: $e')),
+            SnackBar(content: Text('${AppStrings.t('failed_to_delete')} $e')),
           );
         }
       }
@@ -294,7 +301,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Book Details')),
+      appBar: AppBar(title: Text(AppStrings.t('book_details_title'))),
       body: FutureBuilder<Book>(
         future: _bookFuture,
         builder: (context, snapshot) {
@@ -302,7 +309,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(child: Text('${AppStrings.t('error_prefix')} ${snapshot.error}'));
           }
           final book = snapshot.data!;
           if (!_formFieldsInitialized) {
@@ -322,7 +329,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 16),
-                Text('Characters', style: Theme.of(context).textTheme.titleMedium),
+                Text(AppStrings.t('characters_title'), style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
                 SizedBox(
                   height: 140,
@@ -387,7 +394,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                             icon: const Icon(Icons.add),
                           ),
                           const SizedBox(height: 4),
-                          const Text('Add', style: TextStyle(fontSize: 12)),
+                          Text(AppStrings.t('add'), style: const TextStyle(fontSize: 12)),
                         ],
                       ),
                     ],
@@ -402,7 +409,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                             ? null
                             : () => setState(() => _showGenerateForm = true),
                         icon: const Icon(Icons.auto_awesome),
-                        label: const Text('Generate Story'),
+                        label: Text(AppStrings.t('generate_story')),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -410,7 +417,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                       child: OutlinedButton.icon(
                         onPressed: _goToApplyTemplate,
                         icon: const Icon(Icons.auto_stories),
-                        label: const Text('Story Templates'),
+                        label: Text(AppStrings.t('story_templates')),
                       ),
                     ),
                   ],
@@ -419,15 +426,15 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   const SizedBox(height: 16),
                   TextField(
                     controller: _titleController,
-                    decoration: const InputDecoration(
-                      labelText: 'Book Title',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: AppStrings.t('book_title_label'),
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      const Text('# Scenes'),
+                      Text(AppStrings.t('num_scenes_label')),
                       const SizedBox(width: 12),
                       DropdownButton<int>(
                         value: _sceneCount,
@@ -439,9 +446,9 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   const SizedBox(height: 16),
                   TextField(
                     controller: _themeController,
-                    decoration: const InputDecoration(
-                      labelText: 'Theme',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: AppStrings.t('theme_label'),
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                   if (_generateError != null) ...[
@@ -457,7 +464,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                        : const Text('Generate'),
+                        : Text(AppStrings.t('generate')),
                   ),
                 ],
               ],

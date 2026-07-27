@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/book.dart';
 import '../services/api_service.dart';
+import '../services/app_strings.dart';
 import 'record_voice_screen.dart';
 import 'book_reader_screen.dart';
 import 'video_player_screen.dart';
@@ -36,10 +37,16 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
     super.initState();
     _loadBook();
     _loadInstructionsPref();
+    AppStrings.languageCode.addListener(_onLanguageChanged);
+  }
+
+  void _onLanguageChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
+    AppStrings.languageCode.removeListener(_onLanguageChanged);
     _timeToRecordTimer?.cancel();
     super.dispose();
   }
@@ -105,7 +112,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to generate video: $e')),
+          SnackBar(content: Text('${AppStrings.t('failed_to_generate_video')} $e')),
         );
       }
     } finally {
@@ -129,7 +136,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
     await Clipboard.setData(ClipboardData(text: fullUrl));
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Video link copied — paste it anywhere to share!')),
+        SnackBar(content: Text(AppStrings.t('video_link_copied'))),
       );
     }
   }
@@ -139,7 +146,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not download video')),
+          SnackBar(content: Text(AppStrings.t('could_not_download_video'))),
         );
       }
     }
@@ -186,7 +193,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
     final newText = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Edit Page Text'),
+        title: Text(AppStrings.t('edit_page_text_title')),
         content: TextField(
           controller: controller,
           maxLines: null,
@@ -195,11 +202,11 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(AppStrings.t('cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: const Text('Save'),
+            child: Text(AppStrings.t('save')),
           ),
         ],
       ),
@@ -212,7 +219,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to save: $e')),
+            SnackBar(content: Text('${AppStrings.t('failed_to_save')} $e')),
           );
         }
       }
@@ -224,25 +231,25 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
     final proceed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Regenerate Text'),
+        title: Text(AppStrings.t('regenerate_text_title')),
         content: TextField(
           controller: instructionsController,
           autofocus: true,
           maxLines: 3,
-          decoration: const InputDecoration(
-            labelText: 'Optional instructions',
-            hintText: 'e.g. make it shorter, add more excitement',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: AppStrings.t('optional_instructions'),
+            hintText: AppStrings.t('regenerate_text_hint'),
+            border: const OutlineInputBorder(),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(AppStrings.t('cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Regenerate'),
+            child: Text(AppStrings.t('regenerate')),
           ),
         ],
       ),
@@ -263,7 +270,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to regenerate text: $e')),
+          SnackBar(content: Text('${AppStrings.t('failed_to_regenerate_text')} $e')),
         );
       }
     } finally {
@@ -307,7 +314,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to revert: $e')),
+          SnackBar(content: Text('${AppStrings.t('failed_to_revert')} $e')),
         );
       }
     }
@@ -334,7 +341,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed on page ${page.pageNumber}: $e')),
+            SnackBar(content: Text('${AppStrings.t('failed_on_page').replaceFirst('{page}', '${page.pageNumber}')} $e')),
           );
         }
       }
@@ -360,7 +367,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
     final proceed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Generate Scene'),
+        title: Text(AppStrings.t('generate_scene_title')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -380,10 +387,10 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
               controller: instructionsController,
               autofocus: true,
               maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'Optional instructions',
-                hintText: 'e.g. add a hat, make it daytime',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: AppStrings.t('optional_instructions'),
+                hintText: AppStrings.t('generate_scene_hint'),
+                border: const OutlineInputBorder(),
               ),
             ),
           ],
@@ -391,11 +398,11 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(AppStrings.t('cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Generate'),
+            child: Text(AppStrings.t('generate')),
           ),
         ],
       ),
@@ -419,7 +426,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Scene generation failed: $e')),
+          SnackBar(content: Text('${AppStrings.t('scene_generation_failed')} $e')),
         );
       }
     } finally {
@@ -433,12 +440,12 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Creator Wizard'),
+        title: Text(AppStrings.t('creator_wizard_title')),
         actions: [
           if (_instructionsHidden)
             IconButton(
               icon: const Icon(Icons.help_outline),
-              tooltip: 'Show instructions',
+              tooltip: AppStrings.t('show_instructions_tooltip'),
               onPressed: _showInstructionsAgain,
             ),
         ],
@@ -450,7 +457,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(child: Text('${AppStrings.t('error_prefix')} ${snapshot.error}'));
           }
           final book = snapshot.data!;
           final allComplete = book.pages.isNotEmpty &&
@@ -468,7 +475,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                         child: ElevatedButton.icon(
                           onPressed: _goToReadBook,
                           icon: const Icon(Icons.menu_book),
-                          label: const Text('Read Book'),
+                          label: Text(AppStrings.t('read_book')),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -488,24 +495,24 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                                         _generateVideo();
                                       }
                                     },
-                                    itemBuilder: (context) => const [
-                                      PopupMenuItem(value: 'share', child: Row(children: [Icon(Icons.share), SizedBox(width: 12), Text('Share')])),
-                                      PopupMenuItem(value: 'watch', child: Row(children: [Icon(Icons.play_circle_outline), SizedBox(width: 12), Text('Watch')])),
-                                      PopupMenuItem(value: 'download', child: Row(children: [Icon(Icons.download), SizedBox(width: 12), Text('Download')])),
-                                      PopupMenuItem(value: 'regenerate', child: Row(children: [Icon(Icons.refresh), SizedBox(width: 12), Text('Regenerate Video')])),
+                                    itemBuilder: (context) => [
+                                      PopupMenuItem(value: 'share', child: Row(children: [const Icon(Icons.share), const SizedBox(width: 12), Text(AppStrings.t('share'))])),
+                                      PopupMenuItem(value: 'watch', child: Row(children: [const Icon(Icons.play_circle_outline), const SizedBox(width: 12), Text(AppStrings.t('watch'))])),
+                                      PopupMenuItem(value: 'download', child: Row(children: [const Icon(Icons.download), const SizedBox(width: 12), Text(AppStrings.t('download'))])),
+                                      PopupMenuItem(value: 'regenerate', child: Row(children: [const Icon(Icons.refresh), const SizedBox(width: 12), Text(AppStrings.t('regenerate_video'))])),
                                     ],
                                     child: IgnorePointer(
                                       child: OutlinedButton.icon(
                                         onPressed: () {},
                                         icon: const Icon(Icons.check_circle, color: Colors.green),
-                                        label: const Text('Video Ready'),
+                                        label: Text(AppStrings.t('video_ready')),
                                       ),
                                     ),
                                   )
                                 : ElevatedButton.icon(
                                     onPressed: _generateVideo,
                                     icon: const Icon(Icons.movie_creation_outlined),
-                                    label: const Text('Generate Video'),
+                                    label: Text(AppStrings.t('generate_video')),
                                   ),
                       ),
                     ],
@@ -513,7 +520,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                   const SizedBox(height: 16),
                 ],
                 if (!allComplete && !_instructionsHidden) ...[
-                  _buildInstructionStep(1, 'Edit or Regenerate Text', trailingIcon: Icons.more_vert),
+                  _buildInstructionStep(1, AppStrings.t('edit_regenerate_text_step'), trailingIcon: Icons.more_vert),
                   const SizedBox(height: 8),
                 ],
                 if (!allComplete)
@@ -534,20 +541,20 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                               : () => _generateAllScenes(book.pages),
                           icon: const Icon(Icons.auto_fix_high),
                           label: Text(_generatingScenePageId != null
-                              ? 'Generating scenes...'
-                              : 'Generate All Screens'),
+                              ? AppStrings.t('generating_scenes')
+                              : AppStrings.t('generate_all_screens')),
                         ),
                       ),
                     ],
                   ),
                 if (!allComplete && !_instructionsHidden) ...[
                   const SizedBox(height: 8),
-                  _buildInstructionStep(3, 'Record Sounds'),
+                  _buildInstructionStep(3, AppStrings.t('record_sounds_step')),
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: _hideInstructions,
-                      child: const Text('Hide instructions'),
+                      child: Text(AppStrings.t('hide_instructions')),
                     ),
                   ),
                 ],
@@ -562,10 +569,10 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: const Color(0xFFFBC02D)),
                     ),
-                    child: const Text(
-                      'Please wait while the magic happens :-)',
+                    child: Text(
+                      AppStrings.t('magic_happens'),
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                     ),
                   ),
                 if (_showTimeToRecord)
@@ -578,15 +585,15 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: const Color(0xFF7CB342)),
                     ),
-                    child: const Text(
-                      'Time to Record',
+                    child: Text(
+                      AppStrings.t('time_to_record'),
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                     ),
                   ),
                 Expanded(
                   child: book.pages.isEmpty
-                      ? const Text('No pages yet.')
+                      ? Text(AppStrings.t('no_pages_yet'))
                       : ListView.builder(
                           itemCount: book.pages.length,
                           itemBuilder: (context, index) {
@@ -623,8 +630,8 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                                                   }
                                                 },
                                                 itemBuilder: (context) => [
-                                                  const PopupMenuItem(value: 'edit', child: Text('Edit text')),
-                                                  const PopupMenuItem(value: 'regenerate', child: Text('Regenerate text')),
+                                                  PopupMenuItem(value: 'edit', child: Text(AppStrings.t('edit_text'))),
+                                                  PopupMenuItem(value: 'regenerate', child: Text(AppStrings.t('regenerate_text_menu'))),
                                                 ],
                                               ),
                                       ],
@@ -646,7 +653,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                                                   hasScene ? Icons.check_circle : Icons.auto_fix_high,
                                                   color: hasScene ? Colors.green : null,
                                                 ),
-                                                label: Text(hasScene ? 'Regenerate Scene' : 'Generate scene'),
+                                                label: Text(hasScene ? AppStrings.t('regenerate_scene') : AppStrings.t('generate_scene')),
                                               ),
                                         const SizedBox(width: 8),
                                         TextButton.icon(
@@ -655,18 +662,18 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                                             hasAudio ? Icons.check_circle : Icons.mic_none,
                                             color: hasAudio ? Colors.green : null,
                                           ),
-                                          label: Text(hasAudio ? 'Voice recorded' : 'Record voice'),
+                                          label: Text(hasAudio ? AppStrings.t('voice_recorded') : AppStrings.t('record_voice')),
                                         ),
                                         if (hasScene)
                                           IconButton(
                                             icon: const Icon(Icons.visibility_outlined),
-                                            tooltip: 'View scene',
+                                            tooltip: AppStrings.t('view_scene_tooltip'),
                                             onPressed: () => _viewScene(page.cartoonImageUrl!),
                                           ),
                                         if (page.previousCartoonImageUrl != null)
                                           IconButton(
                                             icon: const Icon(Icons.undo),
-                                            tooltip: 'Revert to previous scene',
+                                            tooltip: AppStrings.t('revert_scene_tooltip'),
                                             onPressed: () => _revertScene(page.id),
                                           ),
                                       ],
