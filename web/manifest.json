@@ -1,11 +1,11 @@
 {
-    "name": "story_fun_time",
-    "short_name": "story_fun_time",
-    "start_url": ".",
+    "name": "StoryFunTime",
+    "short_name": "StoryFunTime",
+    "start_url": "/go/",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#800000",
+    "theme_color": "#800000",
+    "description": "Create illustrated storybooks starring the people you love.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
