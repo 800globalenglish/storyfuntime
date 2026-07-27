@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../main.dart';
@@ -10,7 +11,12 @@ import '../screens/login_screen.dart';
 import 'auth_service.dart';
 
 class ApiService {
-  static const String baseUrl = 'https://localhost:7217';
+  // Release builds (what actually gets deployed with `flutter build web`)
+  // always talk to the real live server. Local `flutter run` testing talks
+  // to your own machine instead - no more manual toggling before a deploy.
+  static const String baseUrl = kReleaseMode
+      ? 'https://api.storyfuntime.com'
+      : 'https://localhost:7217';
 
   final _authService = AuthService();
 

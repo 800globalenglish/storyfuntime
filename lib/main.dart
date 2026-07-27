@@ -22,6 +22,17 @@ class StoryFunTimeApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
+      builder: (context, child) {
+        return Container(
+          color: const Color(0xFF800000),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: child,
+            ),
+          ),
+        );
+      },
       home: const AuthGate(),
     );
   }
