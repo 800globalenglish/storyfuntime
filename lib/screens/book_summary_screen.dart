@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/book.dart';
 import '../services/api_service.dart';
 import 'creator_wizard_screen.dart';
 import 'book_reader_screen.dart';
+import 'video_player_screen.dart';
 
 class BookSummaryScreen extends StatefulWidget {
   final String bookId;
@@ -72,12 +74,29 @@ class _BookSummaryScreenState extends State<BookSummaryScreen> {
     }
   }
 
-  Future<void> _watchVideo(String videoUrl) async {
-    final uri = Uri.parse('${ApiService.baseUrl}$videoUrl');
+  void _watchVideo(String videoUrl) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => VideoPlayerScreen(videoUrl: '${ApiService.baseUrl}$videoUrl')),
+    );
+  }
+
+  Future<void> _shareVideo(String videoUrl) async {
+    final fullUrl = '${ApiService.baseUrl}$videoUrl';
+    await Clipboard.setData(ClipboardData(text: fullUrl));
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Video link copied — paste it anywhere to share!')),
+      );
+    }
+  }
+
+  Future<void> _downloadVideo() async {
+    final uri = Uri.parse('${ApiService.baseUrl}/books/${widget.bookId}/video/download');
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open the video.')),
+          const SnackBar(content: Text('Could not download video')),
         );
       }
     }
@@ -114,10 +133,28 @@ class _BookSummaryScreenState extends State<BookSummaryScreen> {
                 if (_isGeneratingVideo)
                   const Center(child: CircularProgressIndicator())
                 else if (book.videoUrl != null)
-                  ElevatedButton.icon(
-                    onPressed: () => _watchVideo(book.videoUrl!),
-                    icon: const Icon(Icons.play_circle_outline),
-                    label: const Text('Watch / Download Video'),
+                  PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == 'share') {
+                        _shareVideo(book.videoUrl!);
+                      } else if (value == 'watch') {
+                        _watchVideo(book.videoUrl!);
+                      } else if (value == 'download') {
+                        _downloadVideo();
+                      }
+                    },
+                    itemBuilder: (context) => const [
+                      PopupMenuItem(value: 'share', child: Row(children: [Icon(Icons.share), SizedBox(width: 12), Text('Share')])),
+                      PopupMenuItem(value: 'watch', child: Row(children: [Icon(Icons.play_circle_outline), SizedBox(width: 12), Text('Watch')])),
+                      PopupMenuItem(value: 'download', child: Row(children: [Icon(Icons.download), SizedBox(width: 12), Text('Download')])),
+                    ],
+                    child: IgnorePointer(
+                      child: ElevatedButton.icon(
+                        onPressed: () {},
+                        icon: const Icon(Icons.check_circle, color: Colors.green),
+                        label: const Text('Video Ready'),
+                      ),
+                    ),
                   )
                 else
                   ElevatedButton.icon(

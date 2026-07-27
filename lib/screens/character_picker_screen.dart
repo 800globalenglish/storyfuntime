@@ -114,7 +114,7 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
                             borderRadius: BorderRadius.circular(12),
                             child: character.cartoonAvatarUrl != null
                                 ? Image.network(
-                              'http://localhost:5220${character.cartoonAvatarUrl}',
+                              '${ApiService.baseUrl}${character.cartoonAvatarUrl}',
                               fit: BoxFit.cover,
                             )
                                 : Container(

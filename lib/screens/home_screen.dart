@@ -6,6 +6,7 @@ import 'characters_home_screen.dart';
 import 'template_admin_screen.dart';
 import 'login_screen.dart';
 import '../services/auth_service.dart';
+import '../services/api_service.dart';
 
 /// How long a new, unverified account gets to explore before the
 /// reminder banner shows up.
@@ -20,11 +21,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _authService = AuthService();
+  final _apiService = ApiService();
 
   String? _username;
   bool _showVerifyBanner = false;
   bool _isSendingEmail = false;
   Timer? _bannerTimer;
+  bool? _hasBooks;
 
   @override
   void initState() {
@@ -33,6 +36,24 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) setState(() => _username = value);
     });
     _checkVerificationStatus();
+    _loadHasBooks();
+  }
+
+  Future<void> _loadHasBooks() async {
+    try {
+      final books = await _apiService.getBooks();
+      if (mounted) setState(() => _hasBooks = books.isNotEmpty);
+    } catch (_) {
+      if (mounted) setState(() => _hasBooks = true);
+    }
+  }
+
+  Future<void> _goToNewStory() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const CharactersHomeScreen()),
+    );
+    _loadHasBooks();
   }
 
   @override
@@ -155,45 +176,63 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                     const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 100,
-                      child: ElevatedButton.icon(
+                    if (_hasBooks == null)
+                      const CircularProgressIndicator()
+                    else if (_hasBooks == false)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 100,
+                        child: ElevatedButton(
+                          onPressed: _goToNewStory,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text(
+                            'Create your first story',
+                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      )
+                    else ...[
+                        SizedBox(
+                          width: double.infinity,
+                          height: 100,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const StoriesListScreen()),
+                              );
+                            },
+                            icon: const Icon(Icons.menu_book, size: 32),
+                            label: const Text('Go to Stories', style: TextStyle(fontSize: 20)),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 100,
+                          child: ElevatedButton.icon(
+                            onPressed: _goToNewStory,
+                            icon: const Icon(Icons.people, size: 32),
+                            label: const Text('New Story', style: TextStyle(fontSize: 20)),
+                          ),
+                        ),
+                      ],
+                    if (_hasBooks == true) ...[
+                      const SizedBox(height: 32),
+                      TextButton(
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const StoriesListScreen()),
+                            MaterialPageRoute(builder: (context) => const TemplateAdminScreen()),
                           );
                         },
-                        icon: const Icon(Icons.menu_book, size: 32),
-                        label: const Text('Go to Stories', style: TextStyle(fontSize: 20)),
+                        child: const Text('Manage Story Templates'),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 100,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const CharactersHomeScreen()),
-                          );
-                        },
-                        icon: const Icon(Icons.people, size: 32),
-                        label: const Text('New Story', style: TextStyle(fontSize: 20)),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const TemplateAdminScreen()),
-                        );
-                      },
-                      child: const Text('Manage Story Templates'),
-                    ),
+                    ],
                   ],
                 ),
               ),

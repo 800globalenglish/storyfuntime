@@ -113,8 +113,26 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   child: ConstrainedBox(
                     constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                    child: const Center(
-                      child: Text('No books yet. Tap + to create one!'),
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 100,
+                          child: ElevatedButton(
+                            onPressed: _goToCreateBook,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: const Text(
+                              'Create your first story',
+                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -132,7 +150,7 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
                   subtitle: Text('${book.theme} - ${book.status}'),
                   leading: thumbnailUrl != null
                       ? CircleAvatar(
-                    backgroundImage: NetworkImage('http://localhost:5220$thumbnailUrl'),
+                    backgroundImage: NetworkImage('${ApiService.baseUrl}$thumbnailUrl'),
                   )
                       : const CircleAvatar(child: Icon(Icons.menu_book)),
                   trailing: IconButton(
@@ -146,9 +164,16 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _goToCreateBook,
-        child: const Icon(Icons.add),
+      floatingActionButton: FutureBuilder<List<Book>>(
+        future: _booksFuture,
+        builder: (context, snapshot) {
+          final books = snapshot.data ?? [];
+          if (books.isEmpty) return const SizedBox.shrink();
+          return FloatingActionButton(
+            onPressed: _goToCreateBook,
+            child: const Icon(Icons.add),
+          );
+        },
       ),
     );
   }

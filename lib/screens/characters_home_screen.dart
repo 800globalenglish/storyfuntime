@@ -159,8 +159,26 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
           }
           final characters = snapshot.data ?? [];
           if (characters.isEmpty) {
-            return const Center(
-              child: Text('No characters yet. Tap "Take Photo" to make your first one!'),
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 100,
+                  child: ElevatedButton(
+                    onPressed: _takePhoto,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text(
+                      'Create First Character',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ),
             );
           }
 
@@ -193,7 +211,7 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
                             borderRadius: BorderRadius.circular(12),
                             child: character.cartoonAvatarUrl != null
                                 ? Image.network(
-                              'http://localhost:5220${character.cartoonAvatarUrl}',
+                              '${ApiService.baseUrl}${character.cartoonAvatarUrl}',
                               fit: BoxFit.cover,
                             )
                                 : Container(
@@ -258,32 +276,39 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
           );
         },
       ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _takePhoto,
-                  icon: const Icon(Icons.camera_alt),
-                  label: const Text('New Character'),
-                ),
+      bottomNavigationBar: FutureBuilder<List<Character>>(
+        future: _charactersFuture,
+        builder: (context, snapshot) {
+          final characters = snapshot.data ?? [];
+          if (characters.isEmpty) return const SizedBox.shrink();
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _takePhoto,
+                      icon: const Icon(Icons.camera_alt),
+                      label: const Text('New Character'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _goToNewBook,
+                      style: _selectedIds.isNotEmpty
+                          ? ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white)
+                          : null,
+                      icon: const Icon(Icons.auto_stories),
+                      label: Text('New Book (${_selectedIds.length})'),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: _goToNewBook,
-                  style: _selectedIds.isNotEmpty
-                      ? ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white)
-                      : null,
-                  icon: const Icon(Icons.auto_stories),
-                  label: Text('New Book (${_selectedIds.length})'),
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

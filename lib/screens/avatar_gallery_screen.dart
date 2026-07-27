@@ -168,7 +168,7 @@ class _AvatarGalleryScreenState extends State<AvatarGalleryScreen> {
                           ClipRRect(
                             borderRadius: BorderRadius.circular(12),
                             child: Image.network(
-                              'http://localhost:5220$url',
+                              '${ApiService.baseUrl}$url',
                               fit: BoxFit.cover,
                             ),
                           ),

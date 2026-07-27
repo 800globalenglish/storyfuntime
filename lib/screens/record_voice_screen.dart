@@ -133,7 +133,7 @@ class _RecordVoiceScreenState extends State<RecordVoiceScreen> {
                 padding: const EdgeInsets.all(16.0),
                 child: Text(
                   widget.scriptText,
-                  style: Theme.of(context).textTheme.titleMedium,
+                  style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w600, height: 1.3),
                 ),
               ),
             ),
@@ -167,10 +167,24 @@ class _RecordVoiceScreenState extends State<RecordVoiceScreen> {
             ),
             if (_hasRecording) ...[
               const SizedBox(height: 32),
-              ElevatedButton.icon(
-                onPressed: _togglePlayback,
-                icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
-                label: Text(_isPlaying ? 'Pause' : 'Play back'),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _togglePlayback,
+                      icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
+                      label: Text(_isPlaying ? 'Pause' : 'Play Back'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _startRecording,
+                      icon: const Icon(Icons.mic),
+                      label: const Text('Re-record'),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
               ElevatedButton.icon(

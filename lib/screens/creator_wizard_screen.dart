@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../models/book.dart';
 import '../services/api_service.dart';
 import 'record_voice_screen.dart';
 import 'book_reader_screen.dart';
+import 'video_player_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -105,12 +107,29 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
     }
   }
 
-  Future<void> _openVideo(String videoUrl) async {
-    final uri = Uri.parse('${ApiService.baseUrl}$videoUrl');
+  void _openVideo(String videoUrl) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => VideoPlayerScreen(videoUrl: '${ApiService.baseUrl}$videoUrl')),
+    );
+  }
+
+  Future<void> _shareVideo(String videoUrl) async {
+    final fullUrl = '${ApiService.baseUrl}$videoUrl';
+    await Clipboard.setData(ClipboardData(text: fullUrl));
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Video link copied — paste it anywhere to share!')),
+      );
+    }
+  }
+
+  Future<void> _downloadVideo() async {
+    final uri = Uri.parse('${ApiService.baseUrl}/books/${widget.bookId}/video/download');
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open video')),
+          const SnackBar(content: Text('Could not download video')),
         );
       }
     }
@@ -416,49 +435,68 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                         child: _isGeneratingVideo
                             ? const Center(child: CircularProgressIndicator())
                             : book.videoUrl != null
-                                ? OutlinedButton.icon(
-                                    onPressed: () {},
-                                    icon: const Icon(Icons.check_circle, color: Colors.green),
-                                    label: const Text('Video Ready'),
+                                ? PopupMenuButton<String>(
+                                    onSelected: (value) {
+                                      if (value == 'share') {
+                                        _shareVideo(book.videoUrl!);
+                                      } else if (value == 'watch') {
+                                        _openVideo(book.videoUrl!);
+                                      } else if (value == 'download') {
+                                        _downloadVideo();
+                                      }
+                                    },
+                                    itemBuilder: (context) => const [
+                                      PopupMenuItem(value: 'share', child: Row(children: [Icon(Icons.share), SizedBox(width: 12), Text('Share')])),
+                                      PopupMenuItem(value: 'watch', child: Row(children: [Icon(Icons.play_circle_outline), SizedBox(width: 12), Text('Watch')])),
+                                      PopupMenuItem(value: 'download', child: Row(children: [Icon(Icons.download), SizedBox(width: 12), Text('Download')])),
+                                    ],
+                                    child: IgnorePointer(
+                                      child: OutlinedButton.icon(
+                                        onPressed: () {},
+                                        icon: const Icon(Icons.check_circle, color: Colors.green),
+                                        label: const Text('Video Ready'),
+                                      ),
+                                    ),
                                   )
                                 : ElevatedButton.icon(
-                          onPressed: () => _openVideo(book.videoUrl!),
-                          icon: const Icon(Icons.play_circle_outline, color: Colors.green),
-                          label: const Text('Watch / Download'),
+                                    onPressed: _generateVideo,
+                                    icon: const Icon(Icons.movie_creation_outlined),
+                                    label: const Text('Generate Video'),
                                   ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
                 ],
-                if (!_instructionsHidden) ...[
+                if (!allComplete && !_instructionsHidden) ...[
                   _buildInstructionStep(1, 'Edit or Regenerate Text', trailingIcon: Icons.more_vert),
                   const SizedBox(height: 8),
                 ],
-                Row(
-                  children: [
-                    if (!_instructionsHidden) ...[
-                      const CircleAvatar(
-                        radius: 12,
-                        backgroundColor: Colors.purple,
-                        child: Text('2', style: TextStyle(color: Colors.white, fontSize: 12)),
+                if (!allComplete)
+                  Row(
+                    children: [
+                      if (!_instructionsHidden) ...[
+                        const CircleAvatar(
+                          radius: 12,
+                          backgroundColor: Colors.purple,
+                          child: Text('2', style: TextStyle(color: Colors.white, fontSize: 12)),
+                        ),
+                        const SizedBox(width: 12),
+                      ],
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _generatingScenePageId != null
+                              ? null
+                              : () => _generateAllScenes(book.pages),
+                          icon: const Icon(Icons.auto_fix_high),
+                          label: Text(_generatingScenePageId != null
+                              ? 'Generating scenes...'
+                              : 'Generate All Screens'),
+                        ),
                       ),
-                      const SizedBox(width: 12),
                     ],
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: _generatingScenePageId != null
-                            ? null
-                            : () => _generateAllScenes(book.pages),
-                        icon: const Icon(Icons.auto_fix_high),
-                        label: Text(_generatingScenePageId != null
-                            ? 'Generating scenes...'
-                            : 'Generate All Screens'),
-                      ),
-                    ),
-                  ],
-                ),
-                if (!_instructionsHidden) ...[
+                  ),
+                if (!allComplete && !_instructionsHidden) ...[
                   const SizedBox(height: 8),
                   _buildInstructionStep(3, 'Record Sounds'),
                   Align(
@@ -532,7 +570,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                                                   hasScene ? Icons.check_circle : Icons.auto_fix_high,
                                                   color: hasScene ? Colors.green : null,
                                                 ),
-                                                label: Text(hasScene ? 'Scene made' : 'Generate scene'),
+                                                label: Text(hasScene ? 'Regenerate Scene' : 'Generate scene'),
                                               ),
                                         const SizedBox(width: 8),
                                         TextButton.icon(

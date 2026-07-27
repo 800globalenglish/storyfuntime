@@ -325,7 +325,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 Text('Characters', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
                 SizedBox(
-                  height: 90,
+                  height: 140,
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: [
@@ -336,30 +336,42 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                             onTap: () => _showCharacterOptions(character.id, character.name, character.cartoonAvatarUrl, book.userId),
                             child: Column(
                               children: [
-                                Stack(
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 28,
-                                      backgroundImage: character.cartoonAvatarUrl != null
-                                          ? NetworkImage('${ApiService.baseUrl}${character.cartoonAvatarUrl}?v=${DateTime.now().millisecondsSinceEpoch}')
-                                          : null,
-                                      child: character.cartoonAvatarUrl == null
-                                          ? const Icon(Icons.person)
-                                          : null,
-                                    ),
-                                    if (_regeneratingAvatarCharacterId == character.id)
-                                      Positioned.fill(
-                                        child: CircleAvatar(
-                                          radius: 28,
-                                          backgroundColor: Colors.black45,
-                                          child: SizedBox(
-                                            width: 20,
-                                            height: 20,
-                                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                                          ),
+                                SizedBox(
+                                  width: 100,
+                                  height: 100,
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: character.cartoonAvatarUrl != null
+                                            ? Image.network(
+                                          '${ApiService.baseUrl}${character.cartoonAvatarUrl}?v=${DateTime.now().millisecondsSinceEpoch}',
+                                          fit: BoxFit.cover,
+                                        )
+                                            : Container(
+                                          color: Colors.grey.shade300,
+                                          child: const Icon(Icons.person, size: 40),
                                         ),
                                       ),
-                                  ],
+                                      if (_regeneratingAvatarCharacterId == character.id)
+                                        Positioned.fill(
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.black45,
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child: const Center(
+                                              child: SizedBox(
+                                                width: 24,
+                                                height: 24,
+                                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(character.name, style: Theme.of(context).textTheme.bodySmall),
