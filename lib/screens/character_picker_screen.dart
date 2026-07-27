@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/character.dart';
 import '../services/api_service.dart';
+import '../services/app_strings.dart';
 import 'book_detail_screen.dart';
 
 class CharacterPickerScreen extends StatefulWidget {
@@ -22,6 +23,17 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
   void initState() {
     super.initState();
     _charactersFuture = _apiService.getAllCharactersForUser();
+    AppStrings.languageCode.addListener(_onLanguageChanged);
+  }
+
+  void _onLanguageChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    AppStrings.languageCode.removeListener(_onLanguageChanged);
+    super.dispose();
   }
 
   void _toggle(String id) {
@@ -37,7 +49,7 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
   Future<void> _next() async {
     if (_selectedIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pick at least one character first.')),
+        SnackBar(content: Text(AppStrings.t('pick_at_least_one_character'))),
       );
       return;
     }
@@ -60,7 +72,7 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add characters: $e')),
+          SnackBar(content: Text('${AppStrings.t('failed_to_add_characters')} $e')),
         );
       }
       setState(() {
@@ -72,7 +84,7 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Choose Characters')),
+      appBar: AppBar(title: Text(AppStrings.t('choose_characters_title'))),
       body: FutureBuilder<List<Character>>(
         future: _charactersFuture,
         builder: (context, snapshot) {
@@ -80,12 +92,12 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(child: Text('${AppStrings.t('error_prefix')} ${snapshot.error}'));
           }
           final characters = snapshot.data ?? [];
           if (characters.isEmpty) {
-            return const Center(
-              child: Text('No characters yet. Go to Characters > Take Photo to make one first.'),
+            return Center(
+              child: Text(AppStrings.t('no_characters_yet_hint')),
             );
           }
 
@@ -162,7 +174,7 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
               height: 20,
               child: CircularProgressIndicator(strokeWidth: 2),
             )
-                : Text('Next (${_selectedIds.length} selected)'),
+                : Text('${AppStrings.t('next_selected_prefix')} (${_selectedIds.length} ${AppStrings.t('selected_suffix')})'),
           ),
         ),
       ),

@@ -25,6 +25,8 @@
   "create_your_first_story": "创建您的第一个故事",
   "create_first_character": "创建第一个角色",
   "manage_story_templates": "管理故事模板",
+  "generate_story": "生成故事",
+  "story_templates": "故事模板",
   "invite_friends_with": "邀请好友，使用：",
   "log_out_tooltip": "退出登录",
   "verify_email_banner": "请验证您的电子邮箱，以免失去访问您故事的权限。",
@@ -121,5 +123,38 @@
   "revert_scene_tooltip": "恢复上一个场景",
 
   "book_title_appbar": "书籍",
-  "change_book": "更改书籍"
+  "change_book": "更改书籍",
+
+  "add_a_character_title": "添加角色",
+  "please_enter_name": "请输入姓名。",
+  "please_choose_photo": "请选择一张照片。",
+  "take_photo": "拍照",
+  "open_gallery": "打开相册",
+  "name_label": "姓名",
+  "name_hint": "例如：奶奶、旺财",
+  "human": "人物",
+  "pet": "宠物",
+  "female": "女性",
+  "male": "男性",
+  "age_label": "年龄",
+  "heres_your_character": "这是您的角色：",
+  "instructions_for_next_try": "下一次尝试的说明",
+  "avatar_instructions_hint": "例如：把头发弄深一点，保持是狗而不是人",
+  "working_on_it": "正在处理中……最多可能需要30秒。",
+  "generate_character": "生成角色",
+
+  "please_choose_character_for_role": "请为每个角色选择一个人物。",
+  "failed_to_apply_template": "应用模板失败：",
+  "no_story_templates_yet": "暂无可用的故事模板。",
+  "pages_suffix": "页",
+  "choose_different_template": "选择其他模板",
+  "who_plays_each_role": "每个角色由谁扮演？",
+  "apply_template": "应用模板",
+
+  "pick_at_least_one_character": "请先选择至少一个角色。",
+  "failed_to_add_characters": "添加角色失败：",
+  "choose_characters_title": "选择角色",
+  "no_characters_yet_hint": "还没有角色。请前往角色页面并点击拍照来创建一个。",
+  "next_selected_prefix": "下一步",
+  "selected_suffix": "已选择"
 }

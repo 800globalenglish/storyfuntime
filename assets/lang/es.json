@@ -25,6 +25,8 @@
   "create_your_first_story": "Crea tu primera historia",
   "create_first_character": "Crea tu Primer Personaje",
   "manage_story_templates": "Administrar Plantillas",
+  "generate_story": "Generar Historia",
+  "story_templates": "Plantillas de Historia",
   "invite_friends_with": "Invita a tus amigos con:",
   "log_out_tooltip": "Cerrar sesión",
   "verify_email_banner": "Por favor verifica tu correo electrónico para no perder acceso a tus historias.",
@@ -121,5 +123,38 @@
   "revert_scene_tooltip": "Revertir a la escena anterior",
 
   "book_title_appbar": "Libro",
-  "change_book": "Cambiar Libro"
+  "change_book": "Cambiar Libro",
+
+  "add_a_character_title": "Agregar un Personaje",
+  "please_enter_name": "Por favor ingresa un nombre.",
+  "please_choose_photo": "Por favor elige una foto.",
+  "take_photo": "Tomar Foto",
+  "open_gallery": "Abrir Galería",
+  "name_label": "Nombre",
+  "name_hint": "ej. Abuela, Firulais",
+  "human": "Persona",
+  "pet": "Mascota",
+  "female": "Femenino",
+  "male": "Masculino",
+  "age_label": "Edad",
+  "heres_your_character": "Aquí está tu personaje:",
+  "instructions_for_next_try": "Instrucciones para el siguiente intento",
+  "avatar_instructions_hint": "ej. oscurece el cabello, que sea un perro no una persona",
+  "working_on_it": "Trabajando en ello... esto puede tardar hasta 30 segundos.",
+  "generate_character": "Generar Personaje",
+
+  "please_choose_character_for_role": "Por favor elige un personaje para cada rol.",
+  "failed_to_apply_template": "Error al aplicar la plantilla:",
+  "no_story_templates_yet": "Aún no hay plantillas de historia disponibles.",
+  "pages_suffix": "páginas",
+  "choose_different_template": "Elegir otra plantilla",
+  "who_plays_each_role": "¿Quién interpreta cada rol?",
+  "apply_template": "Aplicar Plantilla",
+
+  "pick_at_least_one_character": "Elige al menos un personaje primero.",
+  "failed_to_add_characters": "Error al agregar personajes:",
+  "choose_characters_title": "Elegir Personajes",
+  "no_characters_yet_hint": "Aún no hay personajes. Ve a Personajes > Tomar Foto para crear uno primero.",
+  "next_selected_prefix": "Siguiente",
+  "selected_suffix": "seleccionados"
 }

@@ -25,6 +25,8 @@
   "create_your_first_story": "Create your first story",
   "create_first_character": "Create First Character",
   "manage_story_templates": "Manage Story Templates",
+  "generate_story": "Generate Story",
+  "story_templates": "Story Templates",
   "invite_friends_with": "Invite friends with:",
   "log_out_tooltip": "Log out",
   "verify_email_banner": "Please verify your email so you don't lose access to your stories.",
@@ -121,5 +123,38 @@
   "revert_scene_tooltip": "Revert to previous scene",
 
   "book_title_appbar": "Book",
-  "change_book": "Change Book"
+  "change_book": "Change Book",
+
+  "add_a_character_title": "Add a Character",
+  "please_enter_name": "Please enter a name.",
+  "please_choose_photo": "Please choose a photo.",
+  "take_photo": "Take Photo",
+  "open_gallery": "Open Gallery",
+  "name_label": "Name",
+  "name_hint": "e.g. Grandma, Buddy",
+  "human": "Human",
+  "pet": "Pet",
+  "female": "Female",
+  "male": "Male",
+  "age_label": "Age",
+  "heres_your_character": "Here's your character:",
+  "instructions_for_next_try": "Instructions for next try",
+  "avatar_instructions_hint": "e.g. make the hair darker, keep it a dog not a person",
+  "working_on_it": "Working on it... this can take up to 30 seconds.",
+  "generate_character": "Generate Character",
+
+  "please_choose_character_for_role": "Please choose a character for every role.",
+  "failed_to_apply_template": "Failed to apply template:",
+  "no_story_templates_yet": "No story templates available yet.",
+  "pages_suffix": "pages",
+  "choose_different_template": "Choose a different template",
+  "who_plays_each_role": "Who plays each role?",
+  "apply_template": "Apply Template",
+
+  "pick_at_least_one_character": "Pick at least one character first.",
+  "failed_to_add_characters": "Failed to add characters:",
+  "choose_characters_title": "Choose Characters",
+  "no_characters_yet_hint": "No characters yet. Go to Characters > Take Photo to make one first.",
+  "next_selected_prefix": "Next",
+  "selected_suffix": "selected"
 }

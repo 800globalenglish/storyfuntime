@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/story_template.dart';
 import '../models/character.dart';
 import '../services/api_service.dart';
+import '../services/app_strings.dart';
 import 'book_detail_screen.dart';
 
 class ApplyTemplateScreen extends StatefulWidget {
@@ -27,6 +28,17 @@ class _ApplyTemplateScreenState extends State<ApplyTemplateScreen> {
     super.initState();
     _templatesFuture = _apiService.getStoryTemplates();
     _charactersFuture = _apiService.getAllCharactersForUser();
+    AppStrings.languageCode.addListener(_onLanguageChanged);
+  }
+
+  void _onLanguageChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    AppStrings.languageCode.removeListener(_onLanguageChanged);
+    super.dispose();
   }
 
   void _selectTemplate(StoryTemplate template) {
@@ -43,7 +55,7 @@ class _ApplyTemplateScreenState extends State<ApplyTemplateScreen> {
     final roles = template.detectedRoles;
     if (roles.any((role) => _roleToCharacterId[role] == null)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please choose a character for every role.')),
+        SnackBar(content: Text(AppStrings.t('please_choose_character_for_role'))),
       );
       return;
     }
@@ -67,7 +79,7 @@ class _ApplyTemplateScreenState extends State<ApplyTemplateScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to apply template: $e')),
+          SnackBar(content: Text('${AppStrings.t('failed_to_apply_template')} $e')),
         );
       }
       setState(() {
@@ -79,7 +91,7 @@ class _ApplyTemplateScreenState extends State<ApplyTemplateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Use a Story Template')),
+      appBar: AppBar(title: Text(AppStrings.t('story_templates'))),
       body: FutureBuilder<List<StoryTemplate>>(
         future: _templatesFuture,
         builder: (context, templateSnapshot) {
@@ -87,11 +99,11 @@ class _ApplyTemplateScreenState extends State<ApplyTemplateScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (templateSnapshot.hasError) {
-            return Center(child: Text('Error: ${templateSnapshot.error}'));
+            return Center(child: Text('${AppStrings.t('error_prefix')} ${templateSnapshot.error}'));
           }
           final templates = templateSnapshot.data ?? [];
           if (templates.isEmpty) {
-            return const Center(child: Text('No story templates available yet.'));
+            return Center(child: Text(AppStrings.t('no_story_templates_yet')));
           }
 
           if (_selectedTemplate == null) {
@@ -101,7 +113,7 @@ class _ApplyTemplateScreenState extends State<ApplyTemplateScreen> {
                 final template = templates[index];
                 return ListTile(
                   title: Text(template.title),
-                  subtitle: Text('${template.theme} - ${template.pages.length} pages'),
+                  subtitle: Text('${template.theme} - ${template.pages.length} ${AppStrings.t('pages_suffix')}'),
                   leading: const Icon(Icons.auto_stories),
                   onTap: () => _selectTemplate(template),
                 );
@@ -118,7 +130,7 @@ class _ApplyTemplateScreenState extends State<ApplyTemplateScreen> {
                 return const Center(child: CircularProgressIndicator());
               }
               if (characterSnapshot.hasError) {
-                return Center(child: Text('Error: ${characterSnapshot.error}'));
+                return Center(child: Text('${AppStrings.t('error_prefix')} ${characterSnapshot.error}'));
               }
               final characters = characterSnapshot.data ?? [];
 
@@ -131,10 +143,10 @@ class _ApplyTemplateScreenState extends State<ApplyTemplateScreen> {
                     const SizedBox(height: 4),
                     TextButton(
                       onPressed: () => setState(() => _selectedTemplate = null),
-                      child: const Text('Choose a different template'),
+                      child: Text(AppStrings.t('choose_different_template')),
                     ),
                     const SizedBox(height: 16),
-                    const Text('Who plays each role?'),
+                    Text(AppStrings.t('who_plays_each_role')),
                     const SizedBox(height: 12),
                     Expanded(
                       child: ListView(
@@ -170,7 +182,7 @@ class _ApplyTemplateScreenState extends State<ApplyTemplateScreen> {
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                          : const Text('Apply Template'),
+                          : Text(AppStrings.t('apply_template')),
                     ),
                   ],
                 ),

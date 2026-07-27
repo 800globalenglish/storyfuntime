@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
+import '../services/app_strings.dart';
 
 class _AgeStage {
   final String label;
@@ -53,6 +54,22 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
   String? _avatarUrl;
   String? _characterId;
 
+  @override
+  void initState() {
+    super.initState();
+    AppStrings.languageCode.addListener(_onLanguageChanged);
+  }
+
+  void _onLanguageChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    AppStrings.languageCode.removeListener(_onLanguageChanged);
+    super.dispose();
+  }
+
   // Translates the current selections into the exact strings the backend expects.
   String get _resolvedRole {
     if (_characterType == 'Pet') return 'Pet';
@@ -91,13 +108,13 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
     if (_avatarUrl == null) {
       if (_nameController.text.trim().isEmpty) {
         setState(() {
-          _errorMessage = 'Please enter a name.';
+          _errorMessage = AppStrings.t('please_enter_name');
         });
         return;
       }
       if (_pickedImage == null) {
         setState(() {
-          _errorMessage = 'Please choose a photo.';
+          _errorMessage = AppStrings.t('please_choose_photo');
         });
         return;
       }
@@ -140,7 +157,7 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Error: $e';
+        _errorMessage = '${AppStrings.t('error_prefix')} \$e';
       });
     } finally {
       setState(() {
@@ -179,7 +196,7 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add a Character')),
+      appBar: AppBar(title: Text(AppStrings.t('add_a_character_title'))),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -192,7 +209,7 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                     child: ElevatedButton.icon(
                       onPressed: () => _pickImage(ImageSource.camera),
                       icon: const Icon(Icons.camera_alt),
-                      label: const Text('Take Photo'),
+                      label: Text(AppStrings.t('take_photo')),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -200,7 +217,7 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                     child: ElevatedButton.icon(
                       onPressed: () => _pickImage(ImageSource.gallery),
                       icon: const Icon(Icons.photo_library),
-                      label: const Text('Open Gallery'),
+                      label: Text(AppStrings.t('open_gallery')),
                     ),
                   ),
                 ],
@@ -221,18 +238,18 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
               const SizedBox(height: 16),
               TextField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  border: OutlineInputBorder(),
-                  hintText: 'e.g. Grandma, Buddy',
+                decoration: InputDecoration(
+                  labelText: AppStrings.t('name_label'),
+                  border: const OutlineInputBorder(),
+                  hintText: AppStrings.t('name_hint'),
                 ),
               ),
               const SizedBox(height: 20),
               Center(
                 child: SegmentedButton<String>(
-                  segments: const [
-                    ButtonSegment(value: 'Human', label: Text('Human')),
-                    ButtonSegment(value: 'Pet', label: Text('Pet')),
+                  segments: [
+                    ButtonSegment(value: 'Human', label: Text(AppStrings.t('human'))),
+                    ButtonSegment(value: 'Pet', label: Text(AppStrings.t('pet'))),
                   ],
                   selected: {_characterType},
                   onSelectionChanged: (newSelection) {
@@ -248,16 +265,16 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                   spacing: 24,
                   runSpacing: 16,
                   children: [
-                    _buildGenderOption('female', 'female.png', 'Female'),
-                    _buildGenderOption('male', 'male.png', 'Male'),
+                    _buildGenderOption('female', 'female.png', AppStrings.t('female')),
+                    _buildGenderOption('male', 'male.png', AppStrings.t('male')),
                     if (_characterType == 'Human')
                       SizedBox(
                         width: 130,
                         child: DropdownButtonFormField<int>(
                           value: _ageStageIndex,
-                          decoration: const InputDecoration(
-                            labelText: 'Age',
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: AppStrings.t('age_label'),
+                            border: const OutlineInputBorder(),
                             isDense: true,
                           ),
                           items: [
@@ -276,7 +293,7 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
               const SizedBox(height: 20),
             ],
             if (_avatarUrl != null) ...[
-              const Text('Here\'s your character:'),
+              Text(AppStrings.t('heres_your_character')),
               const SizedBox(height: 12),
               Center(
                 child: SizedBox(
@@ -295,30 +312,30 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
               controller: _instructionsController,
               maxLines: 2,
               decoration: InputDecoration(
-                labelText: _avatarUrl == null ? 'Optional instructions' : 'Instructions for next try',
-                hintText: 'e.g. make the hair darker, keep it a dog not a person',
+                labelText: _avatarUrl == null ? AppStrings.t('optional_instructions') : AppStrings.t('instructions_for_next_try'),
+                hintText: AppStrings.t('avatar_instructions_hint'),
                 border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 16),
             if (_isSaving)
-              const Column(
+              Column(
                 children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 12),
-                  Text('Working on it... this can take up to 30 seconds.'),
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 12),
+                  Text(AppStrings.t('working_on_it')),
                 ],
               )
             else ...[
               ElevatedButton(
                 onPressed: _generate,
-                child: Text(_avatarUrl == null ? 'Generate Character' : 'Regenerate'),
+                child: Text(_avatarUrl == null ? AppStrings.t('generate_character') : AppStrings.t('regenerate')),
               ),
               if (_avatarUrl != null) ...[
                 const SizedBox(height: 12),
                 ElevatedButton(
                   onPressed: () => Navigator.pop(context, true),
-                  child: const Text('Done'),
+                  child: Text(AppStrings.t('done')),
                 ),
               ],
             ],
