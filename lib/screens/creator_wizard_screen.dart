@@ -470,47 +470,124 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: const DebugScreenTag('creator_wizard_screen.dart'),
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(
-          AppStrings.t('creator_wizard_title'),
-          style: const TextStyle(fontSize: 30),
+  Future<void> _showRenameDialog(Book book) async {
+    final titleController = TextEditingController(text: book.title);
+    final themeController = TextEditingController(text: book.theme);
+
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Rename Story'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: titleController,
+              decoration: const InputDecoration(labelText: 'Title'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: themeController,
+              decoration: const InputDecoration(labelText: 'Theme'),
+            ),
+          ],
         ),
         actions: [
-          if (_instructionsHidden)
-            IconButton(
-              icon: const Icon(Icons.help_outline),
-              tooltip: AppStrings.t('show_instructions_tooltip'),
-              onPressed: _showInstructionsAgain,
-            ),
-          const AppNavMenuButton(),
-          const SizedBox(width: 8),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Save'),
+          ),
         ],
       ),
-      body: FutureBuilder<Book>(
-        future: _bookFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('${AppStrings.t('error_prefix')} ${snapshot.error}'));
-          }
-          final book = snapshot.data!;
-          final allComplete = book.pages.isNotEmpty &&
-              book.pages.every((p) => p.cartoonImageUrl != null && p.audioUrl != null);
-          // A book from "Record Your Story" already has audio on every page before
-          // scenes exist - the normal 3-step instructions (edit text, generate
-          // scenes, record sounds) don't apply since there's nothing left to record.
-          final allHaveAudioAlready = book.pages.isNotEmpty &&
-              book.pages.every((p) => p.audioUrl != null);
-          final showInstructions = !allComplete && !_instructionsHidden && !allHaveAudioAlready;
+    );
 
-          return ValueListenableBuilder<AppThemeKey>(
+    if (saved == true) {
+      final newTitle = titleController.text.trim();
+      final newTheme = themeController.text.trim();
+      if (newTitle.isEmpty || newTheme.isEmpty) return;
+
+      try {
+        await _apiService.updateBook(bookId: widget.bookId, title: newTitle, theme: newTheme);
+        _refresh();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to rename: $e')),
+          );
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Book>(
+      future: _bookFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            bottomNavigationBar: const DebugScreenTag('creator_wizard_screen.dart'),
+            appBar: AppBar(
+              centerTitle: true,
+              title: Text(
+                AppStrings.t('creator_wizard_title'),
+                style: const TextStyle(fontSize: 30),
+              ),
+              actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+            ),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (snapshot.hasError) {
+          return Scaffold(
+            bottomNavigationBar: const DebugScreenTag('creator_wizard_screen.dart'),
+            appBar: AppBar(
+              centerTitle: true,
+              title: Text(
+                AppStrings.t('creator_wizard_title'),
+                style: const TextStyle(fontSize: 30),
+              ),
+              actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+            ),
+            body: Center(child: Text('${AppStrings.t('error_prefix')} ${snapshot.error}')),
+          );
+        }
+        final book = snapshot.data!;
+        final allComplete = book.pages.isNotEmpty &&
+            book.pages.every((p) => p.cartoonImageUrl != null && p.audioUrl != null);
+        // A book from "Record Your Story" already has audio on every page before
+        // scenes exist - the normal 3-step instructions (edit text, generate
+        // scenes, record sounds) don't apply since there's nothing left to record.
+        final allHaveAudioAlready = book.pages.isNotEmpty &&
+            book.pages.every((p) => p.audioUrl != null);
+        final showInstructions = !allComplete && !_instructionsHidden && !allHaveAudioAlready;
+
+        return Scaffold(
+          bottomNavigationBar: const DebugScreenTag('creator_wizard_screen.dart'),
+          appBar: AppBar(
+            centerTitle: true,
+            title: Text(book.title, style: const TextStyle(fontSize: 22)),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.edit, size: 20),
+                tooltip: 'Rename',
+                onPressed: () => _showRenameDialog(book),
+              ),
+              if (_instructionsHidden)
+                IconButton(
+                  icon: const Icon(Icons.help_outline),
+                  tooltip: AppStrings.t('show_instructions_tooltip'),
+                  onPressed: _showInstructionsAgain,
+                ),
+              const AppNavMenuButton(),
+              const SizedBox(width: 8),
+            ],
+          ),
+          body: ValueListenableBuilder<AppThemeKey>(
             valueListenable: ThemeController.instance.current,
             builder: (context, themeKey, _) {
               final themeData = kAppThemes[themeKey]!;
@@ -790,9 +867,9 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
             ),
           );
             },
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
