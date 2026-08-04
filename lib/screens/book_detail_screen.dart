@@ -604,19 +604,22 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   SizedBox(
                     width: double.infinity,
                     height: 96,
-                    child: ElevatedButton(
+                    child: ElevatedButton.icon(
                       onPressed: _isGenerating ? null : _generateStory,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
+                        backgroundColor: _isGenerating ? Colors.green.shade800 : Colors.green,
                         foregroundColor: Colors.white,
+                        disabledBackgroundColor: Colors.green.shade800,
+                        disabledForegroundColor: Colors.white,
                       ),
-                      child: _isGenerating
+                      icon: _isGenerating
                           ? const SizedBox(
                         width: 24,
                         height: 24,
                         child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                       )
-                          : Text(AppStrings.t('generate'), style: const TextStyle(fontSize: 22)),
+                          : const Icon(Icons.auto_awesome, size: 28),
+                      label: Text(AppStrings.t('generate'), style: const TextStyle(fontSize: 22)),
                     ),
                   ),
                 ],
