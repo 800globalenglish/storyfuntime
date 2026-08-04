@@ -472,25 +472,14 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
 
   Future<void> _showRenameDialog(Book book) async {
     final titleController = TextEditingController(text: book.title);
-    final themeController = TextEditingController(text: book.theme);
 
     final saved = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Rename Story'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: titleController,
-              decoration: const InputDecoration(labelText: 'Title'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: themeController,
-              decoration: const InputDecoration(labelText: 'Theme'),
-            ),
-          ],
+        content: TextField(
+          controller: titleController,
+          decoration: const InputDecoration(labelText: 'Title'),
         ),
         actions: [
           TextButton(
@@ -507,11 +496,10 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
 
     if (saved == true) {
       final newTitle = titleController.text.trim();
-      final newTheme = themeController.text.trim();
-      if (newTitle.isEmpty || newTheme.isEmpty) return;
+      if (newTitle.isEmpty) return;
 
       try {
-        await _apiService.updateBook(bookId: widget.bookId, title: newTitle, theme: newTheme);
+        await _apiService.updateBook(bookId: widget.bookId, title: newTitle, theme: book.theme);
         _refresh();
       } catch (e) {
         if (mounted) {
