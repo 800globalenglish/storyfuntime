@@ -32,6 +32,9 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
   final Set<String> _selectedIds = {};
   bool _isSubmitting = false;
 
+  static const _buttonRadius = BorderRadius.all(Radius.circular(10));
+  static const _buttonHeight = 71.0;
+
   @override
   void initState() {
     super.initState();
@@ -220,15 +223,27 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton(
-                onPressed: _isSubmitting ? null : _next,
-                child: _isSubmitting
-                    ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-                    : Text('${AppStrings.t('next_selected_prefix')} (${_selectedIds.length} ${AppStrings.t('selected_suffix')})'),
+              child: SizedBox(
+                width: double.infinity,
+                height: _buttonHeight,
+                child: ElevatedButton(
+                  onPressed: _isSubmitting ? null : _next,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _selectedIds.isNotEmpty ? Colors.green : null,
+                    foregroundColor: _selectedIds.isNotEmpty ? Colors.white : null,
+                    shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                  ),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                      : Text(
+                    '${AppStrings.t('next_selected_prefix')} (${_selectedIds.length} ${AppStrings.t('selected_suffix')})',
+                    style: const TextStyle(fontSize: 22),
+                  ),
+                ),
               ),
             ),
             const DebugScreenTag('character_picker_screen.dart'),
