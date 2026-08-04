@@ -8,13 +8,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AppLanguage {
   final String code;
   final String label;
-  const AppLanguage(this.code, this.label);
+  final String flag;
+  const AppLanguage(this.code, this.label, this.flag);
 }
 
 const supportedLanguages = [
-  AppLanguage('en', 'English'),
-  AppLanguage('es', 'Español'),
-  AppLanguage('zh', '中文'),
+  AppLanguage('en', 'English', '🇺🇸'),
+  AppLanguage('es', 'Español', '🇪🇸'),
+  AppLanguage('zh', '中文', '🇨🇳'),
 ];
 
 /// Loads translated text from assets/lang/{code}.json and makes it

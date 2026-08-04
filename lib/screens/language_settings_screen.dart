@@ -19,6 +19,7 @@ class LanguageSettingsScreen extends StatelessWidget {
             children: [
               for (final language in supportedLanguages)
                 RadioListTile<String>(
+                  secondary: Text(language.flag, style: const TextStyle(fontSize: 24)),
                   title: Text(language.label, style: const TextStyle(fontSize: 18)),
                   value: language.code,
                   groupValue: currentCode,

@@ -68,6 +68,13 @@ class _HomeScreenState extends State<HomeScreen> {
     if (mounted) setState(() {});
   }
 
+  String _languageFlag() {
+    final code = AppStrings.languageCode.value;
+    return supportedLanguages
+        .firstWhere((language) => language.code == code, orElse: () => supportedLanguages.first)
+        .flag;
+  }
+
   Future<void> _loadHasBooks() async {
     try {
       final books = await _apiService.getBooks();
@@ -200,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.language),
+            icon: Text(_languageFlag(), style: const TextStyle(fontSize: 22)),
             tooltip: 'Language',
             onPressed: () {
               Navigator.push(
