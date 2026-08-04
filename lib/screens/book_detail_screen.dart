@@ -562,6 +562,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     style: const TextStyle(fontSize: 22),
                     decoration: InputDecoration(
                       labelText: AppStrings.t('book_title_label'),
+                      floatingLabelAlignment: FloatingLabelAlignment.center,
                       border: const OutlineInputBorder(),
                     ),
                   ),
@@ -589,6 +590,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     style: const TextStyle(fontSize: 22),
                     decoration: InputDecoration(
                       labelText: AppStrings.t('theme_label'),
+                      floatingLabelAlignment: FloatingLabelAlignment.center,
                       border: const OutlineInputBorder(),
                     ),
                   ),
