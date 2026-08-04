@@ -32,7 +32,6 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
   String? _generatingScenePageId;
   bool _isBulkGenerating = false;
   bool _showTimeToRecord = false;
-  Timer? _timeToRecordTimer;
   String? _regeneratingTextPageId;
   bool _isGeneratingVideo = false;
   bool _instructionsHidden = false;
@@ -62,7 +61,6 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
   @override
   void dispose() {
     AppStrings.languageCode.removeListener(_onLanguageChanged);
-    _timeToRecordTimer?.cancel();
     _pageAudioPlayer.dispose();
     super.dispose();
   }
@@ -389,11 +387,6 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
       _isBulkGenerating = false;
       _showTimeToRecord = true;
     });
-
-    _timeToRecordTimer?.cancel();
-    _timeToRecordTimer = Timer(const Duration(seconds: 3), () {
-      if (mounted) setState(() => _showTimeToRecord = false);
-    });
   }
 
   Future<void> _generateScene(String pageId, String? currentSceneUrl) async {
@@ -553,6 +546,11 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
         final allHaveAudioAlready = book.pages.isNotEmpty &&
             book.pages.every((p) => p.audioUrl != null);
         final showInstructions = !allComplete && !_instructionsHidden && !allHaveAudioAlready;
+        // Stays visible (and keeps the first Record Voice button lit up) until
+        // the very first sound is recorded, instead of a fixed timer - a slow
+        // reader shouldn't have the prompt vanish before they've acted on it.
+        final hasAnyAudioRecorded = book.pages.any((p) => p.audioUrl != null);
+        final showTimeToRecordBanner = _showTimeToRecord && !hasAnyAudioRecorded;
 
         return Scaffold(
           bottomNavigationBar: const DebugScreenTag('creator_wizard_screen.dart'),
@@ -724,7 +722,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                       style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                     ),
                   ),
-                if (_showTimeToRecord)
+                if (showTimeToRecordBanner)
                   Container(
                     width: double.infinity,
                     margin: const EdgeInsets.only(bottom: 12),
@@ -751,6 +749,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                       final hasScene = page.cartoonImageUrl != null;
                       final isGeneratingThisScene = _generatingScenePageId == page.id;
                       final isPlayingThisPage = _playingPageId == page.id;
+                      final isFirstRecordPrompt = showTimeToRecordBanner && index == 0;
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8),
                         shape: RoundedRectangleBorder(
@@ -813,13 +812,22 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                                     label: Text(hasScene ? AppStrings.t('regenerate_scene') : AppStrings.t('generate_scene')),
                                   ),
                                   const SizedBox(width: 8),
-                                  TextButton.icon(
-                                    onPressed: () => _goToRecordVoice(page.id, page.pageNumber, page.scriptText),
-                                    icon: Icon(
-                                      hasAudio ? Icons.check_circle : Icons.mic_none,
-                                      color: hasAudio ? Colors.green : null,
+                                  Container(
+                                    decoration: isFirstRecordPrompt
+                                        ? BoxDecoration(
+                                      color: const Color(0xFFDCEDC8),
+                                      borderRadius: BorderRadius.circular(24),
+                                      border: Border.all(color: const Color(0xFF7CB342), width: 2),
+                                    )
+                                        : null,
+                                    child: TextButton.icon(
+                                      onPressed: () => _goToRecordVoice(page.id, page.pageNumber, page.scriptText),
+                                      icon: Icon(
+                                        hasAudio ? Icons.check_circle : Icons.mic_none,
+                                        color: hasAudio ? Colors.green : (isFirstRecordPrompt ? const Color(0xFF7CB342) : null),
+                                      ),
+                                      label: Text(hasAudio ? AppStrings.t('voice_recorded') : AppStrings.t('record_voice')),
                                     ),
-                                    label: Text(hasAudio ? AppStrings.t('voice_recorded') : AppStrings.t('record_voice')),
                                   ),
                                   // NEW - Listen button, only shown once a page has audio.
                                   if (hasAudio)
