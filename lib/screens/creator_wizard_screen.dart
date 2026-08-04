@@ -43,6 +43,9 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
 
   final Map<String, String> _lastSceneInstructions = {};
 
+  static const _buttonRadius = BorderRadius.all(Radius.circular(10));
+  static const _buttonHeight = 71.0;
+
   @override
   void initState() {
     super.initState();
@@ -521,12 +524,13 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                     children: [
                       Expanded(
                         child: SizedBox(
-                          height: 96,
+                          height: _buttonHeight,
                           child: ElevatedButton.icon(
                             onPressed: _goToReadBook,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: themeData.primary,
                               foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                             ),
                             icon: const Icon(Icons.menu_book, size: 32),
                             label: Text(AppStrings.t('read_book'), style: const TextStyle(fontSize: 22)),
@@ -536,7 +540,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: SizedBox(
-                          height: 96,
+                          height: _buttonHeight,
                           child: _isGeneratingVideo
                               ? const Center(child: CircularProgressIndicator())
                               : book.videoUrl != null
@@ -564,6 +568,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.green,
                                   foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                                 ),
                                 icon: const Icon(Icons.check_circle, color: Colors.white, size: 32),
                                 label: Text(AppStrings.t('video_ready'), style: const TextStyle(fontSize: 22)),
@@ -575,6 +580,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: themeData.secondary,
                               foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                             ),
                             icon: const Icon(Icons.movie_creation_outlined, size: 32),
                             label: Text(AppStrings.t('generate_video'), style: const TextStyle(fontSize: 22)),
@@ -602,7 +608,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                       ],
                       Expanded(
                         child: SizedBox(
-                          height: 96,
+                          height: _buttonHeight,
                           child: ElevatedButton.icon(
                             onPressed: _generatingScenePageId != null
                                 ? null
@@ -610,6 +616,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: themeData.accent,
                               foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                             ),
                             icon: const Icon(Icons.auto_fix_high, size: 32),
                             label: Text(
