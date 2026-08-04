@@ -19,6 +19,9 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
   late Future<List<Character>> _charactersFuture;
   final Set<String> _selectedIds = {};
 
+  static const _buttonRadius = BorderRadius.all(Radius.circular(10));
+  static const _buttonHeight = 71.0;
+
   @override
   void initState() {
     super.initState();
@@ -165,7 +168,28 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
         title: Text(AppStrings.t('characters_title')),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),
-      body: FutureBuilder<List<Character>>(
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: SizedBox(
+              width: double.infinity,
+              height: _buttonHeight,
+              child: OutlinedButton.icon(
+                onPressed: _takePhoto,
+                style: OutlinedButton.styleFrom(
+                  shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                ),
+                icon: const Icon(Icons.camera_alt, size: 32),
+                label: Text(
+                  AppStrings.t('new_character'),
+                  style: const TextStyle(fontSize: 22),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: FutureBuilder<List<Character>>(
         future: _charactersFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -179,21 +203,10 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(32.0),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 100,
-                  child: ElevatedButton(
-                    onPressed: _takePhoto,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: Text(
-                      AppStrings.t('create_first_character'),
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
+                child: Text(
+                  AppStrings.t('no_characters_yet'),
+                  style: const TextStyle(fontSize: 18),
+                  textAlign: TextAlign.center,
                 ),
               ),
             );
@@ -292,6 +305,9 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
             },
           );
         },
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: FutureBuilder<List<Character>>(
         future: _charactersFuture,
@@ -304,27 +320,16 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
                 if (characters.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: _takePhoto,
-                            icon: const Icon(Icons.camera_alt),
-                            label: Text(AppStrings.t('new_character')),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: _goToNewBook,
-                            style: _selectedIds.isNotEmpty
-                                ? ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white)
-                                : null,
-                            icon: const Icon(Icons.auto_stories),
-                            label: Text('${AppStrings.t('new_book')} (${_selectedIds.length})'),
-                          ),
-                        ),
-                      ],
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _goToNewBook,
+                        style: _selectedIds.isNotEmpty
+                            ? ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white)
+                            : null,
+                        icon: const Icon(Icons.auto_stories),
+                        label: Text('${AppStrings.t('new_book')} (${_selectedIds.length})'),
+                      ),
                     ),
                   ),
                 const DebugScreenTag('characters_home_screen.dart'),
