@@ -22,6 +22,9 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
   final _apiService = ApiService();
   late Future<List<Book>> _booksFuture;
 
+  static const _buttonRadius = BorderRadius.all(Radius.circular(10));
+  static const _buttonHeight = 71.0;
+
   @override
   void initState() {
     super.initState();
@@ -126,95 +129,99 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
         title: Text(AppStrings.t('my_story_books')),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),
-      body: RefreshIndicator(
-        onRefresh: _refresh,
-        child: FutureBuilder<List<Book>>(
-          future: _booksFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError) {
-              return Center(child: Text('${AppStrings.t('error_prefix')} ${snapshot.error}'));
-            }
-            final books = snapshot.data ?? [];
-            if (books.isEmpty) {
-              return LayoutBuilder(
-                builder: (context, constraints) => SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(32.0),
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: 100,
-                          child: ElevatedButton(
-                            onPressed: _goToCreateBook,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              foregroundColor: Colors.white,
-                            ),
-                            child: Text(
-                              AppStrings.t('create_your_first_story'),
-                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                              textAlign: TextAlign.center,
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: SizedBox(
+              width: double.infinity,
+              height: _buttonHeight,
+              child: ElevatedButton.icon(
+                onPressed: _goToCreateBook,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                ),
+                icon: const Icon(Icons.add, size: 32),
+                label: Text(
+                  AppStrings.t('create_your_first_story'),
+                  style: const TextStyle(fontSize: 22),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _refresh,
+              child: FutureBuilder<List<Book>>(
+                future: _booksFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return Center(child: Text('${AppStrings.t('error_prefix')} ${snapshot.error}'));
+                  }
+                  final books = snapshot.data ?? [];
+                  if (books.isEmpty) {
+                    return LayoutBuilder(
+                      builder: (context, constraints) => SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(32.0),
+                              child: Text(
+                                AppStrings.t('no_books_yet'),
+                                style: const TextStyle(fontSize: 18),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                ),
-              );
-            }
-            return ListView.builder(
-              itemCount: books.length,
-              itemBuilder: (context, index) {
-                final book = books[index];
-                final thumbnailUrl = book.characters.isNotEmpty && book.characters.first.cartoonAvatarUrl != null
-                    ? book.characters.first.cartoonAvatarUrl
-                    : null;
-                return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(
-                      color: sceneColors[index % sceneColors.length],
-                      width: 2.5,
-                    ),
-                  ),
-                  child: ListTile(
-                    title: Text(book.title),
-                    subtitle: Text('${book.theme} - ${book.status}'),
-                    leading: thumbnailUrl != null
-                        ? CircleAvatar(
-                      backgroundImage: NetworkImage('${ApiService.baseUrl}$thumbnailUrl'),
-                    )
-                        : const CircleAvatar(child: Icon(Icons.menu_book)),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete_outline),
-                      onPressed: () => _confirmDelete(book.id, book.title),
-                    ),
-                    onTap: () => _goToBookDetail(book.id),
-                  ),
-                );
-              },
-            );
-          },
-        ),
-      ),
-      floatingActionButton: FutureBuilder<List<Book>>(
-        future: _booksFuture,
-        builder: (context, snapshot) {
-          final books = snapshot.data ?? [];
-          if (books.isEmpty) return const SizedBox.shrink();
-          return FloatingActionButton(
-            onPressed: _goToCreateBook,
-            child: const Icon(Icons.add),
-          );
-        },
+                    );
+                  }
+                  return ListView.builder(
+                    itemCount: books.length,
+                    itemBuilder: (context, index) {
+                      final book = books[index];
+                      final thumbnailUrl = book.characters.isNotEmpty && book.characters.first.cartoonAvatarUrl != null
+                          ? book.characters.first.cartoonAvatarUrl
+                          : null;
+                      return Card(
+                        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: sceneColors[index % sceneColors.length],
+                            width: 2.5,
+                          ),
+                        ),
+                        child: ListTile(
+                          title: Text(book.title),
+                          subtitle: Text('${book.theme} - ${book.status}'),
+                          leading: thumbnailUrl != null
+                              ? CircleAvatar(
+                            backgroundImage: NetworkImage('${ApiService.baseUrl}$thumbnailUrl'),
+                          )
+                              : const CircleAvatar(child: Icon(Icons.menu_book)),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete_outline),
+                            onPressed: () => _confirmDelete(book.id, book.title),
+                          ),
+                          onTap: () => _goToBookDetail(book.id),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
