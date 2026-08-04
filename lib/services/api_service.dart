@@ -56,6 +56,16 @@ class ApiService {
     }
   }
 
+  Future<String> transcribeAudio(Uint8List audioBytes) async {
+    final uri = Uri.parse('${ApiService.baseUrl}/api/transcribe'); // adjust to your actual route
+    final request = http.MultipartRequest('POST', uri)
+      ..files.add(http.MultipartFile.fromBytes('audio', audioBytes, filename: 'instructions.webm'));
+    final response = await request.send();
+    final body = await response.stream.bytesToString();
+    final data = jsonDecode(body);
+    return data['text'] as String; // adjust key to match your backend response shape
+  }
+
   Future<Book> createBook({
     required String title,
     required String theme,
@@ -184,6 +194,29 @@ class ApiService {
       return BookPage.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('Failed to upload audio: ${response.statusCode}');
+    }
+  }
+
+  Future<List<BookPage>> generateFromRecording({
+    required String bookId,
+    required List<int> audioBytes,
+  }) async {
+    final uri = Uri.parse('$baseUrl/books/$bookId/generate-from-recording');
+    final request = http.MultipartRequest('POST', uri);
+    request.headers.addAll(await _authOnlyHeader());
+    request.files.add(
+      http.MultipartFile.fromBytes('audio', audioBytes, filename: 'recording.webm'),
+    );
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    _handleUnauthorized(response);
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((p) => BookPage.fromJson(p)).toList();
+    } else {
+      throw Exception('Failed to generate book from recording: ${response.statusCode} - ${response.body}');
     }
   }
 
@@ -545,4 +578,35 @@ class ApiService {
       throw Exception('Failed to generate video: ${response.statusCode} ${response.body}');
     }
   }
+
+  Future<String> createCheckoutSession({required String product}) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/payments/checkout-session'),
+      headers: await _authHeaders(),
+      body: jsonEncode({'product': product}),
+    );
+
+    _handleUnauthorized(response);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['checkoutUrl'] as String;
+    } else {
+      throw Exception('Failed to start checkout: ${response.statusCode} ${response.body}');
+    }
+  }
+
+  Future<Map<String, dynamic>> getCredits() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/users/me/credits'),
+      headers: await _authHeaders(),
+    );
+
+    _handleUnauthorized(response);
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } else {
+      throw Exception('Failed to load credits: ${response.statusCode}');
+    }
+  }
+
 }

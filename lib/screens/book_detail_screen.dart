@@ -7,6 +7,7 @@ import '../models/book.dart';
 import '../services/api_service.dart';
 import '../services/app_strings.dart';
 import 'creator_wizard_screen.dart';
+import 'record_story_screen.dart';
 
 /// Screen 1 of the book flow: setup. Shown for a book that has no pages
 /// yet. Lets the person add characters, then either generate a story
@@ -132,6 +133,62 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     } finally {
       if (mounted) setState(() => _isGenerating = false);
     }
+  }
+
+  Future<void> _showRenameDialog(Book book) async {
+    final titleController = TextEditingController(text: book.title);
+    final themeController = TextEditingController(text: book.theme);
+
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Rename Story'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: titleController,
+              decoration: const InputDecoration(labelText: 'Title'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: themeController,
+              decoration: const InputDecoration(labelText: 'Theme'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (saved == true) {
+      final newTitle = titleController.text.trim();
+      final newTheme = themeController.text.trim();
+      if (newTitle.isEmpty || newTheme.isEmpty) return;
+
+      try {
+        await _apiService.updateBook(bookId: widget.bookId, title: newTitle, theme: newTheme);
+        _refresh();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to rename: $e')),
+          );
+        }
+      }
+    }
+
+    titleController.dispose();
+    themeController.dispose();
   }
 
   Future<void> _showCharacterOptions(String characterId, String name, String? cartoonAvatarUrl, String userId, {String? currentAvatarUrl}) async {
@@ -322,7 +379,19 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(book.title, style: Theme.of(context).textTheme.headlineSmall),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Text(book.title, style: Theme.of(context).textTheme.headlineSmall),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.edit, size: 20),
+                      tooltip: 'Rename',
+                      onPressed: () => _showRenameDialog(book),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 4),
                 Text(
                   '${book.theme} - ${book.status}',
@@ -401,26 +470,62 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: _showGenerateForm
-                            ? null
-                            : () => setState(() => _showGenerateForm = true),
-                        icon: const Icon(Icons.auto_awesome),
-                        label: Text(AppStrings.t('generate_story')),
-                      ),
+                SizedBox(
+                  width: double.infinity,
+                  height: 96,
+                  child: ElevatedButton.icon(
+                    onPressed: _showGenerateForm
+                        ? null
+                        : () => setState(() => _showGenerateForm = true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: _goToApplyTemplate,
-                        icon: const Icon(Icons.auto_stories),
-                        label: Text(AppStrings.t('story_templates')),
-                      ),
+                    icon: const Icon(Icons.auto_awesome, size: 32),
+                    label: Text(
+                      AppStrings.t('generate_story'),
+                      style: const TextStyle(fontSize: 28),
                     ),
-                  ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 96,
+                  child: ElevatedButton.icon(
+                    onPressed: _goToApplyTemplate,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                    ),
+                    icon: const Icon(Icons.auto_stories, size: 32),
+                    label: Text(
+                      AppStrings.t('story_templates'),
+                      style: const TextStyle(fontSize: 28),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 96,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => RecordStoryScreen(bookId: widget.bookId)),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                    ),
+                    icon: const Icon(Icons.mic, size: 32),
+                    label: const Text(
+                      'Record Your Story',
+                      style: TextStyle(fontSize: 28),
+                    ),
+                  ),
                 ),
                 if (_showGenerateForm) ...[
                   const SizedBox(height: 16),

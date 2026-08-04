@@ -10,6 +10,7 @@ import 'language_settings_screen.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
 import '../services/app_strings.dart';
+import '../screens/credits_screen.dart';
 
 /// How long a new, unverified account gets to explore before the
 /// reminder banner shows up.
@@ -32,6 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Timer? _bannerTimer;
   bool? _hasBooks;
   bool? _hasCharacters;
+  int? _totalCredits; // creditBalance + bonusCredits combined, for the "low" check
 
   @override
   void initState() {
@@ -42,8 +44,23 @@ class _HomeScreenState extends State<HomeScreen> {
     _checkVerificationStatus();
     _loadHasBooks();
     _loadHasCharacters();
+    _loadCredits();
     // Rebuild this screen whenever the language changes elsewhere in the app.
     AppStrings.languageCode.addListener(_onLanguageChanged);
+  }
+
+  Future<void> _loadCredits() async {
+    try {
+      final credits = await _apiService.getCredits();
+      if (mounted) {
+        setState(() {
+          _totalCredits = (credits['creditBalance'] as int) + (credits['bonusCredits'] as int);
+        });
+      }
+    } catch (e) {
+      // Non-critical - if this fails, the Buy Credits button just won't show.
+      // Don't block the rest of the home screen over it.
+    }
   }
 
   void _onLanguageChanged() {
@@ -153,7 +170,24 @@ class _HomeScreenState extends State<HomeScreen> {
           (route) => false,
     );
   }
-
+  Future<void> _goToMyCharacters() async {
+    try {
+      final libraryBookId = await _apiService.getLibraryBookId();
+      if (!mounted) return;
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => AddCharacterScreen(bookId: libraryBookId)),
+      );
+      _loadHasBooks();
+      _loadHasCharacters();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load characters: $e')),
+        );
+      }
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -201,11 +235,10 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           Expanded(
-            child: Center(
+            child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image.asset(
                       'assets/images/StoryFunTime_MainLogo.png',
@@ -264,30 +297,52 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       )
                     else ...[
-                        SizedBox(
-                          width: double.infinity,
-                          height: 100,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => const StoriesListScreen()),
-                              );
-                            },
-                            icon: const Icon(Icons.menu_book, size: 32),
-                            label: Text(AppStrings.t('go_to_stories'), style: const TextStyle(fontSize: 20)),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 100,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const StoriesListScreen()),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF136795),
+                                foregroundColor: Colors.white,
+                              ),
+                              icon: const Icon(Icons.menu_book, size: 32),
+                              label: Text(AppStrings.t('go_to_stories'), style: const TextStyle(fontSize: 20)),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 100,
-                          child: ElevatedButton.icon(
-                            onPressed: _goToNewStory,
-                            icon: const Icon(Icons.people, size: 32),
-                            label: Text(AppStrings.t('new_story'), style: const TextStyle(fontSize: 20)),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 100,
+                            child: ElevatedButton.icon(
+                              onPressed: _goToNewStory,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFE81E27),
+                                foregroundColor: Colors.white,
+                              ),
+                              icon: const Icon(Icons.people, size: 32),
+                              label: Text(AppStrings.t('new_story'), style: const TextStyle(fontSize: 20)),
+                            ),
                           ),
-                        ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 100,
+                            child: ElevatedButton.icon(
+                              onPressed: _goToMyCharacters,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF784AAA),
+                                foregroundColor: Colors.white,
+                              ),
+                              icon: const Icon(Icons.face, size: 32),
+                              label: Text(AppStrings.t('Add Characters'), style: const TextStyle(fontSize: 20)),
+                            ),
+                          ),
                       ],
                     if (_hasBooks == true) ...[
                       const SizedBox(height: 32),
@@ -300,6 +355,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                         child: Text(AppStrings.t('manage_story_templates')),
                       ),
+                    ],
+                    if (_totalCredits != null && _totalCredits! < 20) ...[
+                      const SizedBox(height: 12),
+                      TextButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const CreditsScreen()),
+                          );
+                        },
+                        icon: const Icon(Icons.add_circle_outline),
+                        label: Text(AppStrings.t('buy_credits')),
+                      ),
+
                     ],
                   ],
                 ),

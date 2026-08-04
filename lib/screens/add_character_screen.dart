@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
 import '../services/app_strings.dart';
+import 'package:record/record.dart';
+import 'package:http/http.dart' as http;
 
 class _AgeStage {
   final String label;
@@ -29,6 +31,9 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
   final _picker = ImagePicker();
   final _nameController = TextEditingController();
   final _instructionsController = TextEditingController();
+  final _audioRecorder = AudioRecorder();
+  bool _isRecording = false;
+  bool _isTranscribing = false;
 
   final List<_AgeStage> _ageStages = const [
     _AgeStage(label: 'Infant', ageRange: '0-1', isChild: true),
@@ -66,6 +71,7 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
 
   @override
   void dispose() {
+    _audioRecorder.dispose();
     AppStrings.languageCode.removeListener(_onLanguageChanged);
     super.dispose();
   }
@@ -103,6 +109,47 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
       });
     }
   }
+
+  Future<void> _toggleRecording() async {
+    if (_isRecording) {
+      // Stop recording and send for transcription
+      final path = await _audioRecorder.stop();
+      setState(() => _isRecording = false);
+
+      if (path == null) return;
+
+      setState(() {
+        _isTranscribing = true;
+        _errorMessage = null;
+      });
+
+      try {
+        // On web, `path` is a blob URL — fetch its bytes first.
+        final response = await http.get(Uri.parse(path));
+        final audioBytes = response.bodyBytes;
+
+        final transcript = await _apiService.transcribeAudio(audioBytes);
+
+        setState(() {
+          final existing = _instructionsController.text.trim();
+          _instructionsController.text =
+          existing.isEmpty ? transcript : '$existing $transcript';
+        });
+      } catch (e) {
+        setState(() => _errorMessage = 'Could not transcribe audio: $e');
+      } finally {
+        setState(() => _isTranscribing = false);
+      }
+    } else {
+      try {
+        await _audioRecorder.start(const RecordConfig(), path: 'instructions_audio');
+        setState(() => _isRecording = true);
+      } catch (e) {
+        setState(() => _errorMessage = 'Could not start recording. Please allow microphone access: $e');
+      }
+    }
+  }
+
 
   Future<void> _generate() async {
     if (_avatarUrl == null) {
@@ -168,25 +215,35 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
 
   Widget _buildGenderOption(String value, String asset, String label) {
     final selected = _genderSelection == value;
+    // Colored circle background: female = blue, male = red. Icon stays white on top.
+    final circleColor = value == 'female' ? const Color(0xFF1A8BC8) : const Color(0xFFE81E27);
     return GestureDetector(
       onTap: () => setState(() => _genderSelection = value),
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(4),
+            width: 78,
+            height: 78,
+            alignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
+              color: circleColor,
               border: Border.all(
                 color: selected ? Colors.deepPurple : Colors.transparent,
                 width: 3,
               ),
             ),
-            child: ClipOval(
-              child: Image.asset('assets/images/$asset', width: 50, height: 50, fit: BoxFit.cover),
+            child: Icon(
+              value == 'female' ? Icons.woman : Icons.man,
+              color: Colors.white,
+              size: 50,
             ),
           ),
           const SizedBox(height: 4),
-          Text(label, style: TextStyle(fontWeight: selected ? FontWeight.bold : FontWeight.normal)),
+          Text(
+            label,
+            style: TextStyle(fontSize: 22, fontWeight: selected ? FontWeight.bold : FontWeight.normal),
+          ),
         ],
       ),
     );
@@ -196,7 +253,13 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppStrings.t('add_a_character_title'))),
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(
+          AppStrings.t('add_a_character_title'),
+          style: const TextStyle(fontSize: 22),
+        ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -206,18 +269,38 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => _pickImage(ImageSource.camera),
-                      icon: const Icon(Icons.camera_alt),
-                      label: Text(AppStrings.t('take_photo')),
+                    child: SizedBox(
+                      height: 96,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _pickImage(ImageSource.camera),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1A8BC8),
+                          foregroundColor: Colors.white,
+                        ),
+                        icon: const Icon(Icons.camera_alt),
+                        label: Text(
+                          AppStrings.t('take_photo'),
+                          style: const TextStyle(fontSize: 22),
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => _pickImage(ImageSource.gallery),
-                      icon: const Icon(Icons.photo_library),
-                      label: Text(AppStrings.t('open_gallery')),
+                    child: SizedBox(
+                      height: 96,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _pickImage(ImageSource.gallery),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFEE575F),
+                          foregroundColor: Colors.white,
+                        ),
+                        icon: const Icon(Icons.photo_library),
+                        label: Text(
+                          AppStrings.t('open_gallery'),
+                          style: const TextStyle(fontSize: 22),
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -238,18 +321,26 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
               const SizedBox(height: 16),
               TextField(
                 controller: _nameController,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 22),
                 decoration: InputDecoration(
-                  labelText: AppStrings.t('name_label'),
                   border: const OutlineInputBorder(),
-                  hintText: AppStrings.t('name_hint'),
+                  hintText: AppStrings.t('Character Name'),
+                  hintStyle: const TextStyle(fontSize: 22),
                 ),
               ),
               const SizedBox(height: 20),
               Center(
                 child: SegmentedButton<String>(
                   segments: [
-                    ButtonSegment(value: 'Human', label: Text(AppStrings.t('human'))),
-                    ButtonSegment(value: 'Pet', label: Text(AppStrings.t('pet'))),
+                    ButtonSegment(
+                      value: 'Human',
+                      label: Text(AppStrings.t('human'), style: const TextStyle(fontSize: 22)),
+                    ),
+                    ButtonSegment(
+                      value: 'Pet',
+                      label: Text(AppStrings.t('pet'), style: const TextStyle(fontSize: 22)),
+                    ),
                   ],
                   selected: {_characterType},
                   onSelectionChanged: (newSelection) {
@@ -272,8 +363,10 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                         width: 130,
                         child: DropdownButtonFormField<int>(
                           value: _ageStageIndex,
+                          style: const TextStyle(fontSize: 22, color: Colors.black),
                           decoration: InputDecoration(
                             labelText: AppStrings.t('age_label'),
+                            labelStyle: const TextStyle(fontSize: 22),
                             border: const OutlineInputBorder(),
                             isDense: true,
                           ),
@@ -281,7 +374,10 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                             for (int i = 0; i < _ageStages.length; i++)
                               DropdownMenuItem(
                                 value: i,
-                                child: Text(_ageStages[i].ageRange),
+                                child: Text(
+                                  _ageStages[i].ageRange,
+                                  style: const TextStyle(fontSize: 22),
+                                ),
                               ),
                           ],
                           onChanged: (value) => setState(() => _ageStageIndex = value ?? 0),
@@ -293,7 +389,10 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
               const SizedBox(height: 20),
             ],
             if (_avatarUrl != null) ...[
-              Text(AppStrings.t('heres_your_character')),
+              Text(
+                AppStrings.t('heres_your_character'),
+                style: const TextStyle(fontSize: 22),
+              ),
               const SizedBox(height: 12),
               Center(
                 child: SizedBox(
@@ -311,10 +410,23 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
             TextField(
               controller: _instructionsController,
               maxLines: 2,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 22),
               decoration: InputDecoration(
-                labelText: _avatarUrl == null ? AppStrings.t('optional_instructions') : AppStrings.t('instructions_for_next_try'),
-                hintText: AppStrings.t('avatar_instructions_hint'),
+                hintText: _avatarUrl == null
+                    ? AppStrings.t('optional_instructions')
+                    : AppStrings.t('instructions_for_next_try'),
+                hintStyle: const TextStyle(fontSize: 22),
                 border: const OutlineInputBorder(),
+                suffixIcon: _isTranscribing
+                    ? const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                )
+                    : IconButton(
+                  icon: Icon(_isRecording ? Icons.stop_circle : Icons.mic, color: const Color(0xFF784AAA)),
+                  onPressed: _toggleRecording,
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -323,25 +435,42 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                 children: [
                   const CircularProgressIndicator(),
                   const SizedBox(height: 12),
-                  Text(AppStrings.t('working_on_it')),
+                  Text(
+                    AppStrings.t('working_on_it'),
+                    style: const TextStyle(fontSize: 22),
+                  ),
                 ],
               )
             else ...[
-              ElevatedButton(
-                onPressed: _generate,
-                child: Text(_avatarUrl == null ? AppStrings.t('generate_character') : AppStrings.t('regenerate')),
+              SizedBox(
+                width: double.infinity,
+                height: 96,
+                child: ElevatedButton(
+                  onPressed: _generate,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF7F50B2),
+                    foregroundColor: Colors.white,
+                  ),
+                  child: Text(
+                    _avatarUrl == null ? AppStrings.t('generate_character') : AppStrings.t('regenerate'),
+                    style: const TextStyle(fontSize: 22),
+                  ),
+                ),
               ),
               if (_avatarUrl != null) ...[
                 const SizedBox(height: 12),
                 ElevatedButton(
                   onPressed: () => Navigator.pop(context, true),
-                  child: Text(AppStrings.t('done')),
+                  child: Text(
+                    AppStrings.t('done'),
+                    style: const TextStyle(fontSize: 22),
+                  ),
                 ),
               ],
             ],
             if (_errorMessage != null) ...[
               const SizedBox(height: 16),
-              Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+              Text(_errorMessage!, style: const TextStyle(color: Colors.red, fontSize: 22)),
             ],
           ],
         ),

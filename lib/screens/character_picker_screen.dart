@@ -4,6 +4,17 @@ import '../services/api_service.dart';
 import '../services/app_strings.dart';
 import 'book_detail_screen.dart';
 
+// NEW - one entry per unique avatar. If the same person appears in several
+// books, count reflects how many, and representative is whichever Character
+// record we show/select (any of them clones the same name/avatar into the
+// target book via copyCharactersToBook, so it doesn't matter which one).
+class _CharacterGroup {
+  final Character representative;
+  final int count;
+
+  _CharacterGroup({required this.representative, required this.count});
+}
+
 class CharacterPickerScreen extends StatefulWidget {
   final String bookId;
 
@@ -34,6 +45,20 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
   void dispose() {
     AppStrings.languageCode.removeListener(_onLanguageChanged);
     super.dispose();
+  }
+
+  // NEW - groups characters that share the same cartoon avatar (same person,
+  // reused across multiple books). Characters with no avatar yet are never
+  // grouped together with each other.
+  List<_CharacterGroup> _groupCharacters(List<Character> characters) {
+    final Map<String, List<Character>> groups = {};
+    for (final c in characters) {
+      final key = c.cartoonAvatarUrl ?? 'ungrouped-${c.id}';
+      groups.putIfAbsent(key, () => []).add(c);
+    }
+    return groups.values
+        .map((group) => _CharacterGroup(representative: group.first, count: group.length))
+        .toList();
   }
 
   void _toggle(String id) {
@@ -101,6 +126,8 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
             );
           }
 
+          final groups = _groupCharacters(characters);
+
           return GridView.builder(
             padding: const EdgeInsets.all(16),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -109,9 +136,10 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
               mainAxisSpacing: 12,
               childAspectRatio: 0.8,
             ),
-            itemCount: characters.length,
+            itemCount: groups.length,
             itemBuilder: (context, index) {
-              final character = characters[index];
+              final group = groups[index];
+              final character = group.representative;
               final isSelected = _selectedIds.contains(character.id);
 
               return GestureDetector(
@@ -151,6 +179,24 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
                               size: 28,
                             ),
                           ),
+                          // NEW - "in N stories" badge, only shown when the same
+                          // avatar appears in more than one book.
+                          if (group.count > 1)
+                            Positioned(
+                              bottom: 6,
+                              left: 6,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: Colors.black54,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  'In ${group.count} stories',
+                                  style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ),

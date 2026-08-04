@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:audioplayers/audioplayers.dart';
 import '../models/book.dart';
 import '../services/api_service.dart';
 import '../services/app_strings.dart';
@@ -30,6 +31,11 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
   bool _isGeneratingVideo = false;
   bool _instructionsHidden = false;
 
+  // NEW - lets someone listen to a page's already-recorded audio right from
+  // this list, without opening the recorder screen.
+  final _pageAudioPlayer = AudioPlayer();
+  String? _playingPageId;
+
   final Map<String, String> _lastSceneInstructions = {};
 
   @override
@@ -48,6 +54,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
   void dispose() {
     AppStrings.languageCode.removeListener(_onLanguageChanged);
     _timeToRecordTimer?.cancel();
+    _pageAudioPlayer.dispose();
     super.dispose();
   }
 
@@ -58,6 +65,24 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
   void _refresh() {
     setState(() {
       _loadBook();
+    });
+  }
+
+  // NEW - toggles play/stop for a page's recorded audio. Tapping a different
+  // page's Listen button while one is already playing just switches to it.
+  Future<void> _togglePlayAudio(String pageId, String audioUrl) async {
+    if (_playingPageId == pageId) {
+      await _pageAudioPlayer.stop();
+      if (mounted) setState(() => _playingPageId = null);
+      return;
+    }
+
+    setState(() => _playingPageId = pageId);
+    await _pageAudioPlayer.play(
+      UrlSource('${ApiService.baseUrl}$audioUrl?v=${DateTime.now().millisecondsSinceEpoch}'),
+    );
+    _pageAudioPlayer.onPlayerComplete.listen((_) {
+      if (mounted) setState(() => _playingPageId = null);
     });
   }
 
@@ -462,6 +487,12 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
           final book = snapshot.data!;
           final allComplete = book.pages.isNotEmpty &&
               book.pages.every((p) => p.cartoonImageUrl != null && p.audioUrl != null);
+          // A book from "Record Your Story" already has audio on every page before
+          // scenes exist - the normal 3-step instructions (edit text, generate
+          // scenes, record sounds) don't apply since there's nothing left to record.
+          final allHaveAudioAlready = book.pages.isNotEmpty &&
+              book.pages.every((p) => p.audioUrl != null);
+          final showInstructions = !allComplete && !_instructionsHidden && !allHaveAudioAlready;
 
           return Padding(
             padding: const EdgeInsets.all(24.0),
@@ -483,50 +514,50 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                         child: _isGeneratingVideo
                             ? const Center(child: CircularProgressIndicator())
                             : book.videoUrl != null
-                                ? PopupMenuButton<String>(
-                                    onSelected: (value) {
-                                      if (value == 'share') {
-                                        _shareVideo(book.videoUrl!);
-                                      } else if (value == 'watch') {
-                                        _openVideo(book.videoUrl!);
-                                      } else if (value == 'download') {
-                                        _downloadVideo();
-                                      } else if (value == 'regenerate') {
-                                        _generateVideo();
-                                      }
-                                    },
-                                    itemBuilder: (context) => [
-                                      PopupMenuItem(value: 'share', child: Row(children: [const Icon(Icons.share), const SizedBox(width: 12), Text(AppStrings.t('share'))])),
-                                      PopupMenuItem(value: 'watch', child: Row(children: [const Icon(Icons.play_circle_outline), const SizedBox(width: 12), Text(AppStrings.t('watch'))])),
-                                      PopupMenuItem(value: 'download', child: Row(children: [const Icon(Icons.download), const SizedBox(width: 12), Text(AppStrings.t('download'))])),
-                                      PopupMenuItem(value: 'regenerate', child: Row(children: [const Icon(Icons.refresh), const SizedBox(width: 12), Text(AppStrings.t('regenerate_video'))])),
-                                    ],
-                                    child: IgnorePointer(
-                                      child: OutlinedButton.icon(
-                                        onPressed: () {},
-                                        icon: const Icon(Icons.check_circle, color: Colors.green),
-                                        label: Text(AppStrings.t('video_ready')),
-                                      ),
-                                    ),
-                                  )
-                                : ElevatedButton.icon(
-                                    onPressed: _generateVideo,
-                                    icon: const Icon(Icons.movie_creation_outlined),
-                                    label: Text(AppStrings.t('generate_video')),
-                                  ),
+                            ? PopupMenuButton<String>(
+                          onSelected: (value) {
+                            if (value == 'share') {
+                              _shareVideo(book.videoUrl!);
+                            } else if (value == 'watch') {
+                              _openVideo(book.videoUrl!);
+                            } else if (value == 'download') {
+                              _downloadVideo();
+                            } else if (value == 'regenerate') {
+                              _generateVideo();
+                            }
+                          },
+                          itemBuilder: (context) => [
+                            PopupMenuItem(value: 'share', child: Row(children: [const Icon(Icons.share), const SizedBox(width: 12), Text(AppStrings.t('share'))])),
+                            PopupMenuItem(value: 'watch', child: Row(children: [const Icon(Icons.play_circle_outline), const SizedBox(width: 12), Text(AppStrings.t('watch'))])),
+                            PopupMenuItem(value: 'download', child: Row(children: [const Icon(Icons.download), const SizedBox(width: 12), Text(AppStrings.t('download'))])),
+                            PopupMenuItem(value: 'regenerate', child: Row(children: [const Icon(Icons.refresh), const SizedBox(width: 12), Text(AppStrings.t('regenerate_video'))])),
+                          ],
+                          child: IgnorePointer(
+                            child: OutlinedButton.icon(
+                              onPressed: () {},
+                              icon: const Icon(Icons.check_circle, color: Colors.green),
+                              label: Text(AppStrings.t('video_ready')),
+                            ),
+                          ),
+                        )
+                            : ElevatedButton.icon(
+                          onPressed: _generateVideo,
+                          icon: const Icon(Icons.movie_creation_outlined),
+                          label: Text(AppStrings.t('generate_video')),
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
                 ],
-                if (!allComplete && !_instructionsHidden) ...[
+                if (showInstructions) ...[
                   _buildInstructionStep(1, AppStrings.t('edit_regenerate_text_step'), trailingIcon: Icons.more_vert),
                   const SizedBox(height: 8),
                 ],
                 if (!allComplete)
                   Row(
                     children: [
-                      if (!_instructionsHidden) ...[
+                      if (showInstructions) ...[
                         const CircleAvatar(
                           radius: 12,
                           backgroundColor: Colors.purple,
@@ -547,7 +578,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                       ),
                     ],
                   ),
-                if (!allComplete && !_instructionsHidden) ...[
+                if (showInstructions) ...[
                   const SizedBox(height: 8),
                   _buildInstructionStep(3, AppStrings.t('record_sounds_step')),
                   Align(
@@ -595,95 +626,105 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                   child: book.pages.isEmpty
                       ? Text(AppStrings.t('no_pages_yet'))
                       : ListView.builder(
-                          itemCount: book.pages.length,
-                          itemBuilder: (context, index) {
-                            final page = book.pages[index];
-                            final hasAudio = page.audioUrl != null;
-                            final hasScene = page.cartoonImageUrl != null;
-                            final isGeneratingThisScene = _generatingScenePageId == page.id;
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              child: Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        CircleAvatar(child: Text('${page.pageNumber}')),
-                                        const SizedBox(width: 12),
-                                        Expanded(child: Text(page.scriptText)),
-                                        _regeneratingTextPageId == page.id
-                                            ? const SizedBox(
-                                                width: 20,
-                                                height: 20,
-                                                child: CircularProgressIndicator(strokeWidth: 2),
-                                              )
-                                            : PopupMenuButton<String>(
-                                                icon: const Icon(Icons.more_vert, size: 20),
-                                                onSelected: (value) {
-                                                  if (value == 'edit') {
-                                                    _editPageText(page.id, page.scriptText);
-                                                  } else if (value == 'regenerate') {
-                                                    _regeneratePageText(page.id);
-                                                  }
-                                                },
-                                                itemBuilder: (context) => [
-                                                  PopupMenuItem(value: 'edit', child: Text(AppStrings.t('edit_text'))),
-                                                  PopupMenuItem(value: 'regenerate', child: Text(AppStrings.t('regenerate_text_menu'))),
-                                                ],
-                                              ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        isGeneratingThisScene
-                                            ? const SizedBox(
-                                                width: 20,
-                                                height: 20,
-                                                child: CircularProgressIndicator(strokeWidth: 2),
-                                              )
-                                            : TextButton.icon(
-                                                onPressed: book.characters.isEmpty
-                                                    ? null
-                                                    : () => _generateScene(page.id, page.cartoonImageUrl),
-                                                icon: Icon(
-                                                  hasScene ? Icons.check_circle : Icons.auto_fix_high,
-                                                  color: hasScene ? Colors.green : null,
-                                                ),
-                                                label: Text(hasScene ? AppStrings.t('regenerate_scene') : AppStrings.t('generate_scene')),
-                                              ),
-                                        const SizedBox(width: 8),
-                                        TextButton.icon(
-                                          onPressed: () => _goToRecordVoice(page.id, page.pageNumber, page.scriptText),
-                                          icon: Icon(
-                                            hasAudio ? Icons.check_circle : Icons.mic_none,
-                                            color: hasAudio ? Colors.green : null,
-                                          ),
-                                          label: Text(hasAudio ? AppStrings.t('voice_recorded') : AppStrings.t('record_voice')),
-                                        ),
-                                        if (hasScene)
-                                          IconButton(
-                                            icon: const Icon(Icons.visibility_outlined),
-                                            tooltip: AppStrings.t('view_scene_tooltip'),
-                                            onPressed: () => _viewScene(page.cartoonImageUrl!),
-                                          ),
-                                        if (page.previousCartoonImageUrl != null)
-                                          IconButton(
-                                            icon: const Icon(Icons.undo),
-                                            tooltip: AppStrings.t('revert_scene_tooltip'),
-                                            onPressed: () => _revertScene(page.id),
-                                          ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                    itemCount: book.pages.length,
+                    itemBuilder: (context, index) {
+                      final page = book.pages[index];
+                      final hasAudio = page.audioUrl != null;
+                      final hasScene = page.cartoonImageUrl != null;
+                      final isGeneratingThisScene = _generatingScenePageId == page.id;
+                      final isPlayingThisPage = _playingPageId == page.id;
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  CircleAvatar(child: Text('${page.pageNumber}')),
+                                  const SizedBox(width: 12),
+                                  Expanded(child: Text(page.scriptText)),
+                                  _regeneratingTextPageId == page.id
+                                      ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                      : PopupMenuButton<String>(
+                                    icon: const Icon(Icons.more_vert, size: 20),
+                                    onSelected: (value) {
+                                      if (value == 'edit') {
+                                        _editPageText(page.id, page.scriptText);
+                                      } else if (value == 'regenerate') {
+                                        _regeneratePageText(page.id);
+                                      }
+                                    },
+                                    itemBuilder: (context) => [
+                                      PopupMenuItem(value: 'edit', child: Text(AppStrings.t('edit_text'))),
+                                      PopupMenuItem(value: 'regenerate', child: Text(AppStrings.t('regenerate_text_menu'))),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            );
-                          },
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  isGeneratingThisScene
+                                      ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                      : TextButton.icon(
+                                    onPressed: book.characters.isEmpty
+                                        ? null
+                                        : () => _generateScene(page.id, page.cartoonImageUrl),
+                                    icon: Icon(
+                                      hasScene ? Icons.check_circle : Icons.auto_fix_high,
+                                      color: hasScene ? Colors.green : null,
+                                    ),
+                                    label: Text(hasScene ? AppStrings.t('regenerate_scene') : AppStrings.t('generate_scene')),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  TextButton.icon(
+                                    onPressed: () => _goToRecordVoice(page.id, page.pageNumber, page.scriptText),
+                                    icon: Icon(
+                                      hasAudio ? Icons.check_circle : Icons.mic_none,
+                                      color: hasAudio ? Colors.green : null,
+                                    ),
+                                    label: Text(hasAudio ? AppStrings.t('voice_recorded') : AppStrings.t('record_voice')),
+                                  ),
+                                  // NEW - Listen button, only shown once a page has audio.
+                                  if (hasAudio)
+                                    IconButton(
+                                      icon: Icon(
+                                        isPlayingThisPage ? Icons.stop_circle : Icons.play_circle_outline,
+                                      ),
+                                      tooltip: isPlayingThisPage ? 'Stop' : 'Listen',
+                                      onPressed: () => _togglePlayAudio(page.id, page.audioUrl!),
+                                    ),
+                                  if (hasScene)
+                                    IconButton(
+                                      icon: const Icon(Icons.visibility_outlined),
+                                      tooltip: AppStrings.t('view_scene_tooltip'),
+                                      onPressed: () => _viewScene(page.cartoonImageUrl!),
+                                    ),
+                                  if (page.previousCartoonImageUrl != null)
+                                    IconButton(
+                                      icon: const Icon(Icons.undo),
+                                      tooltip: AppStrings.t('revert_scene_tooltip'),
+                                      onPressed: () => _revertScene(page.id),
+                                    ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
+                      );
+                    },
+                  ),
                 ),
               ],
             ),
