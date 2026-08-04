@@ -12,6 +12,7 @@ import '../screens/login_screen.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/app_strings.dart';
+import '../utils/fade_route.dart';
 
 enum _NavDestination {
   home,
@@ -38,7 +39,7 @@ class AppNavMenuButton extends StatelessWidget {
       if (!context.mounted) return;
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => AddCharacterScreen(bookId: libraryBookId)),
+        FadeRoute(page: AddCharacterScreen(bookId: libraryBookId)),
       );
     } catch (e) {
       if (context.mounted) {
@@ -53,7 +54,7 @@ class AppNavMenuButton extends StatelessWidget {
     await AuthService().logout();
     if (!context.mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
+      FadeRoute(page: const LoginScreen()),
           (route) => false,
     );
   }
@@ -62,33 +63,33 @@ class AppNavMenuButton extends StatelessWidget {
     switch (destination) {
       case _NavDestination.home:
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          FadeRoute(page: const HomeScreen()),
               (route) => false,
         );
         break;
       case _NavDestination.stories:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const StoriesListScreen()));
+        Navigator.push(context, FadeRoute(page: const StoriesListScreen()));
         break;
       case _NavDestination.newStory:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const CharactersHomeScreen()));
+        Navigator.push(context, FadeRoute(page: const CharactersHomeScreen()));
         break;
       case _NavDestination.characters:
         _goToMyCharacters(context);
         break;
       case _NavDestination.templates:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const TemplateAdminScreen()));
+        Navigator.push(context, FadeRoute(page: const TemplateAdminScreen()));
         break;
       case _NavDestination.credits:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const CreditsScreen()));
+        Navigator.push(context, FadeRoute(page: const CreditsScreen()));
         break;
       case _NavDestination.invites:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const MyInvitesScreen()));
+        Navigator.push(context, FadeRoute(page: const MyInvitesScreen()));
         break;
       case _NavDestination.language:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const LanguageSettingsScreen()));
+        Navigator.push(context, FadeRoute(page: const LanguageSettingsScreen()));
         break;
       case _NavDestination.theme:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const ThemePickerScreen()));
+        Navigator.push(context, FadeRoute(page: const ThemePickerScreen()));
         break;
       case _NavDestination.logout:
         _logout(context);

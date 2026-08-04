@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../main.dart';
 import '../models/book.dart';
@@ -8,6 +7,7 @@ import '../models/book_page.dart';
 import '../models/character.dart';
 import '../models/story_template.dart';
 import '../screens/login_screen.dart';
+import '../utils/fade_route.dart';
 import 'auth_service.dart';
 
 class ApiService {
@@ -50,7 +50,7 @@ class ApiService {
     if (response.statusCode == 401) {
       _authService.logout();
       navigatorKey.currentState?.pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        FadeRoute(page: const LoginScreen()),
             (route) => false,
       );
     }

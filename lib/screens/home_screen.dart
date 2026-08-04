@@ -11,6 +11,7 @@ import '../services/auth_service.dart';
 import '../services/api_service.dart';
 import '../services/app_strings.dart';
 import '../screens/credits_screen.dart';
+import '../utils/fade_route.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
 import '../theme/app_theme.dart';
@@ -102,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _goToNewStory() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const CharactersHomeScreen()),
+      FadeRoute(page: const CharactersHomeScreen()),
     );
     _loadHasBooks();
     _loadHasCharacters();
@@ -117,7 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       await Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => AddCharacterScreen(bookId: libraryBookId)),
+        FadeRoute(page: AddCharacterScreen(bookId: libraryBookId)),
       );
       _loadHasBooks();
       _loadHasCharacters();
@@ -190,7 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       await Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => AddCharacterScreen(bookId: libraryBookId)),
+        FadeRoute(page: AddCharacterScreen(bookId: libraryBookId)),
       );
       _loadHasBooks();
       _loadHasCharacters();
@@ -214,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const LanguageSettingsScreen()),
+                FadeRoute(page: const LanguageSettingsScreen()),
               );
             },
           ),
@@ -266,7 +267,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const MyInvitesScreen()),
+                            FadeRoute(page: const MyInvitesScreen()),
                           );
                         },
                         child: Chip(
@@ -328,7 +329,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 onPressed: () {
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (context) => const StoriesListScreen()),
+                                    FadeRoute(page: const StoriesListScreen()),
                                   );
                                 },
                                 style: ElevatedButton.styleFrom(
@@ -380,7 +381,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const TemplateAdminScreen()),
+                            FadeRoute(page: const TemplateAdminScreen()),
                           );
                         },
                         child: Text(AppStrings.t('manage_story_templates')),
@@ -392,7 +393,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const CreditsScreen()),
+                            FadeRoute(page: const CreditsScreen()),
                           );
                         },
                         icon: const Icon(Icons.add_circle_outline),

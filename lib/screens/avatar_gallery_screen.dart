@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'book_reader_screen.dart';
+import '../utils/fade_route.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
 
@@ -195,9 +196,7 @@ class _AvatarGalleryScreenState extends State<AvatarGalleryScreen> {
                                 onTap: () {
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(
-                                      builder: (context) => BookReaderScreen(bookId: widget.bookId),
-                                    ),
+                                    FadeRoute(page: BookReaderScreen(bookId: widget.bookId)),
                                   );
                                 },
                                 child: Container(

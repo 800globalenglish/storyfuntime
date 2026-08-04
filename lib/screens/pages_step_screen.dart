@@ -3,6 +3,7 @@ import '../models/book.dart';
 import '../services/api_service.dart';
 import 'record_voice_screen.dart';
 import 'home_screen.dart';
+import '../utils/fade_route.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
 import '../theme/app_theme.dart';
@@ -43,8 +44,8 @@ class _PagesStepScreenState extends State<PagesStepScreen> {
   Future<void> _goToRecordVoice(String pageId, int pageNumber, String scriptText) async {
     final saved = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => RecordVoiceScreen(
+      FadeRoute(
+        page: RecordVoiceScreen(
           pageId: pageId,
           pageNumber: pageNumber,
           scriptText: scriptText,

@@ -5,6 +5,7 @@ import '../services/app_strings.dart';
 import 'characters_home_screen.dart';
 import 'book_detail_screen.dart';
 import 'book_summary_screen.dart';
+import '../utils/fade_route.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
 import '../theme/app_theme.dart';
@@ -55,7 +56,7 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
   Future<void> _goToCreateBook() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const CharactersHomeScreen()),
+      FadeRoute(page: const CharactersHomeScreen()),
     );
     _refresh();
   }
@@ -100,12 +101,12 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
     if (book.pages.isEmpty) {
       await Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => BookDetailScreen(bookId: bookId)),
+        FadeRoute(page: BookDetailScreen(bookId: bookId)),
       );
     } else {
       await Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => BookSummaryScreen(bookId: bookId)),
+        FadeRoute(page: BookSummaryScreen(bookId: bookId)),
       );
     }
     _refresh();

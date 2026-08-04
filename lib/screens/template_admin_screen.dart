@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/story_template.dart';
 import '../services/api_service.dart';
 import 'template_page_editor_screen.dart';
+import '../utils/fade_route.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
 
@@ -79,7 +80,7 @@ class _TemplateAdminScreenState extends State<TemplateAdminScreen> {
       if (mounted) {
         await Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => TemplatePageEditorScreen(templateId: template.id, templateTitle: template.title)),
+          FadeRoute(page: TemplatePageEditorScreen(templateId: template.id, templateTitle: template.title)),
         );
         _refresh();
       }
@@ -161,9 +162,7 @@ class _TemplateAdminScreenState extends State<TemplateAdminScreen> {
                 onTap: () async {
                   await Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => TemplatePageEditorScreen(templateId: template.id, templateTitle: template.title),
-                    ),
+                    FadeRoute(page: TemplatePageEditorScreen(templateId: template.id, templateTitle: template.title)),
                   );
                   _refresh();
                 },

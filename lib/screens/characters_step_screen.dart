@@ -3,6 +3,7 @@ import '../models/book.dart';
 import '../services/api_service.dart';
 import 'add_character_screen.dart';
 import 'generate_story_screen.dart';
+import '../utils/fade_route.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
 
@@ -38,7 +39,7 @@ class _CharactersStepScreenState extends State<CharactersStepScreen> {
   Future<void> _goToAddCharacter() async {
     final saved = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => AddCharacterScreen(bookId: widget.bookId)),
+      FadeRoute(page: AddCharacterScreen(bookId: widget.bookId)),
     );
     if (saved == true) _refresh();
   }
@@ -46,9 +47,7 @@ class _CharactersStepScreenState extends State<CharactersStepScreen> {
   void _goToStory() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => GenerateStoryScreen(bookId: widget.bookId, isWizard: true),
-      ),
+      FadeRoute(page: GenerateStoryScreen(bookId: widget.bookId, isWizard: true)),
     );
   }
 

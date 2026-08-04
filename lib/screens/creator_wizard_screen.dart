@@ -8,6 +8,7 @@ import '../services/app_strings.dart';
 import 'record_voice_screen.dart';
 import 'book_reader_screen.dart';
 import 'video_player_screen.dart';
+import '../utils/fade_route.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../widgets/app_nav_menu_button.dart';
@@ -118,7 +119,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
   void _goToReadBook() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => BookReaderScreen(bookId: widget.bookId)),
+      FadeRoute(page: BookReaderScreen(bookId: widget.bookId)),
     );
   }
   Future<void> _loadInstructionsPref() async {
@@ -160,7 +161,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
   void _openVideo(String videoUrl) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => VideoPlayerScreen(videoUrl: '${ApiService.baseUrl}$videoUrl')),
+      FadeRoute(page: VideoPlayerScreen(videoUrl: '${ApiService.baseUrl}$videoUrl')),
     );
   }
 
@@ -196,8 +197,8 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
   Future<void> _goToRecordVoice(String pageId, int pageNumber, String scriptText) async {
     final saved = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => RecordVoiceScreen(
+      FadeRoute(
+        page: RecordVoiceScreen(
           pageId: pageId,
           pageNumber: pageNumber,
           scriptText: scriptText,

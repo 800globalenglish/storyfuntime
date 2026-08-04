@@ -4,6 +4,7 @@ import '../services/app_strings.dart';
 import '../main.dart';
 import 'home_screen.dart';
 import 'language_settings_screen.dart';
+import '../utils/fade_route.dart';
 import '../widgets/debug_screen_tag.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -150,7 +151,7 @@ class _LoginScreenState extends State<LoginScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const LanguageSettingsScreen()),
+                FadeRoute(page: const LanguageSettingsScreen()),
               );
             },
           ),

@@ -8,6 +8,7 @@ import '../services/api_service.dart';
 import '../services/app_strings.dart';
 import 'creator_wizard_screen.dart';
 import 'record_story_screen.dart';
+import '../utils/fade_route.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
 
@@ -72,7 +73,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   Future<void> _goToAddCharacter() async {
     final saved = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => CharacterPickerScreen(bookId: widget.bookId)),
+      FadeRoute(page: CharacterPickerScreen(bookId: widget.bookId)),
     );
     if (saved == true) _refresh();
   }
@@ -80,7 +81,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   Future<void> _goToApplyTemplate() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => ApplyTemplateScreen(bookId: widget.bookId)),
+      FadeRoute(page: ApplyTemplateScreen(bookId: widget.bookId)),
     );
     if (!mounted) return;
 
@@ -318,8 +319,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     } else if (action == 'gallery') {
       final selected = await Navigator.push<bool>(
         context,
-        MaterialPageRoute(
-          builder: (context) => AvatarGalleryScreen(
+        FadeRoute(
+          page: AvatarGalleryScreen(
             characterId: characterId,
             characterName: name,
             currentAvatarUrl: currentAvatarUrl ?? cartoonAvatarUrl,
@@ -333,8 +334,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     } else if (action == 'swap') {
       final swapped = await Navigator.push<bool>(
         context,
-        MaterialPageRoute(
-          builder: (context) => ChooseDifferentCharacterScreen(
+        FadeRoute(
+          page: ChooseDifferentCharacterScreen(
             bookId: bookId,
             currentCharacterId: characterId,
           ),
@@ -556,7 +557,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => RecordStoryScreen(bookId: widget.bookId)),
+                          FadeRoute(page: RecordStoryScreen(bookId: widget.bookId)),
                         );
                       },
                       style: ElevatedButton.styleFrom(

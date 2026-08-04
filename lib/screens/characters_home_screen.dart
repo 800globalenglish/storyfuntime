@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import '../services/app_strings.dart';
 import 'add_character_screen.dart';
 import 'create_book_screen.dart';
+import '../utils/fade_route.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
 
@@ -77,7 +78,7 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
       if (mounted) {
         await Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => AddCharacterScreen(bookId: libraryBookId)),
+          FadeRoute(page: AddCharacterScreen(bookId: libraryBookId)),
         );
         _refresh();
       }
@@ -115,9 +116,7 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
 
     await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => CreateBookScreen(preSelectedCharacterIds: _selectedIds.toList()),
-      ),
+      FadeRoute(page: CreateBookScreen(preSelectedCharacterIds: _selectedIds.toList())),
     );
     setState(() {
       _selectedIds.clear();

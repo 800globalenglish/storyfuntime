@@ -7,6 +7,7 @@ import '../services/app_strings.dart';
 import 'creator_wizard_screen.dart';
 import 'book_reader_screen.dart';
 import 'video_player_screen.dart';
+import '../utils/fade_route.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
 
@@ -57,14 +58,14 @@ class _BookSummaryScreenState extends State<BookSummaryScreen> {
   void _goToReadBook() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => BookReaderScreen(bookId: widget.bookId)),
+      FadeRoute(page: BookReaderScreen(bookId: widget.bookId)),
     );
   }
 
   Future<void> _goToChangeBook() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => CreatorWizardScreen(bookId: widget.bookId)),
+      FadeRoute(page: CreatorWizardScreen(bookId: widget.bookId)),
     );
     _refresh();
   }
@@ -94,7 +95,7 @@ class _BookSummaryScreenState extends State<BookSummaryScreen> {
   void _watchVideo(String videoUrl) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => VideoPlayerScreen(videoUrl: '${ApiService.baseUrl}$videoUrl')),
+      FadeRoute(page: VideoPlayerScreen(videoUrl: '${ApiService.baseUrl}$videoUrl')),
     );
   }
 
