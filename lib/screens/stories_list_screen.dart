@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/book.dart';
 import '../services/api_service.dart';
 import '../services/app_strings.dart';
-import 'create_book_screen.dart';
+import 'characters_home_screen.dart';
 import 'book_detail_screen.dart';
 import 'book_summary_screen.dart';
 import '../widgets/app_nav_menu_button.dart';
@@ -55,7 +55,7 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
   Future<void> _goToCreateBook() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const CreateBookScreen()),
+      MaterialPageRoute(builder: (context) => const CharactersHomeScreen()),
     );
     _refresh();
   }
@@ -145,7 +145,7 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
                 ),
                 icon: const Icon(Icons.add, size: 32),
                 label: Text(
-                  AppStrings.t('create_your_first_story'),
+                  AppStrings.t('create_a_story'),
                   style: const TextStyle(fontSize: 22),
                 ),
               ),
