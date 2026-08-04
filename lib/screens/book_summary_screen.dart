@@ -161,10 +161,12 @@ class _BookSummaryScreenState extends State<BookSummaryScreen> {
                   child: ElevatedButton.icon(
                     onPressed: _goToReadBook,
                     style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                     ),
-                    icon: const Icon(Icons.menu_book),
-                    label: Text(AppStrings.t('read_book')),
+                    icon: const Icon(Icons.menu_book, size: 32),
+                    label: Text(AppStrings.t('read_book'), style: const TextStyle(fontSize: 28)),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -195,10 +197,12 @@ class _BookSummaryScreenState extends State<BookSummaryScreen> {
                         child: ElevatedButton.icon(
                           onPressed: () {},
                           style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                           ),
-                          icon: const Icon(Icons.check_circle, color: Colors.green),
-                          label: Text(AppStrings.t('video_ready')),
+                          icon: const Icon(Icons.check_circle, color: Colors.white, size: 32),
+                          label: Text(AppStrings.t('video_ready'), style: const TextStyle(fontSize: 28)),
                         ),
                       ),
                     ),
@@ -209,22 +213,26 @@ class _BookSummaryScreenState extends State<BookSummaryScreen> {
                     child: ElevatedButton.icon(
                       onPressed: _generateVideo,
                       style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                       ),
-                      icon: const Icon(Icons.movie_creation_outlined),
-                      label: Text(AppStrings.t('generate_video')),
+                      icon: const Icon(Icons.movie_creation_outlined, size: 32),
+                      label: Text(AppStrings.t('generate_video'), style: const TextStyle(fontSize: 28)),
                     ),
                   ),
                 const SizedBox(height: 12),
                 SizedBox(
                   height: _buttonHeight,
-                  child: OutlinedButton.icon(
+                  child: ElevatedButton.icon(
                     onPressed: _goToChangeBook,
-                    style: OutlinedButton.styleFrom(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF7F50B2),
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                     ),
-                    icon: const Icon(Icons.edit_outlined),
-                    label: Text(AppStrings.t('change_book')),
+                    icon: const Icon(Icons.edit_outlined, size: 32),
+                    label: Text(AppStrings.t('change_book'), style: const TextStyle(fontSize: 28)),
                   ),
                 ),
               ],
