@@ -5,6 +5,9 @@ import '../services/api_service.dart';
 import 'package:http/http.dart' as http;
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../theme/app_theme.dart';
+import '../theme/theme_controller.dart';
+import '../theme/scene_border_colors.dart';
 
 class RecordVoiceScreen extends StatefulWidget {
   final String pageId;
@@ -123,6 +126,17 @@ class _RecordVoiceScreenState extends State<RecordVoiceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return ValueListenableBuilder<AppThemeKey>(
+      valueListenable: ThemeController.instance.current,
+      builder: (context, themeKey, _) {
+        final sceneColors = sceneBorderColors(kAppThemes[themeKey]!);
+        final borderColor = sceneColors[(widget.pageNumber - 1) % sceneColors.length];
+        return _buildScaffold(context, borderColor);
+      },
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context, Color borderColor) {
     return Scaffold(
       bottomNavigationBar: const DebugScreenTag('record_voice_screen.dart'),
       appBar: AppBar(
@@ -135,6 +149,10 @@ class _RecordVoiceScreenState extends State<RecordVoiceScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: borderColor, width: 5),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Text(

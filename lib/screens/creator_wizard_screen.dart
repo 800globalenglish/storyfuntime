@@ -13,6 +13,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
 import '../theme/app_theme.dart';
+import '../theme/scene_border_colors.dart';
 import '../theme/theme_controller.dart';
 
 class CreatorWizardScreen extends StatefulWidget {
@@ -41,15 +42,6 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
   String? _playingPageId;
 
   final Map<String, String> _lastSceneInstructions = {};
-
-  List<Color> _sceneBorderColors(AppThemeData themeData) => [
-    themeData.primary,
-    themeData.secondary,
-    themeData.accent,
-    const Color(0xFF43A047), // green
-    const Color(0xFFFB8C00), // orange
-    const Color(0xFF00ACC1), // teal
-  ];
 
   @override
   void initState() {
@@ -518,7 +510,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
             valueListenable: ThemeController.instance.current,
             builder: (context, themeKey, _) {
               final themeData = kAppThemes[themeKey]!;
-              final sceneColors = _sceneBorderColors(themeData);
+              final sceneColors = sceneBorderColors(themeData);
               return Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(

@@ -5,6 +5,9 @@ import 'record_voice_screen.dart';
 import 'home_screen.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../theme/app_theme.dart';
+import '../theme/theme_controller.dart';
+import '../theme/scene_border_colors.dart';
 
 class PagesStepScreen extends StatefulWidget {
   final String bookId;
@@ -175,6 +178,16 @@ class _PagesStepScreenState extends State<PagesStepScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return ValueListenableBuilder<AppThemeKey>(
+      valueListenable: ThemeController.instance.current,
+      builder: (context, themeKey, _) {
+        final sceneColors = sceneBorderColors(kAppThemes[themeKey]!);
+        return _buildScaffold(context, sceneColors);
+      },
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context, List<Color> sceneColors) {
     return Scaffold(
       bottomNavigationBar: const DebugScreenTag('pages_step_screen.dart'),
       appBar: AppBar(
@@ -211,6 +224,13 @@ class _PagesStepScreenState extends State<PagesStepScreen> {
                       final isGeneratingThisScene = _generatingScenePageId == page.id;
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: sceneColors[index % sceneColors.length],
+                            width: 5,
+                          ),
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
                           child: Column(
@@ -282,3 +302,4 @@ class _PagesStepScreenState extends State<PagesStepScreen> {
     );
   }
 }
+

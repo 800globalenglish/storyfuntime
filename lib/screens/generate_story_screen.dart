@@ -3,6 +3,9 @@ import '../services/api_service.dart';
 import 'pages_step_screen.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../theme/app_theme.dart';
+import '../theme/theme_controller.dart';
+import '../theme/scene_border_colors.dart';
 
 class GenerateStoryScreen extends StatefulWidget {
   final String bookId;
@@ -96,6 +99,16 @@ class _GenerateStoryScreenState extends State<GenerateStoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return ValueListenableBuilder<AppThemeKey>(
+      valueListenable: ThemeController.instance.current,
+      builder: (context, themeKey, _) {
+        final sceneColors = sceneBorderColors(kAppThemes[themeKey]!);
+        return _buildScaffold(context, sceneColors);
+      },
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context, List<Color> sceneColors) {
     return Scaffold(
       bottomNavigationBar: const DebugScreenTag('generate_story_screen.dart'),
       appBar: AppBar(
@@ -137,7 +150,18 @@ class _GenerateStoryScreenState extends State<GenerateStoryScreen> {
                           maxLines: null,
                           decoration: InputDecoration(
                             labelText: 'Page ${i + 1}',
-                            border: const OutlineInputBorder(),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: sceneColors[i % sceneColors.length], width: 5),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: sceneColors[i % sceneColors.length], width: 5),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: sceneColors[i % sceneColors.length], width: 5),
+                            ),
                           ),
                         ),
                       ),
