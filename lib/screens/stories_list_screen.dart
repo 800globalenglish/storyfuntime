@@ -182,7 +182,7 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
                     borderRadius: BorderRadius.circular(12),
                     side: BorderSide(
                       color: sceneColors[index % sceneColors.length],
-                      width: 5,
+                      width: 2.5,
                     ),
                   ),
                   child: ListTile(

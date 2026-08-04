@@ -152,15 +152,15 @@ class _GenerateStoryScreenState extends State<GenerateStoryScreen> {
                             labelText: 'Page ${i + 1}',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: sceneColors[i % sceneColors.length], width: 5),
+                              borderSide: BorderSide(color: sceneColors[i % sceneColors.length], width: 2.5),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: sceneColors[i % sceneColors.length], width: 5),
+                              borderSide: BorderSide(color: sceneColors[i % sceneColors.length], width: 2.5),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: sceneColors[i % sceneColors.length], width: 5),
+                              borderSide: BorderSide(color: sceneColors[i % sceneColors.length], width: 2.5),
                             ),
                           ),
                         ),

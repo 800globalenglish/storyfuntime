@@ -151,7 +151,7 @@ class _RecordVoiceScreenState extends State<RecordVoiceScreen> {
             Card(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: borderColor, width: 5),
+                side: BorderSide(color: borderColor, width: 2.5),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
