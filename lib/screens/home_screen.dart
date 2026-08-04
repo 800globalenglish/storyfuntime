@@ -12,6 +12,7 @@ import '../services/api_service.dart';
 import '../services/app_strings.dart';
 import '../screens/credits_screen.dart';
 import '../widgets/app_nav_menu_button.dart';
+import '../widgets/debug_screen_tag.dart';
 
 /// How long a new, unverified account gets to explore before the
 /// reminder banner shows up.
@@ -199,6 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const DebugScreenTag('home_screen.dart'),
       appBar: AppBar(
         centerTitle: true,
         title: Text(

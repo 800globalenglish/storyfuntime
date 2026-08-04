@@ -5,6 +5,7 @@ import '../services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'creator_wizard_screen.dart'; // adjust this import path if creator_wizard_screen.dart lives elsewhere
 import '../widgets/app_nav_menu_button.dart';
+import '../widgets/debug_screen_tag.dart';
 
 class RecordStoryScreen extends StatefulWidget {
   final String bookId;
@@ -145,6 +146,7 @@ class _RecordStoryScreenState extends State<RecordStoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const DebugScreenTag('record_story_screen.dart'),
       appBar: AppBar(
         title: const Text('Record Your Story'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],

@@ -4,6 +4,7 @@ import '../services/app_strings.dart';
 import '../main.dart';
 import 'home_screen.dart';
 import 'language_settings_screen.dart';
+import '../widgets/debug_screen_tag.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -139,6 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const DebugScreenTag('login_screen.dart'),
       appBar: AppBar(
         title: Text(AppStrings.t('app_title')),
         actions: [

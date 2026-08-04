@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/app_strings.dart';
 import '../widgets/app_nav_menu_button.dart';
+import '../widgets/debug_screen_tag.dart';
 
 class LanguageSettingsScreen extends StatelessWidget {
   const LanguageSettingsScreen({super.key});
@@ -8,6 +9,7 @@ class LanguageSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const DebugScreenTag('language_settings_screen.dart'),
       appBar: AppBar(
         title: const Text('Language / Idioma / 语言'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],

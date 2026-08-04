@@ -3,6 +3,7 @@ import '../models/story_template.dart';
 import '../services/api_service.dart';
 import 'template_page_editor_screen.dart';
 import '../widgets/app_nav_menu_button.dart';
+import '../widgets/debug_screen_tag.dart';
 
 class TemplateAdminScreen extends StatefulWidget {
   const TemplateAdminScreen({super.key});
@@ -127,6 +128,7 @@ class _TemplateAdminScreenState extends State<TemplateAdminScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const DebugScreenTag('template_admin_screen.dart'),
       appBar: AppBar(
         title: const Text('Manage Story Templates'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],

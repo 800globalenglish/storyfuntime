@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'book_reader_screen.dart';
 import '../widgets/app_nav_menu_button.dart';
+import '../widgets/debug_screen_tag.dart';
 
 class AvatarGalleryScreen extends StatefulWidget {
   final String characterId;
@@ -112,6 +113,7 @@ class _AvatarGalleryScreenState extends State<AvatarGalleryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const DebugScreenTag('avatar_gallery_screen.dart'),
       appBar: AppBar(
         title: Text('${widget.characterName}\'s characters'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],

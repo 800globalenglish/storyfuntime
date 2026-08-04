@@ -5,6 +5,7 @@ import '../services/app_strings.dart';
 import 'add_character_screen.dart';
 import 'create_book_screen.dart';
 import '../widgets/app_nav_menu_button.dart';
+import '../widgets/debug_screen_tag.dart';
 
 class CharactersHomeScreen extends StatefulWidget {
   const CharactersHomeScreen({super.key});
@@ -296,32 +297,38 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
         future: _charactersFuture,
         builder: (context, snapshot) {
           final characters = snapshot.data ?? [];
-          if (characters.isEmpty) return const SizedBox.shrink();
           return SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _takePhoto,
-                      icon: const Icon(Icons.camera_alt),
-                      label: Text(AppStrings.t('new_character')),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (characters.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: _takePhoto,
+                            icon: const Icon(Icons.camera_alt),
+                            label: Text(AppStrings.t('new_character')),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: _goToNewBook,
+                            style: _selectedIds.isNotEmpty
+                                ? ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white)
+                                : null,
+                            icon: const Icon(Icons.auto_stories),
+                            label: Text('${AppStrings.t('new_book')} (${_selectedIds.length})'),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _goToNewBook,
-                      style: _selectedIds.isNotEmpty
-                          ? ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white)
-                          : null,
-                      icon: const Icon(Icons.auto_stories),
-                      label: Text('${AppStrings.t('new_book')} (${_selectedIds.length})'),
-                    ),
-                  ),
-                ],
-              ),
+                const DebugScreenTag('characters_home_screen.dart'),
+              ],
             ),
           );
         },

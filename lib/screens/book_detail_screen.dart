@@ -9,6 +9,7 @@ import '../services/app_strings.dart';
 import 'creator_wizard_screen.dart';
 import 'record_story_screen.dart';
 import '../widgets/app_nav_menu_button.dart';
+import '../widgets/debug_screen_tag.dart';
 
 /// Screen 1 of the book flow: setup. Shown for a book that has no pages
 /// yet. Lets the person add characters, then either generate a story
@@ -359,6 +360,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const DebugScreenTag('book_detail_screen.dart'),
       appBar: AppBar(
         title: Text(AppStrings.t('book_details_title')),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
 import '../widgets/app_nav_menu_button.dart';
+import '../widgets/debug_screen_tag.dart';
 
 class CreditsScreen extends StatefulWidget {
   const CreditsScreen({super.key});
@@ -65,6 +66,7 @@ class _CreditsScreenState extends State<CreditsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const DebugScreenTag('credits_screen.dart'),
       appBar: AppBar(
         title: const Text('Buy Credits'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],

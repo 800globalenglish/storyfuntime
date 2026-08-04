@@ -11,6 +11,7 @@ import 'video_player_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../widgets/app_nav_menu_button.dart';
+import '../widgets/debug_screen_tag.dart';
 
 class CreatorWizardScreen extends StatefulWidget {
   final String bookId;
@@ -474,6 +475,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const DebugScreenTag('creator_wizard_screen.dart'),
       appBar: AppBar(
         centerTitle: true,
         title: Text(

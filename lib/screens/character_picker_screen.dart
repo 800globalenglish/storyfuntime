@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import '../services/app_strings.dart';
 import 'book_detail_screen.dart';
 import '../widgets/app_nav_menu_button.dart';
+import '../widgets/debug_screen_tag.dart';
 
 // NEW - one entry per unique avatar. If the same person appears in several
 // books, count reflects how many, and representative is whichever Character
@@ -214,18 +215,24 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
         },
       ),
       bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: ElevatedButton(
-            onPressed: _isSubmitting ? null : _next,
-            child: _isSubmitting
-                ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-                : Text('${AppStrings.t('next_selected_prefix')} (${_selectedIds.length} ${AppStrings.t('selected_suffix')})'),
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ElevatedButton(
+                onPressed: _isSubmitting ? null : _next,
+                child: _isSubmitting
+                    ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+                    : Text('${AppStrings.t('next_selected_prefix')} (${_selectedIds.length} ${AppStrings.t('selected_suffix')})'),
+              ),
+            ),
+            const DebugScreenTag('character_picker_screen.dart'),
+          ],
         ),
       ),
     );

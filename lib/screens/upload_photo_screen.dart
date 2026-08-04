@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
 import '../widgets/app_nav_menu_button.dart';
+import '../widgets/debug_screen_tag.dart';
 
 class UploadPhotoScreen extends StatefulWidget {
   final String pageId;
@@ -129,17 +130,22 @@ class _UploadPhotoScreenState extends State<UploadPhotoScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: _cartoonImageUrl != null
-          ? SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Done'),
-          ),
+      bottomNavigationBar: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_cartoonImageUrl != null)
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Done'),
+                ),
+              ),
+            const DebugScreenTag('upload_photo_screen.dart'),
+          ],
         ),
-      )
-          : null,
+      ),
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../widgets/app_nav_menu_button.dart';
+import '../widgets/debug_screen_tag.dart';
 
 class TemplatePageEditorScreen extends StatefulWidget {
   final String templateId;
@@ -148,6 +149,7 @@ class _TemplatePageEditorScreenState extends State<TemplatePageEditorScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const DebugScreenTag('template_page_editor_screen.dart'),
       appBar: AppBar(
         title: Text(widget.templateTitle),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],

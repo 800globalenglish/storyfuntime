@@ -2,6 +2,7 @@
 import '../services/api_service.dart';
 import 'pages_step_screen.dart';
 import '../widgets/app_nav_menu_button.dart';
+import '../widgets/debug_screen_tag.dart';
 
 class GenerateStoryScreen extends StatefulWidget {
   final String bookId;
@@ -96,6 +97,7 @@ class _GenerateStoryScreenState extends State<GenerateStoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const DebugScreenTag('generate_story_screen.dart'),
       appBar: AppBar(
         title: const Text('Review Your Story'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],

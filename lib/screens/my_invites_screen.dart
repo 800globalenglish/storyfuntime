@@ -4,6 +4,7 @@ import '../services/auth_service.dart';
 import '../services/api_service.dart';
 import '../services/app_strings.dart';
 import '../widgets/app_nav_menu_button.dart';
+import '../widgets/debug_screen_tag.dart';
 
 class MyInvitesScreen extends StatefulWidget {
   const MyInvitesScreen({super.key});
@@ -60,6 +61,7 @@ class _MyInvitesScreenState extends State<MyInvitesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const DebugScreenTag('my_invites_screen.dart'),
       appBar: AppBar(
         title: Text(AppStrings.t('my_invites_title')),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],

@@ -3,6 +3,7 @@ import '../services/api_service.dart';
 import 'characters_step_screen.dart';
 import 'book_detail_screen.dart';
 import '../widgets/app_nav_menu_button.dart';
+import '../widgets/debug_screen_tag.dart';
 
 class CreateBookScreen extends StatefulWidget {
   final List<String>? preSelectedCharacterIds;
@@ -119,6 +120,7 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
     }
 
     return Scaffold(
+      bottomNavigationBar: const DebugScreenTag('create_book_screen.dart'),
       appBar: AppBar(
         title: const Text('Create a Story Book'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],

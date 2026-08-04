@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import '../widgets/app_nav_menu_button.dart';
+import '../widgets/debug_screen_tag.dart';
 
 /// Plays a video right inside the app - no new browser tab, no leaving
 /// the screen the person was already on.
@@ -44,6 +45,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const DebugScreenTag('video_player_screen.dart'),
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,

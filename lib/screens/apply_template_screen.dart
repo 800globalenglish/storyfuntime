@@ -5,6 +5,7 @@ import '../services/api_service.dart';
 import '../services/app_strings.dart';
 import 'book_detail_screen.dart';
 import '../widgets/app_nav_menu_button.dart';
+import '../widgets/debug_screen_tag.dart';
 
 class ApplyTemplateScreen extends StatefulWidget {
   final String bookId;
@@ -92,6 +93,7 @@ class _ApplyTemplateScreenState extends State<ApplyTemplateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const DebugScreenTag('apply_template_screen.dart'),
       appBar: AppBar(
         title: Text(AppStrings.t('story_templates')),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],

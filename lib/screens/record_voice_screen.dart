@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 import '../services/api_service.dart';
 import 'package:http/http.dart' as http;
 import '../widgets/app_nav_menu_button.dart';
+import '../widgets/debug_screen_tag.dart';
 
 class RecordVoiceScreen extends StatefulWidget {
   final String pageId;
@@ -123,6 +124,7 @@ class _RecordVoiceScreenState extends State<RecordVoiceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const DebugScreenTag('record_voice_screen.dart'),
       appBar: AppBar(
         title: Text('Record Page ${widget.pageNumber}'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],

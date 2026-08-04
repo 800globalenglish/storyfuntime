@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/character.dart';
 import '../services/api_service.dart';
 import '../widgets/app_nav_menu_button.dart';
+import '../widgets/debug_screen_tag.dart';
 
 class ChooseDifferentCharacterScreen extends StatefulWidget {
   final String bookId;
@@ -150,18 +151,24 @@ class _ChooseDifferentCharacterScreenState extends State<ChooseDifferentCharacte
         },
       ),
       bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: ElevatedButton(
-            onPressed: (_selectedId == null || _isSubmitting) ? null : _swap,
-            child: _isSubmitting
-                ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-                : const Text('Swap Character'),
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ElevatedButton(
+                onPressed: (_selectedId == null || _isSubmitting) ? null : _swap,
+                child: _isSubmitting
+                    ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+                    : const Text('Swap Character'),
+              ),
+            ),
+            const DebugScreenTag('choose_different_character_screen.dart'),
+          ],
         ),
       ),
     );

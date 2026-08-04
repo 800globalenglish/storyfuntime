@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../services/app_strings.dart';
 import 'login_screen.dart';
+import '../widgets/debug_screen_tag.dart';
 
 /// Shown when someone opens a password reset link (storyfuntime.com/go/?resetToken=...).
 /// Lets them set a new password, then sends them to Login.
@@ -71,6 +72,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const DebugScreenTag('reset_password_screen.dart'),
       appBar: AppBar(title: Text(AppStrings.t('reset_password_title'))),
       body: Center(
         child: SingleChildScrollView(

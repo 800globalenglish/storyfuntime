@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../models/book.dart';
 import '../services/api_service.dart';
+import '../widgets/debug_screen_tag.dart';
 
 class BookReaderScreen extends StatefulWidget {
   final String bookId;
@@ -55,6 +56,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const DebugScreenTag('book_reader_screen.dart'),
       backgroundColor: Colors.black,
       body: FutureBuilder<Book>(
         future: _bookFuture,

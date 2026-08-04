@@ -6,6 +6,7 @@ import '../services/app_strings.dart';
 import 'package:record/record.dart';
 import 'package:http/http.dart' as http;
 import '../widgets/app_nav_menu_button.dart';
+import '../widgets/debug_screen_tag.dart';
 
 class _AgeStage {
   final String label;
@@ -254,6 +255,7 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const DebugScreenTag('add_character_screen.dart'),
       appBar: AppBar(
         centerTitle: true,
         title: Text(
