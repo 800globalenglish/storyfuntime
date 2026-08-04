@@ -175,9 +175,11 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
             child: SizedBox(
               width: double.infinity,
               height: _buttonHeight,
-              child: OutlinedButton.icon(
+              child: ElevatedButton.icon(
                 onPressed: _takePhoto,
-                style: OutlinedButton.styleFrom(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF7F50B2),
+                  foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                 ),
                 icon: const Icon(Icons.camera_alt, size: 32),
@@ -322,13 +324,19 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
                     padding: const EdgeInsets.all(16.0),
                     child: SizedBox(
                       width: double.infinity,
+                      height: _buttonHeight,
                       child: ElevatedButton.icon(
                         onPressed: _goToNewBook,
-                        style: _selectedIds.isNotEmpty
-                            ? ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white)
-                            : null,
-                        icon: const Icon(Icons.auto_stories),
-                        label: Text('${AppStrings.t('new_book')} (${_selectedIds.length})'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _selectedIds.isNotEmpty ? Colors.green : null,
+                          foregroundColor: _selectedIds.isNotEmpty ? Colors.white : null,
+                          shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                        ),
+                        icon: const Icon(Icons.auto_stories, size: 32),
+                        label: Text(
+                          '${AppStrings.t('new_book')} (${_selectedIds.length})',
+                          style: const TextStyle(fontSize: 22),
+                        ),
                       ),
                     ),
                   ),
