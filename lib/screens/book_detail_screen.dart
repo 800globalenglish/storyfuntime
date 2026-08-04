@@ -494,45 +494,47 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  height: 96,
-                  child: ElevatedButton.icon(
-                    onPressed: _goToApplyTemplate,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                    ),
-                    icon: const Icon(Icons.auto_stories, size: 32),
-                    label: Text(
-                      AppStrings.t('story_templates'),
-                      style: const TextStyle(fontSize: 28),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  height: 96,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => RecordStoryScreen(bookId: widget.bookId)),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                    ),
-                    icon: const Icon(Icons.mic, size: 32),
-                    label: const Text(
-                      'Record Your Story',
-                      style: TextStyle(fontSize: 28),
+                if (!_showGenerateForm) ...[
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 96,
+                    child: ElevatedButton.icon(
+                      onPressed: _goToApplyTemplate,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                      ),
+                      icon: const Icon(Icons.auto_stories, size: 32),
+                      label: Text(
+                        AppStrings.t('story_templates'),
+                        style: const TextStyle(fontSize: 28),
+                      ),
                     ),
                   ),
-                ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 96,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => RecordStoryScreen(bookId: widget.bookId)),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                      ),
+                      icon: const Icon(Icons.mic, size: 32),
+                      label: const Text(
+                        'Record Your Story',
+                        style: TextStyle(fontSize: 28),
+                      ),
+                    ),
+                  ),
+                ],
                 if (_showGenerateForm) ...[
                   const SizedBox(height: 16),
                   TextField(
