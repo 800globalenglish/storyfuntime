@@ -7,6 +7,9 @@ import 'book_detail_screen.dart';
 import 'book_summary_screen.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../theme/app_theme.dart';
+import '../theme/theme_controller.dart';
+import '../theme/scene_border_colors.dart';
 
 class StoriesListScreen extends StatefulWidget {
   const StoriesListScreen({super.key});
@@ -107,6 +110,16 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return ValueListenableBuilder<AppThemeKey>(
+      valueListenable: ThemeController.instance.current,
+      builder: (context, themeKey, _) {
+        final sceneColors = sceneBorderColors(kAppThemes[themeKey]!);
+        return _buildScaffold(context, sceneColors);
+      },
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context, List<Color> sceneColors) {
     return Scaffold(
       bottomNavigationBar: const DebugScreenTag('stories_list_screen.dart'),
       appBar: AppBar(
@@ -163,19 +176,29 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
                 final thumbnailUrl = book.characters.isNotEmpty && book.characters.first.cartoonAvatarUrl != null
                     ? book.characters.first.cartoonAvatarUrl
                     : null;
-                return ListTile(
-                  title: Text(book.title),
-                  subtitle: Text('${book.theme} - ${book.status}'),
-                  leading: thumbnailUrl != null
-                      ? CircleAvatar(
-                    backgroundImage: NetworkImage('${ApiService.baseUrl}$thumbnailUrl'),
-                  )
-                      : const CircleAvatar(child: Icon(Icons.menu_book)),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    onPressed: () => _confirmDelete(book.id, book.title),
+                return Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                      color: sceneColors[index % sceneColors.length],
+                      width: 5,
+                    ),
                   ),
-                  onTap: () => _goToBookDetail(book.id),
+                  child: ListTile(
+                    title: Text(book.title),
+                    subtitle: Text('${book.theme} - ${book.status}'),
+                    leading: thumbnailUrl != null
+                        ? CircleAvatar(
+                      backgroundImage: NetworkImage('${ApiService.baseUrl}$thumbnailUrl'),
+                    )
+                        : const CircleAvatar(child: Icon(Icons.menu_book)),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete_outline),
+                      onPressed: () => _confirmDelete(book.id, book.title),
+                    ),
+                    onTap: () => _goToBookDetail(book.id),
+                  ),
                 );
               },
             );
