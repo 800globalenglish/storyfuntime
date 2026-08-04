@@ -24,6 +24,9 @@ class _BookSummaryScreenState extends State<BookSummaryScreen> {
   late Future<Book> _bookFuture;
   bool _isGeneratingVideo = false;
 
+  static const _buttonRadius = BorderRadius.all(Radius.circular(10));
+  static const _buttonHeight = 71.0;
+
   @override
   void initState() {
     super.initState();
@@ -118,34 +121,51 @@ class _BookSummaryScreenState extends State<BookSummaryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: const DebugScreenTag('book_summary_screen.dart'),
-      appBar: AppBar(
-        title: Text(AppStrings.t('book_title_appbar')),
-        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
-      ),
-      body: FutureBuilder<Book>(
-        future: _bookFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('${AppStrings.t('error_prefix')} ${snapshot.error}'));
-          }
-          final book = snapshot.data!;
+    return FutureBuilder<Book>(
+      future: _bookFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            bottomNavigationBar: const DebugScreenTag('book_summary_screen.dart'),
+            appBar: AppBar(
+              actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+            ),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (snapshot.hasError) {
+          return Scaffold(
+            bottomNavigationBar: const DebugScreenTag('book_summary_screen.dart'),
+            appBar: AppBar(
+              actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+            ),
+            body: Center(child: Text('${AppStrings.t('error_prefix')} ${snapshot.error}')),
+          );
+        }
+        final book = snapshot.data!;
 
-          return Padding(
+        return Scaffold(
+          bottomNavigationBar: const DebugScreenTag('book_summary_screen.dart'),
+          appBar: AppBar(
+            centerTitle: true,
+            title: Text(book.title, style: const TextStyle(fontSize: 22)),
+            actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+          ),
+          body: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(book.title, style: Theme.of(context).textTheme.headlineSmall),
-                const SizedBox(height: 24),
-                ElevatedButton.icon(
-                  onPressed: _goToReadBook,
-                  icon: const Icon(Icons.menu_book),
-                  label: Text(AppStrings.t('read_book')),
+                SizedBox(
+                  height: _buttonHeight,
+                  child: ElevatedButton.icon(
+                    onPressed: _goToReadBook,
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                    ),
+                    icon: const Icon(Icons.menu_book),
+                    label: Text(AppStrings.t('read_book')),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 if (_isGeneratingVideo)
@@ -170,30 +190,48 @@ class _BookSummaryScreenState extends State<BookSummaryScreen> {
                       PopupMenuItem(value: 'regenerate', child: Row(children: [const Icon(Icons.refresh), const SizedBox(width: 12), Text(AppStrings.t('regenerate_video'))])),
                     ],
                     child: IgnorePointer(
-                      child: ElevatedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.check_circle, color: Colors.green),
-                        label: Text(AppStrings.t('video_ready')),
+                      child: SizedBox(
+                        height: _buttonHeight,
+                        child: ElevatedButton.icon(
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                          ),
+                          icon: const Icon(Icons.check_circle, color: Colors.green),
+                          label: Text(AppStrings.t('video_ready')),
+                        ),
                       ),
                     ),
                   )
                 else
-                  ElevatedButton.icon(
-                    onPressed: _generateVideo,
-                    icon: const Icon(Icons.movie_creation_outlined),
-                    label: Text(AppStrings.t('generate_video')),
+                  SizedBox(
+                    height: _buttonHeight,
+                    child: ElevatedButton.icon(
+                      onPressed: _generateVideo,
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                      ),
+                      icon: const Icon(Icons.movie_creation_outlined),
+                      label: Text(AppStrings.t('generate_video')),
+                    ),
                   ),
                 const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  onPressed: _goToChangeBook,
-                  icon: const Icon(Icons.edit_outlined),
-                  label: Text(AppStrings.t('change_book')),
+                SizedBox(
+                  height: _buttonHeight,
+                  child: OutlinedButton.icon(
+                    onPressed: _goToChangeBook,
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                    ),
+                    icon: const Icon(Icons.edit_outlined),
+                    label: Text(AppStrings.t('change_book')),
+                  ),
                 ),
               ],
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
