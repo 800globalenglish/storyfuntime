@@ -39,6 +39,9 @@ class _HomeScreenState extends State<HomeScreen> {
   bool? _hasCharacters;
   int? _totalCredits; // creditBalance + bonusCredits combined, for the "low" check
 
+  static const _buttonRadius = BorderRadius.all(Radius.circular(10));
+  static const _buttonHeight = 71.0;
+
   @override
   void initState() {
     super.initState();
@@ -204,11 +207,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       bottomNavigationBar: const DebugScreenTag('home_screen.dart'),
       appBar: AppBar(
-        centerTitle: true,
-        title: Text(
-          AppStrings.t('app_title'),
-          style: const TextStyle(fontSize: 30),
-        ),
         actions: [
           IconButton(
             icon: Text(_languageFlag(), style: const TextStyle(fontSize: 22)),
@@ -287,12 +285,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         } else if (_hasBooks == false && _hasCharacters == false) {
                           return SizedBox(
                             width: double.infinity,
-                            height: 96,
+                            height: _buttonHeight,
                             child: ElevatedButton(
                               onPressed: _goToCreateFirstCharacter,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: themeData.secondary,
                                 foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                               ),
                               child: Text(
                                 AppStrings.t('create_first_character'),
@@ -304,12 +303,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         } else if (_hasBooks == false) {
                           return SizedBox(
                             width: double.infinity,
-                            height: 96,
+                            height: _buttonHeight,
                             child: ElevatedButton(
                               onPressed: _goToNewStory,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: themeData.secondary,
                                 foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                               ),
                               child: Text(
                                 AppStrings.t('create_your_first_story'),
@@ -323,7 +323,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             SizedBox(
                               width: double.infinity,
-                              height: 96,
+                              height: _buttonHeight,
                               child: ElevatedButton.icon(
                                 onPressed: () {
                                   Navigator.push(
@@ -334,6 +334,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: themeData.primary,
                                   foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                                 ),
                                 icon: const Icon(Icons.menu_book, size: 32),
                                 label: Text(AppStrings.t('go_to_stories'), style: const TextStyle(fontSize: 22)),
@@ -342,12 +343,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(height: 24),
                             SizedBox(
                               width: double.infinity,
-                              height: 96,
+                              height: _buttonHeight,
                               child: ElevatedButton.icon(
                                 onPressed: _goToNewStory,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: themeData.secondary,
                                   foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                                 ),
                                 icon: const Icon(Icons.people, size: 32),
                                 label: Text(AppStrings.t('new_story'), style: const TextStyle(fontSize: 22)),
@@ -356,12 +358,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(height: 24),
                             SizedBox(
                               width: double.infinity,
-                              height: 96,
+                              height: _buttonHeight,
                               child: ElevatedButton.icon(
                                 onPressed: _goToMyCharacters,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: themeData.accent,
                                   foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                                 ),
                                 icon: const Icon(Icons.face, size: 32),
                                 label: Text(AppStrings.t('Add Characters'), style: const TextStyle(fontSize: 22)),
