@@ -479,19 +479,38 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 SizedBox(
                   width: double.infinity,
                   height: 96,
-                  child: ElevatedButton.icon(
-                    onPressed: _showGenerateForm
-                        ? null
-                        : () => setState(() => _showGenerateForm = true),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                    ),
-                    icon: const Icon(Icons.auto_awesome, size: 32),
-                    label: Text(
-                      AppStrings.t('generate_story'),
-                      style: const TextStyle(fontSize: 28),
-                    ),
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: ElevatedButton.icon(
+                          onPressed: _showGenerateForm
+                              ? null
+                              : () => setState(() => _showGenerateForm = true),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor: Colors.blue,
+                            disabledForegroundColor: Colors.white,
+                          ),
+                          icon: const Icon(Icons.auto_awesome, size: 32),
+                          label: Text(
+                            AppStrings.t('generate_story'),
+                            style: const TextStyle(fontSize: 28),
+                          ),
+                        ),
+                      ),
+                      if (_showGenerateForm)
+                        Positioned(
+                          right: 8,
+                          top: 0,
+                          bottom: 0,
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_back, color: Colors.white, size: 32),
+                            tooltip: 'Back',
+                            onPressed: () => setState(() => _showGenerateForm = false),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 if (!_showGenerateForm) ...[
@@ -539,6 +558,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   const SizedBox(height: 16),
                   TextField(
                     controller: _titleController,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 22),
                     decoration: InputDecoration(
                       labelText: AppStrings.t('book_title_label'),
                       border: const OutlineInputBorder(),
@@ -546,12 +567,17 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   ),
                   const SizedBox(height: 16),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(AppStrings.t('num_scenes_label')),
+                      Text(AppStrings.t('num_scenes_label'), style: const TextStyle(fontSize: 22)),
                       const SizedBox(width: 12),
                       DropdownButton<int>(
                         value: _sceneCount,
-                        items: [for (int i = 1; i <= 10; i++) DropdownMenuItem(value: i, child: Text('$i'))],
+                        style: const TextStyle(fontSize: 22, color: Colors.black),
+                        items: [
+                          for (int i = 1; i <= 10; i++)
+                            DropdownMenuItem(value: i, child: Text('$i', style: const TextStyle(fontSize: 22))),
+                        ],
                         onChanged: _isGenerating ? null : (value) => setState(() => _sceneCount = value ?? 5),
                       ),
                     ],
@@ -559,6 +585,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   const SizedBox(height: 16),
                   TextField(
                     controller: _themeController,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 22),
                     decoration: InputDecoration(
                       labelText: AppStrings.t('theme_label'),
                       border: const OutlineInputBorder(),
@@ -566,18 +594,30 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   ),
                   if (_generateError != null) ...[
                     const SizedBox(height: 8),
-                    Text(_generateError!, style: const TextStyle(color: Colors.red)),
+                    Text(
+                      _generateError!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.red, fontSize: 22),
+                    ),
                   ],
                   const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _isGenerating ? null : _generateStory,
-                    child: _isGenerating
-                        ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                        : Text(AppStrings.t('generate')),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 96,
+                    child: ElevatedButton(
+                      onPressed: _isGenerating ? null : _generateStory,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: _isGenerating
+                          ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                          : Text(AppStrings.t('generate'), style: const TextStyle(fontSize: 22)),
+                    ),
                   ),
                 ],
               ],
