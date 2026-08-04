@@ -127,6 +127,7 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
     return Scaffold(
       bottomNavigationBar: const DebugScreenTag('stories_list_screen.dart'),
       appBar: AppBar(
+        centerTitle: true,
         title: Text(AppStrings.t('my_story_books')),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),

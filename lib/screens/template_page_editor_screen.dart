@@ -151,6 +151,7 @@ class _TemplatePageEditorScreenState extends State<TemplatePageEditorScreen> {
     return Scaffold(
       bottomNavigationBar: const DebugScreenTag('template_page_editor_screen.dart'),
       appBar: AppBar(
+        centerTitle: true,
         title: Text(widget.templateTitle),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),

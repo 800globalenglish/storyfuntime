@@ -143,6 +143,7 @@ class _RecordVoiceScreenState extends State<RecordVoiceScreen> {
     return Scaffold(
       bottomNavigationBar: const DebugScreenTag('record_voice_screen.dart'),
       appBar: AppBar(
+        centerTitle: true,
         title: Text('Record Page ${widget.pageNumber}'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),

@@ -148,6 +148,7 @@ class _RecordStoryScreenState extends State<RecordStoryScreen> {
     return Scaffold(
       bottomNavigationBar: const DebugScreenTag('record_story_screen.dart'),
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Record Your Story'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),

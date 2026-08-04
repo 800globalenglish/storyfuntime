@@ -192,6 +192,7 @@ class _PagesStepScreenState extends State<PagesStepScreen> {
     return Scaffold(
       bottomNavigationBar: const DebugScreenTag('pages_step_screen.dart'),
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Step 3 of 3: Bring It to Life'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),

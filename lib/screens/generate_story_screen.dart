@@ -112,6 +112,7 @@ class _GenerateStoryScreenState extends State<GenerateStoryScreen> {
     return Scaffold(
       bottomNavigationBar: const DebugScreenTag('generate_story_screen.dart'),
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Review Your Story'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),

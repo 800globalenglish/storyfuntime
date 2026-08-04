@@ -122,6 +122,7 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
     return Scaffold(
       bottomNavigationBar: const DebugScreenTag('create_book_screen.dart'),
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Create a Story Book'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),

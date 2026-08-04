@@ -24,6 +24,7 @@ class ThemePickerScreen extends StatelessWidget {
     return Scaffold(
       bottomNavigationBar: const DebugScreenTag('theme_picker_screen.dart'),
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Choose a Theme'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),

@@ -115,6 +115,7 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: Text(AppStrings.t('choose_characters_title')),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),

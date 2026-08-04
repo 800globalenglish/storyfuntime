@@ -73,7 +73,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: const DebugScreenTag('reset_password_screen.dart'),
-      appBar: AppBar(title: Text(AppStrings.t('reset_password_title'))),
+      appBar: AppBar(centerTitle: true, title: Text(AppStrings.t('reset_password_title'))),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),

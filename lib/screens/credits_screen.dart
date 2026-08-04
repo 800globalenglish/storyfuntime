@@ -68,6 +68,7 @@ class _CreditsScreenState extends State<CreditsScreen> {
     return Scaffold(
       bottomNavigationBar: const DebugScreenTag('credits_screen.dart'),
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Buy Credits'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),

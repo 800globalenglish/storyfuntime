@@ -74,6 +74,7 @@ class _UploadPhotoScreenState extends State<UploadPhotoScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: Text('Photo for Page ${widget.pageNumber}'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),

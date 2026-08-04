@@ -11,6 +11,7 @@ class LanguageSettingsScreen extends StatelessWidget {
     return Scaffold(
       bottomNavigationBar: const DebugScreenTag('language_settings_screen.dart'),
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Language / Idioma / 语言'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),

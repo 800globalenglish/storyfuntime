@@ -143,6 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       bottomNavigationBar: const DebugScreenTag('login_screen.dart'),
       appBar: AppBar(
+        centerTitle: true,
         title: Text(AppStrings.t('app_title')),
         actions: [
           IconButton(

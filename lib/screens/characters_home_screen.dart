@@ -164,6 +164,7 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: Text(AppStrings.t('characters_title')),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),

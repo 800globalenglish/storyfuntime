@@ -62,6 +62,7 @@ class _ChooseDifferentCharacterScreenState extends State<ChooseDifferentCharacte
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Choose Different Character'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),

@@ -63,6 +63,7 @@ class _MyInvitesScreenState extends State<MyInvitesScreen> {
     return Scaffold(
       bottomNavigationBar: const DebugScreenTag('my_invites_screen.dart'),
       appBar: AppBar(
+        centerTitle: true,
         title: Text(AppStrings.t('my_invites_title')),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),

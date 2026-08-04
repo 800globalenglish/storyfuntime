@@ -95,6 +95,7 @@ class _ApplyTemplateScreenState extends State<ApplyTemplateScreen> {
     return Scaffold(
       bottomNavigationBar: const DebugScreenTag('apply_template_screen.dart'),
       appBar: AppBar(
+        centerTitle: true,
         title: Text(AppStrings.t('story_templates')),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),

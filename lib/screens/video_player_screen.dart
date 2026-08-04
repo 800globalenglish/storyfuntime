@@ -50,6 +50,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
+        centerTitle: true,
         title: const Text('Your Story Video'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),

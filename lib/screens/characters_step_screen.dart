@@ -56,6 +56,7 @@ class _CharactersStepScreenState extends State<CharactersStepScreen> {
     return Scaffold(
       bottomNavigationBar: const DebugScreenTag('characters_step_screen.dart'),
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Step 1 of 3: Add Characters'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),

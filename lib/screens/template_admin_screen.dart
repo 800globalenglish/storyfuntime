@@ -131,6 +131,7 @@ class _TemplateAdminScreenState extends State<TemplateAdminScreen> {
     return Scaffold(
       bottomNavigationBar: const DebugScreenTag('template_admin_screen.dart'),
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Manage Story Templates'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),

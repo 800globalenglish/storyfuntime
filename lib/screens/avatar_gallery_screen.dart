@@ -116,6 +116,7 @@ class _AvatarGalleryScreenState extends State<AvatarGalleryScreen> {
     return Scaffold(
       bottomNavigationBar: const DebugScreenTag('avatar_gallery_screen.dart'),
       appBar: AppBar(
+        centerTitle: true,
         title: Text('${widget.characterName}\'s characters'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),

@@ -370,6 +370,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           return Scaffold(
             bottomNavigationBar: const DebugScreenTag('book_detail_screen.dart'),
             appBar: AppBar(
+              centerTitle: true,
               title: Text(AppStrings.t('book_details_title')),
               actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
             ),
@@ -380,6 +381,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           return Scaffold(
             bottomNavigationBar: const DebugScreenTag('book_detail_screen.dart'),
             appBar: AppBar(
+              centerTitle: true,
               title: Text(AppStrings.t('book_details_title')),
               actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
             ),
