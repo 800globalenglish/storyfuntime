@@ -12,6 +12,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../theme/app_theme.dart';
+import '../theme/theme_controller.dart';
 
 class CreatorWizardScreen extends StatefulWidget {
   final String bookId;
@@ -40,13 +42,13 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
 
   final Map<String, String> _lastSceneInstructions = {};
 
-  static const List<Color> _sceneBorderColors = [
-    Color(0xFF1A8BC8), // blue
-    Color(0xFFE81E27), // red
-    Color(0xFF7F50B2), // purple
-    Color(0xFF43A047), // green
-    Color(0xFFFB8C00), // orange
-    Color(0xFF00ACC1), // teal
+  List<Color> _sceneBorderColors(AppThemeData themeData) => [
+    themeData.primary,
+    themeData.secondary,
+    themeData.accent,
+    const Color(0xFF43A047), // green
+    const Color(0xFFFB8C00), // orange
+    const Color(0xFF00ACC1), // teal
   ];
 
   @override
@@ -512,7 +514,12 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
               book.pages.every((p) => p.audioUrl != null);
           final showInstructions = !allComplete && !_instructionsHidden && !allHaveAudioAlready;
 
-          return Padding(
+          return ValueListenableBuilder<AppThemeKey>(
+            valueListenable: ThemeController.instance.current,
+            builder: (context, themeKey, _) {
+              final themeData = kAppThemes[themeKey]!;
+              final sceneColors = _sceneBorderColors(themeData);
+              return Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -526,7 +533,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                           child: ElevatedButton.icon(
                             onPressed: _goToReadBook,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF1A8BC8),
+                              backgroundColor: themeData.primary,
                               foregroundColor: Colors.white,
                             ),
                             icon: const Icon(Icons.menu_book, size: 32),
@@ -574,7 +581,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                               : ElevatedButton.icon(
                             onPressed: _generateVideo,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFE81E27),
+                              backgroundColor: themeData.secondary,
                               foregroundColor: Colors.white,
                             ),
                             icon: const Icon(Icons.movie_creation_outlined, size: 32),
@@ -609,7 +616,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                                 ? null
                                 : () => _generateAllScenes(book.pages),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF7F50B2),
+                              backgroundColor: themeData.accent,
                               foregroundColor: Colors.white,
                             ),
                             icon: const Icon(Icons.auto_fix_high, size: 32),
@@ -684,7 +691,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                           side: BorderSide(
-                            color: _sceneBorderColors[index % _sceneBorderColors.length],
+                            color: sceneColors[index % sceneColors.length],
                             width: 5,
                           ),
                         ),
@@ -781,6 +788,8 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                 ),
               ],
             ),
+          );
+            },
           );
         },
       ),

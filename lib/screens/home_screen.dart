@@ -13,6 +13,8 @@ import '../services/app_strings.dart';
 import '../screens/credits_screen.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../theme/app_theme.dart';
+import '../theme/theme_controller.dart';
 
 /// How long a new, unverified account gets to explore before the
 /// reminder banner shows up.
@@ -276,90 +278,99 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                     const SizedBox(height: 24),
-                    if (_hasBooks == null || _hasCharacters == null)
-                      const CircularProgressIndicator()
-                    else if (_hasBooks == false && _hasCharacters == false)
-                      SizedBox(
-                        width: double.infinity,
-                        height: 96,
-                        child: ElevatedButton(
-                          onPressed: _goToCreateFirstCharacter,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFE81E27),
-                            foregroundColor: Colors.white,
-                          ),
-                          child: Text(
-                            AppStrings.t('create_first_character'),
-                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      )
-                    else if (_hasBooks == false)
-                      SizedBox(
-                        width: double.infinity,
-                        height: 96,
-                        child: ElevatedButton(
-                          onPressed: _goToNewStory,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFE81E27),
-                            foregroundColor: Colors.white,
-                          ),
-                          child: Text(
-                            AppStrings.t('create_your_first_story'),
-                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      )
-                    else ...[
-                          SizedBox(
+                    ValueListenableBuilder<AppThemeKey>(
+                      valueListenable: ThemeController.instance.current,
+                      builder: (context, themeKey, _) {
+                        final themeData = kAppThemes[themeKey]!;
+                        if (_hasBooks == null || _hasCharacters == null) {
+                          return const CircularProgressIndicator();
+                        } else if (_hasBooks == false && _hasCharacters == false) {
+                          return SizedBox(
                             width: double.infinity,
                             height: 96,
-                            child: ElevatedButton.icon(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const StoriesListScreen()),
-                                );
-                              },
+                            child: ElevatedButton(
+                              onPressed: _goToCreateFirstCharacter,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF1A8BC8),
+                                backgroundColor: themeData.secondary,
                                 foregroundColor: Colors.white,
                               ),
-                              icon: const Icon(Icons.menu_book, size: 32),
-                              label: Text(AppStrings.t('go_to_stories'), style: const TextStyle(fontSize: 22)),
+                              child: Text(
+                                AppStrings.t('create_first_character'),
+                                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 24),
-                          SizedBox(
+                          );
+                        } else if (_hasBooks == false) {
+                          return SizedBox(
                             width: double.infinity,
                             height: 96,
-                            child: ElevatedButton.icon(
+                            child: ElevatedButton(
                               onPressed: _goToNewStory,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFE81E27),
+                                backgroundColor: themeData.secondary,
                                 foregroundColor: Colors.white,
                               ),
-                              icon: const Icon(Icons.people, size: 32),
-                              label: Text(AppStrings.t('new_story'), style: const TextStyle(fontSize: 22)),
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 96,
-                            child: ElevatedButton.icon(
-                              onPressed: _goToMyCharacters,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF7F50B2),
-                                foregroundColor: Colors.white,
+                              child: Text(
+                                AppStrings.t('create_your_first_story'),
+                                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                                textAlign: TextAlign.center,
                               ),
-                              icon: const Icon(Icons.face, size: 32),
-                              label: Text(AppStrings.t('Add Characters'), style: const TextStyle(fontSize: 22)),
                             ),
-                          ),
-                      ],
+                          );
+                        }
+                        return Column(
+                          children: [
+                            SizedBox(
+                              width: double.infinity,
+                              height: 96,
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const StoriesListScreen()),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: themeData.primary,
+                                  foregroundColor: Colors.white,
+                                ),
+                                icon: const Icon(Icons.menu_book, size: 32),
+                                label: Text(AppStrings.t('go_to_stories'), style: const TextStyle(fontSize: 22)),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 96,
+                              child: ElevatedButton.icon(
+                                onPressed: _goToNewStory,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: themeData.secondary,
+                                  foregroundColor: Colors.white,
+                                ),
+                                icon: const Icon(Icons.people, size: 32),
+                                label: Text(AppStrings.t('new_story'), style: const TextStyle(fontSize: 22)),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 96,
+                              child: ElevatedButton.icon(
+                                onPressed: _goToMyCharacters,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: themeData.accent,
+                                  foregroundColor: Colors.white,
+                                ),
+                                icon: const Icon(Icons.face, size: 32),
+                                label: Text(AppStrings.t('Add Characters'), style: const TextStyle(fontSize: 22)),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
                     if (_hasBooks == true) ...[
                       const SizedBox(height: 32),
                       TextButton(

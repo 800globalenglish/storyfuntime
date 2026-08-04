@@ -7,6 +7,8 @@ import 'package:record/record.dart';
 import 'package:http/http.dart' as http;
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../theme/app_theme.dart';
+import '../theme/theme_controller.dart';
 
 class _AgeStage {
   final String label;
@@ -215,10 +217,10 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
     }
   }
 
-  Widget _buildGenderOption(String value, String asset, String label) {
+  Widget _buildGenderOption(String value, String asset, String label, Color primaryColor, Color secondaryColor) {
     final selected = _genderSelection == value;
-    // Colored circle background: female = blue, male = red. Icon stays white on top.
-    final circleColor = value == 'female' ? const Color(0xFF1A8BC8) : const Color(0xFFE81E27);
+    // Colored circle background: female = theme primary, male = theme secondary. Icon stays white on top.
+    final circleColor = value == 'female' ? primaryColor : secondaryColor;
     return GestureDetector(
       onTap: () => setState(() => _genderSelection = value),
       child: Column(
@@ -266,7 +268,11 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
-        child: Column(
+        child: ValueListenableBuilder<AppThemeKey>(
+          valueListenable: ThemeController.instance.current,
+          builder: (context, themeKey, _) {
+            final themeData = kAppThemes[themeKey]!;
+            return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (_characterId == null) ...[
@@ -278,7 +284,7 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                       child: ElevatedButton.icon(
                         onPressed: () => _pickImage(ImageSource.camera),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1A8BC8),
+                          backgroundColor: themeData.primary,
                           foregroundColor: Colors.white,
                         ),
                         icon: const Icon(Icons.camera_alt),
@@ -296,7 +302,7 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                       child: ElevatedButton.icon(
                         onPressed: () => _pickImage(ImageSource.gallery),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFEE575F),
+                          backgroundColor: themeData.secondary,
                           foregroundColor: Colors.white,
                         ),
                         icon: const Icon(Icons.photo_library),
@@ -360,8 +366,8 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                   spacing: 24,
                   runSpacing: 16,
                   children: [
-                    _buildGenderOption('female', 'female.png', AppStrings.t('female')),
-                    _buildGenderOption('male', 'male.png', AppStrings.t('male')),
+                    _buildGenderOption('female', 'female.png', AppStrings.t('female'), themeData.primary, themeData.secondary),
+                    _buildGenderOption('male', 'male.png', AppStrings.t('male'), themeData.primary, themeData.secondary),
                     if (_characterType == 'Human')
                       SizedBox(
                         width: 130,
@@ -428,7 +434,7 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                   child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
                 )
                     : IconButton(
-                  icon: Icon(_isRecording ? Icons.stop_circle : Icons.mic, color: const Color(0xFF784AAA)),
+                  icon: Icon(_isRecording ? Icons.stop_circle : Icons.mic, color: themeData.accent),
                   onPressed: _toggleRecording,
                 ),
               ),
@@ -452,7 +458,7 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                 child: ElevatedButton(
                   onPressed: _generate,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF7F50B2),
+                    backgroundColor: themeData.accent,
                     foregroundColor: Colors.white,
                   ),
                   child: Text(
@@ -477,6 +483,8 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
               Text(_errorMessage!, style: const TextStyle(color: Colors.red, fontSize: 22)),
             ],
           ],
+            );
+          },
         ),
       ),
     );

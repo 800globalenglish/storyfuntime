@@ -7,6 +7,7 @@ import '../screens/template_admin_screen.dart';
 import '../screens/credits_screen.dart';
 import '../screens/my_invites_screen.dart';
 import '../screens/language_settings_screen.dart';
+import '../screens/theme_picker_screen.dart';
 import '../screens/login_screen.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
@@ -21,6 +22,7 @@ enum _NavDestination {
   credits,
   invites,
   language,
+  theme,
   logout,
 }
 
@@ -85,6 +87,9 @@ class AppNavMenuButton extends StatelessWidget {
       case _NavDestination.language:
         Navigator.push(context, MaterialPageRoute(builder: (context) => const LanguageSettingsScreen()));
         break;
+      case _NavDestination.theme:
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const ThemePickerScreen()));
+        break;
       case _NavDestination.logout:
         _logout(context);
         break;
@@ -143,6 +148,11 @@ class AppNavMenuButton extends StatelessWidget {
         PopupMenuItem(
           value: _NavDestination.logout,
           child: Row(children: [const Icon(Icons.logout, color: Colors.red), const SizedBox(width: 12), Text(AppStrings.t('nav_log_out'), style: const TextStyle(color: Colors.red))]),
+        ),
+        const PopupMenuDivider(),
+        PopupMenuItem(
+          value: _NavDestination.theme,
+          child: Row(children: [const Icon(Icons.palette_outlined), const SizedBox(width: 12), Text(AppStrings.t('nav_theme'))]),
         ),
       ],
     );
