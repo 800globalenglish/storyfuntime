@@ -357,57 +357,72 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     }
   }
 
+  static const _buttonRadius = BorderRadius.all(Radius.circular(10));
+  static const _buttonHeight = 71.0;
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: const DebugScreenTag('book_detail_screen.dart'),
-      appBar: AppBar(
-        title: Text(AppStrings.t('book_details_title')),
-        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
-      ),
-      body: FutureBuilder<Book>(
-        future: _bookFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('${AppStrings.t('error_prefix')} ${snapshot.error}'));
-          }
-          final book = snapshot.data!;
-          if (!_formFieldsInitialized) {
-            _titleController.text = book.title == 'My Story' ? '' : book.title;
-            _themeController.text = book.theme == 'draft' ? '' : book.theme;
-            _formFieldsInitialized = true;
-          }
-          return SingleChildScrollView(
+    return FutureBuilder<Book>(
+      future: _bookFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            bottomNavigationBar: const DebugScreenTag('book_detail_screen.dart'),
+            appBar: AppBar(
+              title: Text(AppStrings.t('book_details_title')),
+              actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+            ),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (snapshot.hasError) {
+          return Scaffold(
+            bottomNavigationBar: const DebugScreenTag('book_detail_screen.dart'),
+            appBar: AppBar(
+              title: Text(AppStrings.t('book_details_title')),
+              actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+            ),
+            body: Center(child: Text('${AppStrings.t('error_prefix')} ${snapshot.error}')),
+          );
+        }
+        final book = snapshot.data!;
+        if (!_formFieldsInitialized) {
+          _titleController.text = book.title == 'My Story' ? '' : book.title;
+          _themeController.text = book.theme == 'draft' ? '' : book.theme;
+          _formFieldsInitialized = true;
+        }
+        return Scaffold(
+          bottomNavigationBar: const DebugScreenTag('book_detail_screen.dart'),
+          appBar: AppBar(
+            centerTitle: true,
+            toolbarHeight: 76,
+            title: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(book.title, style: const TextStyle(fontSize: 22)),
+                const SizedBox(height: 2),
+                Text(book.status, style: const TextStyle(fontSize: 13)),
+              ],
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.edit, size: 20),
+                tooltip: 'Rename',
+                onPressed: () => _showRenameDialog(book),
+              ),
+              const AppNavMenuButton(),
+              const SizedBox(width: 8),
+            ],
+          ),
+          body: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Text(book.title, style: Theme.of(context).textTheme.headlineSmall),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.edit, size: 20),
-                      tooltip: 'Rename',
-                      onPressed: () => _showRenameDialog(book),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${book.theme} - ${book.status}',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 16),
                 Text(AppStrings.t('characters_title'), style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
                 SizedBox(
-                  height: 140,
+                  height: 240,
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: [
@@ -419,13 +434,13 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                             child: Column(
                               children: [
                                 SizedBox(
-                                  width: 100,
-                                  height: 100,
+                                  width: 200,
+                                  height: 200,
                                   child: Stack(
                                     fit: StackFit.expand,
                                     children: [
                                       ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: _buttonRadius,
                                         child: character.cartoonAvatarUrl != null
                                             ? Image.network(
                                           '${ApiService.baseUrl}${character.cartoonAvatarUrl}?v=${DateTime.now().millisecondsSinceEpoch}',
@@ -433,7 +448,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                         )
                                             : Container(
                                           color: Colors.grey.shade300,
-                                          child: const Icon(Icons.person, size: 40),
+                                          child: const Icon(Icons.person, size: 80),
                                         ),
                                       ),
                                       if (_regeneratingAvatarCharacterId == character.id)
@@ -441,7 +456,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                           child: Container(
                                             decoration: BoxDecoration(
                                               color: Colors.black45,
-                                              borderRadius: BorderRadius.circular(12),
+                                              borderRadius: _buttonRadius,
                                             ),
                                             child: const Center(
                                               child: SizedBox(
@@ -478,7 +493,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
-                  height: 96,
+                  height: _buttonHeight,
                   child: Stack(
                     children: [
                       Positioned.fill(
@@ -491,6 +506,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                             foregroundColor: Colors.white,
                             disabledBackgroundColor: Colors.blue,
                             disabledForegroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                           ),
                           icon: const Icon(Icons.auto_awesome, size: 32),
                           label: Text(
@@ -517,12 +533,13 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
-                    height: 96,
+                    height: _buttonHeight,
                     child: ElevatedButton.icon(
                       onPressed: _goToApplyTemplate,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
                         foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                       ),
                       icon: const Icon(Icons.auto_stories, size: 32),
                       label: Text(
@@ -534,7 +551,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
-                    height: 96,
+                    height: _buttonHeight,
                     child: ElevatedButton.icon(
                       onPressed: () {
                         Navigator.push(
@@ -545,6 +562,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
                         foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                       ),
                       icon: const Icon(Icons.mic, size: 32),
                       label: const Text(
@@ -563,7 +581,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     decoration: InputDecoration(
                       labelText: AppStrings.t('book_title_label'),
                       floatingLabelAlignment: FloatingLabelAlignment.center,
-                      border: const OutlineInputBorder(),
+                      border: OutlineInputBorder(borderRadius: _buttonRadius),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -591,7 +609,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     decoration: InputDecoration(
                       labelText: AppStrings.t('theme_label'),
                       floatingLabelAlignment: FloatingLabelAlignment.center,
-                      border: const OutlineInputBorder(),
+                      border: OutlineInputBorder(borderRadius: _buttonRadius),
                     ),
                   ),
                   if (_generateError != null) ...[
@@ -605,7 +623,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
-                    height: 96,
+                    height: _buttonHeight,
                     child: ElevatedButton.icon(
                       onPressed: _isGenerating ? null : _generateStory,
                       style: ElevatedButton.styleFrom(
@@ -613,6 +631,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                         foregroundColor: Colors.white,
                         disabledBackgroundColor: Colors.green.shade800,
                         disabledForegroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                       ),
                       icon: _isGenerating
                           ? const SizedBox(
@@ -627,9 +646,9 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 ],
               ],
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
