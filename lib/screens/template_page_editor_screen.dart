@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../widgets/app_nav_menu_button.dart';
 
 class TemplatePageEditorScreen extends StatefulWidget {
   final String templateId;
@@ -147,7 +148,10 @@ class _TemplatePageEditorScreenState extends State<TemplatePageEditorScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.templateTitle)),
+      appBar: AppBar(
+        title: Text(widget.templateTitle),
+        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+      ),
       body: FutureBuilder<List<dynamic>>(
         future: _pagesFuture,
         builder: (context, snapshot) {

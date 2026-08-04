@@ -3,6 +3,7 @@ import '../models/book.dart';
 import '../services/api_service.dart';
 import 'record_voice_screen.dart';
 import 'home_screen.dart';
+import '../widgets/app_nav_menu_button.dart';
 
 class PagesStepScreen extends StatefulWidget {
   final String bookId;
@@ -174,7 +175,10 @@ class _PagesStepScreenState extends State<PagesStepScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Step 3 of 3: Bring It to Life')),
+      appBar: AppBar(
+        title: const Text('Step 3 of 3: Bring It to Life'),
+        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(

@@ -8,6 +8,7 @@ import '../services/api_service.dart';
 import '../services/app_strings.dart';
 import 'creator_wizard_screen.dart';
 import 'record_story_screen.dart';
+import '../widgets/app_nav_menu_button.dart';
 
 /// Screen 1 of the book flow: setup. Shown for a book that has no pages
 /// yet. Lets the person add characters, then either generate a story
@@ -358,7 +359,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppStrings.t('book_details_title'))),
+      appBar: AppBar(
+        title: Text(AppStrings.t('book_details_title')),
+        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+      ),
       body: FutureBuilder<Book>(
         future: _bookFuture,
         builder: (context, snapshot) {
@@ -374,7 +378,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
             _themeController.text = book.theme == 'draft' ? '' : book.theme;
             _formFieldsInitialized = true;
           }
-          return Padding(
+          return SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

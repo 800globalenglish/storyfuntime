@@ -3,6 +3,7 @@ import 'package:record/record.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../services/api_service.dart';
 import 'package:http/http.dart' as http;
+import '../widgets/app_nav_menu_button.dart';
 
 class RecordVoiceScreen extends StatefulWidget {
   final String pageId;
@@ -122,7 +123,10 @@ class _RecordVoiceScreenState extends State<RecordVoiceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Record Page ${widget.pageNumber}')),
+      appBar: AppBar(
+        title: Text('Record Page ${widget.pageNumber}'),
+        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(

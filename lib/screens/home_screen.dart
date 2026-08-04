@@ -11,6 +11,7 @@ import '../services/auth_service.dart';
 import '../services/api_service.dart';
 import '../services/app_strings.dart';
 import '../screens/credits_screen.dart';
+import '../widgets/app_nav_menu_button.dart';
 
 /// How long a new, unverified account gets to explore before the
 /// reminder banner shows up.
@@ -192,7 +193,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppStrings.t('app_title')),
+        centerTitle: true,
+        title: Text(
+          AppStrings.t('app_title'),
+          style: const TextStyle(fontSize: 30),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.language),
@@ -209,6 +214,8 @@ class _HomeScreenState extends State<HomeScreen> {
             tooltip: AppStrings.t('log_out_tooltip'),
             onPressed: () => _logout(context),
           ),
+          const AppNavMenuButton(),
+          const SizedBox(width: 8),
         ],
       ),
       body: Column(
@@ -265,16 +272,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     else if (_hasBooks == false && _hasCharacters == false)
                       SizedBox(
                         width: double.infinity,
-                        height: 100,
+                        height: 96,
                         child: ElevatedButton(
                           onPressed: _goToCreateFirstCharacter,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
+                            backgroundColor: const Color(0xFFE81E27),
                             foregroundColor: Colors.white,
                           ),
                           child: Text(
                             AppStrings.t('create_first_character'),
-                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -282,16 +289,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     else if (_hasBooks == false)
                       SizedBox(
                         width: double.infinity,
-                        height: 100,
+                        height: 96,
                         child: ElevatedButton(
                           onPressed: _goToNewStory,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
+                            backgroundColor: const Color(0xFFE81E27),
                             foregroundColor: Colors.white,
                           ),
                           child: Text(
                             AppStrings.t('create_your_first_story'),
-                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -299,7 +306,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     else ...[
                           SizedBox(
                             width: double.infinity,
-                            height: 100,
+                            height: 96,
                             child: ElevatedButton.icon(
                               onPressed: () {
                                 Navigator.push(
@@ -308,17 +315,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                 );
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF136795),
+                                backgroundColor: const Color(0xFF1A8BC8),
                                 foregroundColor: Colors.white,
                               ),
                               icon: const Icon(Icons.menu_book, size: 32),
-                              label: Text(AppStrings.t('go_to_stories'), style: const TextStyle(fontSize: 20)),
+                              label: Text(AppStrings.t('go_to_stories'), style: const TextStyle(fontSize: 22)),
                             ),
                           ),
                           const SizedBox(height: 24),
                           SizedBox(
                             width: double.infinity,
-                            height: 100,
+                            height: 96,
                             child: ElevatedButton.icon(
                               onPressed: _goToNewStory,
                               style: ElevatedButton.styleFrom(
@@ -326,21 +333,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                 foregroundColor: Colors.white,
                               ),
                               icon: const Icon(Icons.people, size: 32),
-                              label: Text(AppStrings.t('new_story'), style: const TextStyle(fontSize: 20)),
+                              label: Text(AppStrings.t('new_story'), style: const TextStyle(fontSize: 22)),
                             ),
                           ),
                           const SizedBox(height: 24),
                           SizedBox(
                             width: double.infinity,
-                            height: 100,
+                            height: 96,
                             child: ElevatedButton.icon(
                               onPressed: _goToMyCharacters,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF784AAA),
+                                backgroundColor: const Color(0xFF7F50B2),
                                 foregroundColor: Colors.white,
                               ),
                               icon: const Icon(Icons.face, size: 32),
-                              label: Text(AppStrings.t('Add Characters'), style: const TextStyle(fontSize: 20)),
+                              label: Text(AppStrings.t('Add Characters'), style: const TextStyle(fontSize: 22)),
                             ),
                           ),
                       ],

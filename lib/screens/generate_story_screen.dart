@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'pages_step_screen.dart';
+import '../widgets/app_nav_menu_button.dart';
 
 class GenerateStoryScreen extends StatefulWidget {
   final String bookId;
@@ -95,7 +96,10 @@ class _GenerateStoryScreenState extends State<GenerateStoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Review Your Story')),
+      appBar: AppBar(
+        title: const Text('Review Your Story'),
+        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+      ),
       body: _isGenerating
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage != null && _pageControllers.isEmpty

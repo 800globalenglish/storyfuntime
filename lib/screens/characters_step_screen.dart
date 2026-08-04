@@ -3,6 +3,7 @@ import '../models/book.dart';
 import '../services/api_service.dart';
 import 'add_character_screen.dart';
 import 'generate_story_screen.dart';
+import '../widgets/app_nav_menu_button.dart';
 
 class CharactersStepScreen extends StatefulWidget {
   final String bookId;
@@ -53,7 +54,10 @@ class _CharactersStepScreenState extends State<CharactersStepScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Step 1 of 3: Add Characters')),
+      appBar: AppBar(
+        title: const Text('Step 1 of 3: Add Characters'),
+        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(

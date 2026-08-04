@@ -10,6 +10,7 @@ import 'book_reader_screen.dart';
 import 'video_player_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../widgets/app_nav_menu_button.dart';
 
 class CreatorWizardScreen extends StatefulWidget {
   final String bookId;
@@ -37,6 +38,15 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
   String? _playingPageId;
 
   final Map<String, String> _lastSceneInstructions = {};
+
+  static const List<Color> _sceneBorderColors = [
+    Color(0xFF1A8BC8), // blue
+    Color(0xFFE81E27), // red
+    Color(0xFF7F50B2), // purple
+    Color(0xFF43A047), // green
+    Color(0xFFFB8C00), // orange
+    Color(0xFF00ACC1), // teal
+  ];
 
   @override
   void initState() {
@@ -465,7 +475,11 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppStrings.t('creator_wizard_title')),
+        centerTitle: true,
+        title: Text(
+          AppStrings.t('creator_wizard_title'),
+          style: const TextStyle(fontSize: 30),
+        ),
         actions: [
           if (_instructionsHidden)
             IconButton(
@@ -473,6 +487,8 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
               tooltip: AppStrings.t('show_instructions_tooltip'),
               onPressed: _showInstructionsAgain,
             ),
+          const AppNavMenuButton(),
+          const SizedBox(width: 8),
         ],
       ),
       body: FutureBuilder<Book>(
@@ -503,47 +519,65 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: _goToReadBook,
-                          icon: const Icon(Icons.menu_book),
-                          label: Text(AppStrings.t('read_book')),
+                        child: SizedBox(
+                          height: 96,
+                          child: ElevatedButton.icon(
+                            onPressed: _goToReadBook,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF1A8BC8),
+                              foregroundColor: Colors.white,
+                            ),
+                            icon: const Icon(Icons.menu_book, size: 32),
+                            label: Text(AppStrings.t('read_book'), style: const TextStyle(fontSize: 22)),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: _isGeneratingVideo
-                            ? const Center(child: CircularProgressIndicator())
-                            : book.videoUrl != null
-                            ? PopupMenuButton<String>(
-                          onSelected: (value) {
-                            if (value == 'share') {
-                              _shareVideo(book.videoUrl!);
-                            } else if (value == 'watch') {
-                              _openVideo(book.videoUrl!);
-                            } else if (value == 'download') {
-                              _downloadVideo();
-                            } else if (value == 'regenerate') {
-                              _generateVideo();
-                            }
-                          },
-                          itemBuilder: (context) => [
-                            PopupMenuItem(value: 'share', child: Row(children: [const Icon(Icons.share), const SizedBox(width: 12), Text(AppStrings.t('share'))])),
-                            PopupMenuItem(value: 'watch', child: Row(children: [const Icon(Icons.play_circle_outline), const SizedBox(width: 12), Text(AppStrings.t('watch'))])),
-                            PopupMenuItem(value: 'download', child: Row(children: [const Icon(Icons.download), const SizedBox(width: 12), Text(AppStrings.t('download'))])),
-                            PopupMenuItem(value: 'regenerate', child: Row(children: [const Icon(Icons.refresh), const SizedBox(width: 12), Text(AppStrings.t('regenerate_video'))])),
-                          ],
-                          child: IgnorePointer(
-                            child: OutlinedButton.icon(
-                              onPressed: () {},
-                              icon: const Icon(Icons.check_circle, color: Colors.green),
-                              label: Text(AppStrings.t('video_ready')),
+                        child: SizedBox(
+                          height: 96,
+                          child: _isGeneratingVideo
+                              ? const Center(child: CircularProgressIndicator())
+                              : book.videoUrl != null
+                              ? PopupMenuButton<String>(
+                            onSelected: (value) {
+                              if (value == 'share') {
+                                _shareVideo(book.videoUrl!);
+                              } else if (value == 'watch') {
+                                _openVideo(book.videoUrl!);
+                              } else if (value == 'download') {
+                                _downloadVideo();
+                              } else if (value == 'regenerate') {
+                                _generateVideo();
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              PopupMenuItem(value: 'share', child: Row(children: [const Icon(Icons.share), const SizedBox(width: 12), Text(AppStrings.t('share'))])),
+                              PopupMenuItem(value: 'watch', child: Row(children: [const Icon(Icons.play_circle_outline), const SizedBox(width: 12), Text(AppStrings.t('watch'))])),
+                              PopupMenuItem(value: 'download', child: Row(children: [const Icon(Icons.download), const SizedBox(width: 12), Text(AppStrings.t('download'))])),
+                              PopupMenuItem(value: 'regenerate', child: Row(children: [const Icon(Icons.refresh), const SizedBox(width: 12), Text(AppStrings.t('regenerate_video'))])),
+                            ],
+                            child: IgnorePointer(
+                              child: ElevatedButton.icon(
+                                onPressed: () {},
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  foregroundColor: Colors.white,
+                                ),
+                                icon: const Icon(Icons.check_circle, color: Colors.white, size: 32),
+                                label: Text(AppStrings.t('video_ready'), style: const TextStyle(fontSize: 22)),
+                              ),
                             ),
+                          )
+                              : ElevatedButton.icon(
+                            onPressed: _generateVideo,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFE81E27),
+                              foregroundColor: Colors.white,
+                            ),
+                            icon: const Icon(Icons.movie_creation_outlined, size: 32),
+                            label: Text(AppStrings.t('generate_video'), style: const TextStyle(fontSize: 22)),
                           ),
-                        )
-                            : ElevatedButton.icon(
-                          onPressed: _generateVideo,
-                          icon: const Icon(Icons.movie_creation_outlined),
-                          label: Text(AppStrings.t('generate_video')),
                         ),
                       ),
                     ],
@@ -566,14 +600,24 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                         const SizedBox(width: 12),
                       ],
                       Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: _generatingScenePageId != null
-                              ? null
-                              : () => _generateAllScenes(book.pages),
-                          icon: const Icon(Icons.auto_fix_high),
-                          label: Text(_generatingScenePageId != null
-                              ? AppStrings.t('generating_scenes')
-                              : AppStrings.t('generate_all_screens')),
+                        child: SizedBox(
+                          height: 96,
+                          child: ElevatedButton.icon(
+                            onPressed: _generatingScenePageId != null
+                                ? null
+                                : () => _generateAllScenes(book.pages),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF7F50B2),
+                              foregroundColor: Colors.white,
+                            ),
+                            icon: const Icon(Icons.auto_fix_high, size: 32),
+                            label: Text(
+                              _generatingScenePageId != null
+                                  ? AppStrings.t('generating_scenes')
+                                  : AppStrings.t('generate_all_screens'),
+                              style: const TextStyle(fontSize: 22),
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -635,6 +679,13 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                       final isPlayingThisPage = _playingPageId == page.id;
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: _sceneBorderColors[index % _sceneBorderColors.length],
+                            width: 5,
+                          ),
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
                           child: Column(

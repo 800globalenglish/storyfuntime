@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/character.dart';
 import '../services/api_service.dart';
+import '../widgets/app_nav_menu_button.dart';
 
 class ChooseDifferentCharacterScreen extends StatefulWidget {
   final String bookId;
@@ -59,7 +60,10 @@ class _ChooseDifferentCharacterScreenState extends State<ChooseDifferentCharacte
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Choose Different Character')),
+      appBar: AppBar(
+        title: const Text('Choose Different Character'),
+        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+      ),
       body: FutureBuilder<List<Character>>(
         future: _charactersFuture,
         builder: (context, snapshot) {

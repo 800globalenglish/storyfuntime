@@ -7,6 +7,7 @@ import '../services/app_strings.dart';
 import 'creator_wizard_screen.dart';
 import 'book_reader_screen.dart';
 import 'video_player_screen.dart';
+import '../widgets/app_nav_menu_button.dart';
 
 class BookSummaryScreen extends StatefulWidget {
   final String bookId;
@@ -117,7 +118,10 @@ class _BookSummaryScreenState extends State<BookSummaryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppStrings.t('book_title_appbar'))),
+      appBar: AppBar(
+        title: Text(AppStrings.t('book_title_appbar')),
+        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+      ),
       body: FutureBuilder<Book>(
         future: _bookFuture,
         builder: (context, snapshot) {

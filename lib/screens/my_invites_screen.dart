@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
 import '../services/app_strings.dart';
+import '../widgets/app_nav_menu_button.dart';
 
 class MyInvitesScreen extends StatefulWidget {
   const MyInvitesScreen({super.key});
@@ -59,7 +60,10 @@ class _MyInvitesScreenState extends State<MyInvitesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppStrings.t('my_invites_title'))),
+      appBar: AppBar(
+        title: Text(AppStrings.t('my_invites_title')),
+        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+      ),
       body: RefreshIndicator(
         onRefresh: () async => _refresh(),
         child: FutureBuilder<ReferralSummary>(

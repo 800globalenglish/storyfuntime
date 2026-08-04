@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'book_reader_screen.dart';
+import '../widgets/app_nav_menu_button.dart';
 
 class AvatarGalleryScreen extends StatefulWidget {
   final String characterId;
@@ -111,7 +112,10 @@ class _AvatarGalleryScreenState extends State<AvatarGalleryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('${widget.characterName}\'s characters')),
+      appBar: AppBar(
+        title: Text('${widget.characterName}\'s characters'),
+        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+      ),
       body: Column(
         children: [
           FutureBuilder<Map<String, int>>(

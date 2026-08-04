@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/story_template.dart';
 import '../services/api_service.dart';
 import 'template_page_editor_screen.dart';
+import '../widgets/app_nav_menu_button.dart';
 
 class TemplateAdminScreen extends StatefulWidget {
   const TemplateAdminScreen({super.key});
@@ -126,7 +127,10 @@ class _TemplateAdminScreenState extends State<TemplateAdminScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Manage Story Templates')),
+      appBar: AppBar(
+        title: const Text('Manage Story Templates'),
+        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+      ),
       body: FutureBuilder<List<StoryTemplate>>(
         future: _templatesFuture,
         builder: (context, snapshot) {

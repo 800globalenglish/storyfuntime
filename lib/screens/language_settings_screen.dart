@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/app_strings.dart';
+import '../widgets/app_nav_menu_button.dart';
 
 class LanguageSettingsScreen extends StatelessWidget {
   const LanguageSettingsScreen({super.key});
@@ -7,7 +8,10 @@ class LanguageSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Language / Idioma / 语言')),
+      appBar: AppBar(
+        title: const Text('Language / Idioma / 语言'),
+        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+      ),
       body: ValueListenableBuilder<String>(
         valueListenable: AppStrings.languageCode,
         builder: (context, currentCode, _) {

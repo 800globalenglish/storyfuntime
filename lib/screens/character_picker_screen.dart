@@ -3,6 +3,7 @@ import '../models/character.dart';
 import '../services/api_service.dart';
 import '../services/app_strings.dart';
 import 'book_detail_screen.dart';
+import '../widgets/app_nav_menu_button.dart';
 
 // NEW - one entry per unique avatar. If the same person appears in several
 // books, count reflects how many, and representative is whichever Character
@@ -109,7 +110,10 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppStrings.t('choose_characters_title'))),
+      appBar: AppBar(
+        title: Text(AppStrings.t('choose_characters_title')),
+        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+      ),
       body: FutureBuilder<List<Character>>(
         future: _charactersFuture,
         builder: (context, snapshot) {

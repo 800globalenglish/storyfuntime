@@ -5,6 +5,7 @@ import '../services/api_service.dart';
 import '../services/app_strings.dart';
 import 'package:record/record.dart';
 import 'package:http/http.dart' as http;
+import '../widgets/app_nav_menu_button.dart';
 
 class _AgeStage {
   final String label;
@@ -259,6 +260,7 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
           AppStrings.t('add_a_character_title'),
           style: const TextStyle(fontSize: 22),
         ),
+        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),

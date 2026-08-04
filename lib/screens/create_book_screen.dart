@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'characters_step_screen.dart';
 import 'book_detail_screen.dart';
+import '../widgets/app_nav_menu_button.dart';
 
 class CreateBookScreen extends StatefulWidget {
   final List<String>? preSelectedCharacterIds;
@@ -118,7 +119,10 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Create a Story Book')),
+      appBar: AppBar(
+        title: const Text('Create a Story Book'),
+        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(

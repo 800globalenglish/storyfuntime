@@ -5,6 +5,7 @@ import '../services/app_strings.dart';
 import 'create_book_screen.dart';
 import 'book_detail_screen.dart';
 import 'book_summary_screen.dart';
+import '../widgets/app_nav_menu_button.dart';
 
 class StoriesListScreen extends StatefulWidget {
   const StoriesListScreen({super.key});
@@ -106,7 +107,10 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppStrings.t('my_story_books'))),
+      appBar: AppBar(
+        title: Text(AppStrings.t('my_story_books')),
+        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+      ),
       body: RefreshIndicator(
         onRefresh: _refresh,
         child: FutureBuilder<List<Book>>(

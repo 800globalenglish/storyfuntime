@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import '../services/app_strings.dart';
 import 'add_character_screen.dart';
 import 'create_book_screen.dart';
+import '../widgets/app_nav_menu_button.dart';
 
 class CharactersHomeScreen extends StatefulWidget {
   const CharactersHomeScreen({super.key});
@@ -159,7 +160,10 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppStrings.t('characters_title'))),
+      appBar: AppBar(
+        title: Text(AppStrings.t('characters_title')),
+        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+      ),
       body: FutureBuilder<List<Character>>(
         future: _charactersFuture,
         builder: (context, snapshot) {

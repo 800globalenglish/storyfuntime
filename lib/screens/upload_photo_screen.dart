@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
+import '../widgets/app_nav_menu_button.dart';
 
 class UploadPhotoScreen extends StatefulWidget {
   final String pageId;
@@ -71,7 +72,10 @@ class _UploadPhotoScreenState extends State<UploadPhotoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Photo for Page ${widget.pageNumber}')),
+      appBar: AppBar(
+        title: Text('Photo for Page ${widget.pageNumber}'),
+        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(

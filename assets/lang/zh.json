@@ -169,5 +169,16 @@
   "send_reset_link": "发送链接",
   "reset_email_sent_if_exists": "如果该账户存在，重置密码的邮件已发送。",
   "forgot_password_link": "忘记密码？",
-  "back_to_login": "返回登录"
+  "back_to_login": "返回登录",
+
+  "get_around_tooltip": "导航",
+  "nav_home": "首页",
+  "nav_my_stories": "我的故事",
+  "nav_new_story": "新故事",
+  "nav_my_characters": "我的角色",
+  "nav_manage_templates": "管理故事模板",
+  "nav_buy_credits": "购买积分",
+  "nav_invite_friends": "邀请朋友",
+  "nav_language_settings": "语言设置",
+  "nav_log_out": "退出登录"
 }

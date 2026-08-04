@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+import '../widgets/app_nav_menu_button.dart';
 
 /// Plays a video right inside the app - no new browser tab, no leaving
 /// the screen the person was already on.
@@ -48,6 +49,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         title: const Text('Your Story Video'),
+        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),
       body: Center(
         child: _errorMessage != null

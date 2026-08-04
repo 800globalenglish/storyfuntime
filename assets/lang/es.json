@@ -169,5 +169,16 @@
   "send_reset_link": "Enviar Enlace",
   "reset_email_sent_if_exists": "Si existe una cuenta, se ha enviado un correo para restablecer la contraseña.",
   "forgot_password_link": "¿Olvidaste tu contraseña?",
-  "back_to_login": "Volver a Iniciar Sesión"
+  "back_to_login": "Volver a Iniciar Sesión",
+
+  "get_around_tooltip": "Navegar",
+  "nav_home": "Inicio",
+  "nav_my_stories": "Mis Historias",
+  "nav_new_story": "Nueva Historia",
+  "nav_my_characters": "Mis Personajes",
+  "nav_manage_templates": "Administrar Plantillas",
+  "nav_buy_credits": "Comprar Créditos",
+  "nav_invite_friends": "Invitar Amigos",
+  "nav_language_settings": "Configuración de Idioma",
+  "nav_log_out": "Cerrar Sesión"
 }

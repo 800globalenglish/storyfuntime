@@ -169,5 +169,16 @@
   "send_reset_link": "Send Link",
   "reset_email_sent_if_exists": "If an account exists, a password reset email has been sent.",
   "forgot_password_link": "Forgot password?",
-  "back_to_login": "Back to Login"
+  "back_to_login": "Back to Login",
+
+  "get_around_tooltip": "Get around",
+  "nav_home": "Home",
+  "nav_my_stories": "My Stories",
+  "nav_new_story": "New Story",
+  "nav_my_characters": "My Characters",
+  "nav_manage_templates": "Manage Story Templates",
+  "nav_buy_credits": "Buy Credits",
+  "nav_invite_friends": "Invite Friends",
+  "nav_language_settings": "Language Settings",
+  "nav_log_out": "Log Out"
 }
