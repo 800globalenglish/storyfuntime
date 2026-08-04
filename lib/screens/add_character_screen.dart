@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
@@ -417,27 +418,40 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
               ),
               const SizedBox(height: 16),
             ],
-            TextField(
-              controller: _instructionsController,
-              maxLines: 2,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 22),
-              decoration: InputDecoration(
-                hintText: _avatarUrl == null
-                    ? AppStrings.t('optional_instructions')
-                    : AppStrings.t('instructions_for_next_try'),
-                hintStyle: const TextStyle(fontSize: 22),
-                border: const OutlineInputBorder(),
-                suffixIcon: _isTranscribing
-                    ? const Padding(
-                  padding: EdgeInsets.all(12),
-                  child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
-                )
-                    : IconButton(
-                  icon: Icon(_isRecording ? Icons.stop_circle : Icons.mic, color: themeData.accent),
-                  onPressed: _toggleRecording,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextField(
+                  controller: _instructionsController,
+                  maxLines: 2,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 22),
+                  decoration: InputDecoration(
+                    hintText: _avatarUrl == null
+                        ? AppStrings.t('optional_instructions')
+                        : AppStrings.t('instructions_for_next_try'),
+                    hintStyle: const TextStyle(fontSize: 22),
+                    border: const OutlineInputBorder(),
+                    suffixIcon: _isTranscribing
+                        ? const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                    )
+                        : IconButton(
+                      icon: Icon(
+                        _isRecording ? Icons.stop_circle : Icons.mic,
+                        color: themeData.accent,
+                        size: _isRecording ? 20 : null,
+                      ),
+                      onPressed: _toggleRecording,
+                    ),
+                  ),
                 ),
-              ),
+                if (_isRecording) ...[
+                  const SizedBox(height: 8),
+                  _AudioMeter(recorder: _audioRecorder),
+                ],
+              ],
             ),
             const SizedBox(height: 16),
             if (_isSaving)
@@ -487,6 +501,56 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
           },
         ),
       ),
+    );
+  }
+}
+
+class _AudioMeter extends StatefulWidget {
+  final AudioRecorder recorder;
+  const _AudioMeter({required this.recorder});
+
+  @override
+  State<_AudioMeter> createState() => _AudioMeterState();
+}
+
+class _AudioMeterState extends State<_AudioMeter> {
+  double _level = 0.0;
+  StreamSubscription<Amplitude>? _sub;
+
+  @override
+  void initState() {
+    super.initState();
+    _sub = widget.recorder
+        .onAmplitudeChanged(const Duration(milliseconds: 150))
+        .listen((amp) {
+      final normalized = ((amp.current + 60) / 60).clamp(0.0, 1.0);
+      if (mounted) setState(() => _level = normalized);
+    });
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(5, (i) {
+        final barLevel = (_level * 5 - i).clamp(0.0, 1.0);
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          margin: const EdgeInsets.symmetric(horizontal: 2),
+          width: 6,
+          height: 8 + barLevel * 24,
+          decoration: BoxDecoration(
+            color: const Color(0xFF784AAA),
+            borderRadius: BorderRadius.circular(3),
+          ),
+        );
+      }),
     );
   }
 }
