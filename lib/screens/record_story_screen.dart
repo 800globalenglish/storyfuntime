@@ -34,6 +34,9 @@ class _RecordStoryScreenState extends State<RecordStoryScreen> {
   String? _errorMessage;
   String? _recordingPath;
 
+  static const _buttonRadius = BorderRadius.all(Radius.circular(10));
+  static const _buttonHeight = 71.0;
+
   @override
   void dispose() {
     _audioRecorder.dispose();
@@ -211,29 +214,59 @@ class _RecordStoryScreenState extends State<RecordStoryScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _togglePlayback,
-                      icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
-                      label: Text(_isPlaying ? 'Pause' : 'Play Back'),
+                    child: SizedBox(
+                      height: _buttonHeight,
+                      child: ElevatedButton.icon(
+                        onPressed: _togglePlayback,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                        ),
+                        icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow, size: 32),
+                        label: Text(_isPlaying ? 'Pause' : 'Play Back', style: const TextStyle(fontSize: 22)),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _startRecording,
-                      icon: const Icon(Icons.mic),
-                      label: const Text('Re-record'),
+                    child: SizedBox(
+                      height: _buttonHeight,
+                      child: ElevatedButton.icon(
+                        onPressed: _startRecording,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                        ),
+                        icon: const Icon(Icons.mic, size: 32),
+                        label: const Text('Re-record', style: TextStyle(fontSize: 22)),
+                      ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
-              ElevatedButton.icon(
-                onPressed: _isGenerating ? null : _generateBook,
-                icon: _isGenerating
-                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Icon(Icons.auto_stories),
-                label: Text(_isGenerating ? 'Generating your book...' : 'Generate Book'),
+              SizedBox(
+                width: double.infinity,
+                height: _buttonHeight,
+                child: ElevatedButton.icon(
+                  onPressed: _isGenerating ? null : _generateBook,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: Colors.green.shade800,
+                    disabledForegroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                  ),
+                  icon: _isGenerating
+                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : const Icon(Icons.auto_stories, size: 32),
+                  label: Text(
+                    _isGenerating ? 'Generating your book...' : 'Generate Book',
+                    style: const TextStyle(fontSize: 22),
+                  ),
+                ),
               ),
             ],
           ],
