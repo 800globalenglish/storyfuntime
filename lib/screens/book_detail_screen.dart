@@ -428,14 +428,19 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
+                    crossAxisCount: 3,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
                     childAspectRatio: 0.85,
                   ),
                   itemCount: book.characters.length + 1,
                   itemBuilder: (context, index) {
-                    if (index == book.characters.length) {
+                    // The Add tile stays pinned in the first row (3rd column)
+                    // as long as there's room for it - once a 3rd character
+                    // exists, it drops to the next row instead of pushing
+                    // Add out of sight.
+                    final addIndex = book.characters.length >= 2 ? 2 : book.characters.length;
+                    if (index == addIndex) {
                       return Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -448,7 +453,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                         ],
                       );
                     }
-                    final character = book.characters[index];
+                    final characterIndex = index < addIndex ? index : index - 1;
+                    final character = book.characters[characterIndex];
                     return GestureDetector(
                       onTap: () => _showCharacterOptions(character.id, character.name, character.cartoonAvatarUrl, book.userId),
                       child: Column(
