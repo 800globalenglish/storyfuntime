@@ -5,6 +5,7 @@ import '../services/api_service.dart';
 import 'package:http/http.dart' as http;
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../widgets/audio_meter.dart';
 import '../theme/app_theme.dart';
 import '../theme/theme_controller.dart';
 import '../theme/scene_border_colors.dart';
@@ -190,6 +191,10 @@ class _RecordVoiceScreenState extends State<RecordVoiceScreen> {
             Center(
               child: Text(_isRecording ? 'Recording... tap to stop' : 'Tap to record'),
             ),
+            if (_isRecording) ...[
+              const SizedBox(height: 12),
+              AudioMeter(recorder: _audioRecorder),
+            ],
             if (_hasRecording) ...[
               const SizedBox(height: 32),
               Row(
