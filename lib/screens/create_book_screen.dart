@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../models/story_type.dart';
 import 'characters_step_screen.dart';
 import 'book_detail_screen.dart';
 import '../widgets/app_nav_menu_button.dart';
@@ -17,6 +18,7 @@ class CreateBookScreen extends StatefulWidget {
 class _CreateBookScreenState extends State<CreateBookScreen> {
   final _titleController = TextEditingController();
   final _themeController = TextEditingController();
+  StoryType _selectedStoryType = StoryType.bedtime;
   final _apiService = ApiService();
   bool _isSubmitting = false;
   String? _resultMessage;
@@ -38,6 +40,7 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
       final book = await _apiService.createBook(
         title: 'My Story',
         theme: 'draft',
+        storyType: StoryType.bedtime.apiValue,
       );
       await _apiService.copyCharactersToBook(
         bookId: book.id,
@@ -75,6 +78,7 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
       final book = await _apiService.createBook(
         title: _titleController.text.trim(),
         theme: _themeController.text.trim(),
+        storyType: _selectedStoryType.apiValue,
       );
 
       final preSelected = widget.preSelectedCharacterIds;
@@ -147,6 +151,25 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
                 border: OutlineInputBorder(),
                 hintText: 'e.g. Farm animals, Bible stories',
               ),
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<StoryType>(
+              value: _selectedStoryType,
+              style: const TextStyle(fontSize: 22, color: Colors.black),
+              decoration: const InputDecoration(
+                labelText: 'Story Type',
+                labelStyle: TextStyle(fontSize: 22),
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+              items: [
+                for (final type in StoryType.values)
+                  DropdownMenuItem(
+                    value: type,
+                    child: Text(type.label, style: const TextStyle(fontSize: 22)),
+                  ),
+              ],
+              onChanged: (value) => setState(() => _selectedStoryType = value ?? StoryType.bedtime),
             ),
             const SizedBox(height: 24),
             ElevatedButton(

@@ -69,6 +69,7 @@ class ApiService {
   Future<Book> createBook({
     required String title,
     required String theme,
+    required String storyType,
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/books'),
@@ -76,6 +77,7 @@ class ApiService {
       body: jsonEncode({
         'title': title,
         'theme': theme,
+        'storyType': storyType,
       }),
     );
 
