@@ -8,6 +8,7 @@ import 'package:record/record.dart';
 import 'package:http/http.dart' as http;
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../widgets/audio_meter.dart';
 import '../theme/app_theme.dart';
 import '../theme/theme_controller.dart';
 
@@ -454,7 +455,7 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                 ),
                 if (_isRecording) ...[
                   const SizedBox(height: 8),
-                  _AudioMeter(recorder: _audioRecorder),
+                  AudioMeter(recorder: _audioRecorder),
                 ],
               ],
             ),
@@ -518,56 +519,6 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
           },
         ),
       ),
-    );
-  }
-}
-
-class _AudioMeter extends StatefulWidget {
-  final AudioRecorder recorder;
-  const _AudioMeter({required this.recorder});
-
-  @override
-  State<_AudioMeter> createState() => _AudioMeterState();
-}
-
-class _AudioMeterState extends State<_AudioMeter> {
-  double _level = 0.0;
-  StreamSubscription<Amplitude>? _sub;
-
-  @override
-  void initState() {
-    super.initState();
-    _sub = widget.recorder
-        .onAmplitudeChanged(const Duration(milliseconds: 150))
-        .listen((amp) {
-      final normalized = ((amp.current + 60) / 60).clamp(0.0, 1.0);
-      if (mounted) setState(() => _level = normalized);
-    });
-  }
-
-  @override
-  void dispose() {
-    _sub?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(5, (i) {
-        final barLevel = (_level * 5 - i).clamp(0.0, 1.0);
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          margin: const EdgeInsets.symmetric(horizontal: 2),
-          width: 6,
-          height: 8 + barLevel * 24,
-          decoration: BoxDecoration(
-            color: const Color(0xFF784AAA),
-            borderRadius: BorderRadius.circular(3),
-          ),
-        );
-      }),
     );
   }
 }

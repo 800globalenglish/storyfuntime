@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'creator_wizard_screen.dart'; // adjust this import path if creator_wizard_screen.dart lives elsewhere
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../widgets/audio_meter.dart';
 
 class RecordStoryScreen extends StatefulWidget {
   final String bookId;
@@ -200,6 +201,10 @@ class _RecordStoryScreenState extends State<RecordStoryScreen> {
             Center(
               child: Text(_isRecording ? 'Recording... tap to stop' : 'Tap to start telling your story'),
             ),
+            if (_isRecording) ...[
+              const SizedBox(height: 12),
+              AudioMeter(recorder: _audioRecorder),
+            ],
             const SizedBox(height: 16),
             if (_hasRecording) ...[
               const SizedBox(height: 32),
