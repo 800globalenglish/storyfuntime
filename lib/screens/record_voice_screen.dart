@@ -33,7 +33,6 @@ class _RecordVoiceScreenState extends State<RecordVoiceScreen> {
 
   bool _isRecording = false;
   bool _hasRecording = false;
-  bool _isUploading = false;
   bool _isPlaying = false;
   String? _errorMessage;
   String? _recordingPath;
@@ -105,26 +104,24 @@ class _RecordVoiceScreenState extends State<RecordVoiceScreen> {
     });
   }
 
-  Future<void> _saveRecording() async {
+  void _saveRecording() {
     if (_recordingPath == null) return;
-    setState(() {
-      _isUploading = true;
-      _errorMessage = null;
-    });
+    final path = _recordingPath!;
+    final pageId = widget.pageId;
 
-    try {
-      final response = await http.get(Uri.parse(_recordingPath!));
-      await _apiService.uploadAudio(pageId: widget.pageId, audioBytes: response.bodyBytes);
-      if (mounted) Navigator.pop(context, true);
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Failed to save recording: $e';
-      });
-    } finally {
-      setState(() {
-        _isUploading = false;
-      });
-    }
+    // Upload happens in the background so the person can move on right
+    // away instead of waiting on the network - there's no screen left to
+    // show an upload failure on, so just log it.
+    () async {
+      try {
+        final response = await http.get(Uri.parse(path));
+        await _apiService.uploadAudio(pageId: pageId, audioBytes: response.bodyBytes);
+      } catch (e) {
+        debugPrint('Failed to save recording in background: $e');
+      }
+    }();
+
+    Navigator.pop(context, true);
   }
 
   @override
@@ -235,16 +232,14 @@ class _RecordVoiceScreenState extends State<RecordVoiceScreen> {
                 width: double.infinity,
                 height: _buttonHeight,
                 child: ElevatedButton.icon(
-                  onPressed: _isUploading ? null : _saveRecording,
+                  onPressed: _saveRecording,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                   ),
-                  icon: _isUploading
-                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Icon(Icons.check, size: 32),
-                  label: Text(_isUploading ? 'Saving...' : 'Save Recording', style: const TextStyle(fontSize: 22)),
+                  icon: const Icon(Icons.check, size: 32),
+                  label: const Text('Save Recording', style: TextStyle(fontSize: 22)),
                 ),
               ),
             ],
