@@ -424,62 +424,19 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               children: [
                 Text(AppStrings.t('characters_title'), style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
-                SizedBox(
-                  height: 240,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      for (final character in book.characters)
-                        Padding(
-                          padding: const EdgeInsets.only(right: 12),
-                          child: GestureDetector(
-                            onTap: () => _showCharacterOptions(character.id, character.name, character.cartoonAvatarUrl, book.userId),
-                            child: Column(
-                              children: [
-                                SizedBox(
-                                  width: 200,
-                                  height: 200,
-                                  child: Stack(
-                                    fit: StackFit.expand,
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius: _buttonRadius,
-                                        child: character.cartoonAvatarUrl != null
-                                            ? Image.network(
-                                          '${ApiService.baseUrl}${character.cartoonAvatarUrl}?v=${DateTime.now().millisecondsSinceEpoch}',
-                                          fit: BoxFit.cover,
-                                        )
-                                            : Container(
-                                          color: Colors.grey.shade300,
-                                          child: const Icon(Icons.person, size: 80),
-                                        ),
-                                      ),
-                                      if (_regeneratingAvatarCharacterId == character.id)
-                                        Positioned.fill(
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              color: Colors.black45,
-                                              borderRadius: _buttonRadius,
-                                            ),
-                                            child: const Center(
-                                              child: SizedBox(
-                                                width: 24,
-                                                height: 24,
-                                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(character.name, style: Theme.of(context).textTheme.bodySmall),
-                              ],
-                            ),
-                          ),
-                        ),
-                      Column(
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 0.85,
+                  ),
+                  itemCount: book.characters.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index == book.characters.length) {
+                      return Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           IconButton.filledTonal(
@@ -489,9 +446,54 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                           const SizedBox(height: 4),
                           Text(AppStrings.t('add'), style: const TextStyle(fontSize: 12)),
                         ],
+                      );
+                    }
+                    final character = book.characters[index];
+                    return GestureDetector(
+                      onTap: () => _showCharacterOptions(character.id, character.name, character.cartoonAvatarUrl, book.userId),
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: _buttonRadius,
+                                  child: character.cartoonAvatarUrl != null
+                                      ? Image.network(
+                                    '${ApiService.baseUrl}${character.cartoonAvatarUrl}?v=${DateTime.now().millisecondsSinceEpoch}',
+                                    fit: BoxFit.cover,
+                                  )
+                                      : Container(
+                                    color: Colors.grey.shade300,
+                                    child: const Icon(Icons.person, size: 80),
+                                  ),
+                                ),
+                                if (_regeneratingAvatarCharacterId == character.id)
+                                  Positioned.fill(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.black45,
+                                        borderRadius: _buttonRadius,
+                                      ),
+                                      child: const Center(
+                                        child: SizedBox(
+                                          width: 24,
+                                          height: 24,
+                                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(character.name, style: Theme.of(context).textTheme.bodySmall),
+                        ],
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 24),
                 SizedBox(
