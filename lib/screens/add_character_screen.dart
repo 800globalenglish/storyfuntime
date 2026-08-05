@@ -64,6 +64,9 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
   String? _avatarUrl;
   String? _characterId;
 
+  static const _buttonRadius = BorderRadius.all(Radius.circular(10));
+  static const _buttonHeight = 71.0;
+
   @override
   void initState() {
     super.initState();
@@ -281,14 +284,15 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                 children: [
                   Expanded(
                     child: SizedBox(
-                      height: 96,
+                      height: _buttonHeight,
                       child: ElevatedButton.icon(
                         onPressed: () => _pickImage(ImageSource.camera),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: themeData.primary,
                           foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                         ),
-                        icon: const Icon(Icons.camera_alt),
+                        icon: const Icon(Icons.camera_alt, size: 32),
                         label: Text(
                           AppStrings.t('take_photo'),
                           style: const TextStyle(fontSize: 22),
@@ -299,14 +303,15 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: SizedBox(
-                      height: 96,
+                      height: _buttonHeight,
                       child: ElevatedButton.icon(
                         onPressed: () => _pickImage(ImageSource.gallery),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: themeData.secondary,
                           foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                         ),
-                        icon: const Icon(Icons.photo_library),
+                        icon: const Icon(Icons.photo_library, size: 32),
                         label: Text(
                           AppStrings.t('open_gallery'),
                           style: const TextStyle(fontSize: 22),
@@ -468,14 +473,16 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
             else ...[
               SizedBox(
                 width: double.infinity,
-                height: 96,
-                child: ElevatedButton(
+                height: _buttonHeight,
+                child: ElevatedButton.icon(
                   onPressed: _generate,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: themeData.accent,
                     foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                   ),
-                  child: Text(
+                  icon: const Icon(Icons.auto_awesome, size: 28),
+                  label: Text(
                     _avatarUrl == null ? AppStrings.t('generate_character') : AppStrings.t('regenerate'),
                     style: const TextStyle(fontSize: 22),
                   ),
@@ -483,11 +490,21 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
               ),
               if (_avatarUrl != null) ...[
                 const SizedBox(height: 12),
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: Text(
-                    AppStrings.t('done'),
-                    style: const TextStyle(fontSize: 22),
+                SizedBox(
+                  width: double.infinity,
+                  height: _buttonHeight,
+                  child: ElevatedButton.icon(
+                    onPressed: () => Navigator.pop(context, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                    ),
+                    icon: const Icon(Icons.check, size: 28),
+                    label: Text(
+                      AppStrings.t('done'),
+                      style: const TextStyle(fontSize: 22),
+                    ),
                   ),
                 ),
               ],
