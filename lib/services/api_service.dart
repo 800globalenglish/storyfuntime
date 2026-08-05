@@ -57,13 +57,21 @@ class ApiService {
   }
 
   Future<String> transcribeAudio(Uint8List audioBytes) async {
-    final uri = Uri.parse('${ApiService.baseUrl}/api/transcribe'); // adjust to your actual route
-    final request = http.MultipartRequest('POST', uri)
-      ..files.add(http.MultipartFile.fromBytes('audio', audioBytes, filename: 'instructions.webm'));
-    final response = await request.send();
-    final body = await response.stream.bytesToString();
-    final data = jsonDecode(body);
-    return data['text'] as String; // adjust key to match your backend response shape
+    final uri = Uri.parse('${ApiService.baseUrl}/transcribe');
+    final request = http.MultipartRequest('POST', uri);
+    request.headers.addAll(await _authOnlyHeader());
+    request.files.add(http.MultipartFile.fromBytes('audio', audioBytes, filename: 'instructions.webm'));
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    _handleUnauthorized(response);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['text'] as String;
+    } else {
+      throw Exception('Failed to transcribe audio: ${response.statusCode} - ${response.body}');
+    }
   }
 
   Future<Book> createBook({
