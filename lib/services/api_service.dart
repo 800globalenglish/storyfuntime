@@ -136,11 +136,12 @@ class ApiService {
   Future<List<String>> generateScript({
     required String bookId,
     int pageCount = 5,
+    String storyType = 'bedtime',
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/books/$bookId/generate-script'),
       headers: await _authHeaders(),
-      body: jsonEncode({'pageCount': pageCount}),
+      body: jsonEncode({'pageCount': pageCount, 'storyType': storyType}),
     );
 
     _handleUnauthorized(response);

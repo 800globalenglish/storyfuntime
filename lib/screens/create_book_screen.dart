@@ -18,7 +18,6 @@ class CreateBookScreen extends StatefulWidget {
 class _CreateBookScreenState extends State<CreateBookScreen> {
   final _titleController = TextEditingController();
   final _themeController = TextEditingController();
-  StoryType _selectedStoryType = StoryType.bedtime;
   final _apiService = ApiService();
   bool _isSubmitting = false;
   String? _resultMessage;
@@ -28,68 +27,20 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
     super.initState();
     final preSelected = widget.preSelectedCharacterIds;
     if (preSelected != null && preSelected.isNotEmpty) {
-      // Characters were already chosen - skip the full title/theme form,
-      // that's handled on Book Details via "Generate Story" instead. Still
-      // let them pick a story type though, via a lightweight dialog rather
-      // than routing through the full form.
+      // Characters were already chosen - skip asking for title/theme here,
+      // that's handled on Book Details via "Generate Story" instead. Story
+      // Type is picked there too, not at creation time.
       _isSubmitting = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) => _promptStoryTypeThenCreate(preSelected));
+      WidgetsBinding.instance.addPostFrameCallback((_) => _createWithDefaults(preSelected));
     }
   }
 
-  Future<void> _promptStoryTypeThenCreate(List<String> characterIds) async {
-    var selectedType = StoryType.bedtime;
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Choose a Story Type'),
-          content: DropdownButtonFormField<StoryType>(
-            value: selectedType,
-            style: const TextStyle(fontSize: 22, color: Colors.black),
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              isDense: true,
-            ),
-            items: [
-              for (final type in StoryType.values)
-                DropdownMenuItem(
-                  value: type,
-                  child: Text(type.label, style: const TextStyle(fontSize: 22)),
-                ),
-            ],
-            onChanged: (value) => setDialogState(() => selectedType = value ?? StoryType.bedtime),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Create'),
-            ),
-          ],
-        ),
-      ),
-    );
-
-    if (confirmed != true) {
-      if (mounted) Navigator.pop(context);
-      return;
-    }
-
-    await _createWithDefaults(characterIds, selectedType);
-  }
-
-  Future<void> _createWithDefaults(List<String> characterIds, StoryType storyType) async {
+  Future<void> _createWithDefaults(List<String> characterIds) async {
     try {
       final book = await _apiService.createBook(
         title: 'My Story',
         theme: 'draft',
-        storyType: storyType.apiValue,
+        storyType: StoryType.bedtime.apiValue,
       );
       await _apiService.copyCharactersToBook(
         bookId: book.id,
@@ -127,7 +78,7 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
       final book = await _apiService.createBook(
         title: _titleController.text.trim(),
         theme: _themeController.text.trim(),
-        storyType: _selectedStoryType.apiValue,
+        storyType: StoryType.bedtime.apiValue,
       );
 
       final preSelected = widget.preSelectedCharacterIds;
@@ -200,25 +151,6 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
                 border: OutlineInputBorder(),
                 hintText: 'e.g. Farm animals, Bible stories',
               ),
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<StoryType>(
-              value: _selectedStoryType,
-              style: const TextStyle(fontSize: 22, color: Colors.black),
-              decoration: const InputDecoration(
-                labelText: 'Story Type',
-                labelStyle: TextStyle(fontSize: 22),
-                border: OutlineInputBorder(),
-                isDense: true,
-              ),
-              items: [
-                for (final type in StoryType.values)
-                  DropdownMenuItem(
-                    value: type,
-                    child: Text(type.label, style: const TextStyle(fontSize: 22)),
-                  ),
-              ],
-              onChanged: (value) => setState(() => _selectedStoryType = value ?? StoryType.bedtime),
             ),
             const SizedBox(height: 24),
             ElevatedButton(

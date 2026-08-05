@@ -4,6 +4,7 @@ import 'choose_different_character_screen.dart';
 import 'character_picker_screen.dart';
 import 'apply_template_screen.dart';
 import '../models/book.dart';
+import '../models/story_type.dart';
 import '../services/api_service.dart';
 import '../services/app_strings.dart';
 import 'creator_wizard_screen.dart';
@@ -37,6 +38,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   final _titleController = TextEditingController();
   final _themeController = TextEditingController();
   int _sceneCount = 5;
+  StoryType _selectedStoryType = StoryType.bedtime;
   bool _isGenerating = false;
   String? _generateError;
 
@@ -116,7 +118,11 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         theme: _themeController.text.trim(),
       );
 
-      final pages = await _apiService.generateScript(bookId: widget.bookId, pageCount: _sceneCount);
+      final pages = await _apiService.generateScript(
+        bookId: widget.bookId,
+        pageCount: _sceneCount,
+        storyType: _selectedStoryType.apiValue,
+      );
       for (int i = 0; i < pages.length; i++) {
         await _apiService.addPage(
           bookId: widget.bookId,
@@ -585,6 +591,45 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 ],
                 if (_showGenerateForm) ...[
                   const SizedBox(height: 16),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<StoryType>(
+                          value: _selectedStoryType,
+                          style: const TextStyle(fontSize: 18, color: Colors.black),
+                          decoration: InputDecoration(
+                            labelText: AppStrings.t('story_type_label'),
+                            border: OutlineInputBorder(borderRadius: _buttonRadius),
+                            isDense: true,
+                          ),
+                          items: [
+                            for (final type in StoryType.values)
+                              DropdownMenuItem(
+                                value: type,
+                                child: Text(type.label, style: const TextStyle(fontSize: 16)),
+                              ),
+                          ],
+                          onChanged: _isGenerating
+                              ? null
+                              : (value) => setState(() => _selectedStoryType = value ?? StoryType.bedtime),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(AppStrings.t('num_scenes_label'), style: const TextStyle(fontSize: 18)),
+                      const SizedBox(width: 8),
+                      DropdownButton<int>(
+                        value: _sceneCount,
+                        style: const TextStyle(fontSize: 18, color: Colors.black),
+                        items: [
+                          for (int i = 1; i <= 10; i++)
+                            DropdownMenuItem(value: i, child: Text('$i', style: const TextStyle(fontSize: 18))),
+                        ],
+                        onChanged: _isGenerating ? null : (value) => setState(() => _sceneCount = value ?? 5),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                   TextField(
                     controller: _titleController,
                     textAlign: TextAlign.center,
@@ -594,23 +639,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                       floatingLabelAlignment: FloatingLabelAlignment.center,
                       border: OutlineInputBorder(borderRadius: _buttonRadius),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(AppStrings.t('num_scenes_label'), style: const TextStyle(fontSize: 22)),
-                      const SizedBox(width: 12),
-                      DropdownButton<int>(
-                        value: _sceneCount,
-                        style: const TextStyle(fontSize: 22, color: Colors.black),
-                        items: [
-                          for (int i = 1; i <= 10; i++)
-                            DropdownMenuItem(value: i, child: Text('$i', style: const TextStyle(fontSize: 22))),
-                        ],
-                        onChanged: _isGenerating ? null : (value) => setState(() => _sceneCount = value ?? 5),
-                      ),
-                    ],
                   ),
                   const SizedBox(height: 16),
                   TextField(
