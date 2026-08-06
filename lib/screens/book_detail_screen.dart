@@ -12,6 +12,7 @@ import 'record_story_screen.dart';
 import '../utils/fade_route.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../widgets/voice_text_field.dart';
 
 /// Screen 1 of the book flow: setup. Shown for a book that has no pages
 /// yet. Lets the person add characters, then either generate a story
@@ -36,7 +37,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   bool _showGenerateForm = false;
   bool _formFieldsInitialized = false;
   final _titleController = TextEditingController();
-  final _themeController = TextEditingController();
   int _sceneCount = 5;
   StoryType _selectedStoryType = StoryType.bedtime;
   bool _isGenerating = false;
@@ -57,7 +57,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   void dispose() {
     AppStrings.languageCode.removeListener(_onLanguageChanged);
     _titleController.dispose();
-    _themeController.dispose();
     super.dispose();
   }
 
@@ -101,8 +100,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   }
 
   Future<void> _generateStory() async {
-    if (_titleController.text.trim().isEmpty || _themeController.text.trim().isEmpty) {
-      setState(() => _generateError = AppStrings.t('please_fill_title_theme'));
+    if (_titleController.text.trim().isEmpty) {
+      setState(() => _generateError = AppStrings.t('please_fill_title'));
       return;
     }
 
@@ -115,7 +114,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       await _apiService.updateBook(
         bookId: widget.bookId,
         title: _titleController.text.trim(),
-        theme: _themeController.text.trim(),
+        theme: _titleController.text.trim(),
       );
 
       final pages = await _apiService.generateScript(
@@ -155,25 +154,47 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
+            VoiceTextField(
               controller: titleController,
               decoration: const InputDecoration(labelText: 'Title'),
             ),
             const SizedBox(height: 12),
-            TextField(
+            VoiceTextField(
               controller: themeController,
               decoration: const InputDecoration(labelText: 'Theme'),
             ),
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Save'),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                height: _buttonHeight,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                  ),
+                  child: const Text('Cancel', style: TextStyle(fontSize: 22)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              SizedBox(
+                height: _buttonHeight,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                  ),
+                  child: const Text('Save', style: TextStyle(fontSize: 22)),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -263,7 +284,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 ),
                 const SizedBox(height: 16),
               ],
-              TextField(
+              VoiceTextField(
                 controller: instructionsController,
                 autofocus: true,
                 maxLines: 3,
@@ -397,22 +418,13 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         final book = snapshot.data!;
         if (!_formFieldsInitialized) {
           _titleController.text = book.title == 'My Story' ? '' : book.title;
-          _themeController.text = book.theme == 'draft' ? '' : book.theme;
           _formFieldsInitialized = true;
         }
         return Scaffold(
           bottomNavigationBar: const DebugScreenTag('book_detail_screen.dart'),
           appBar: AppBar(
             centerTitle: true,
-            toolbarHeight: 76,
-            title: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(book.title, style: const TextStyle(fontSize: 22)),
-                const SizedBox(height: 2),
-                Text(book.status, style: const TextStyle(fontSize: 13)),
-              ],
-            ),
+            title: Text(book.title, style: const TextStyle(fontSize: 22)),
             actions: [
               IconButton(
                 icon: const Icon(Icons.edit, size: 20),
@@ -630,23 +642,12 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  TextField(
+                  VoiceTextField(
                     controller: _titleController,
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 22),
                     decoration: InputDecoration(
                       labelText: AppStrings.t('book_title_label'),
-                      floatingLabelAlignment: FloatingLabelAlignment.center,
-                      border: OutlineInputBorder(borderRadius: _buttonRadius),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _themeController,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 22),
-                    decoration: InputDecoration(
-                      labelText: AppStrings.t('theme_label'),
                       floatingLabelAlignment: FloatingLabelAlignment.center,
                       border: OutlineInputBorder(borderRadius: _buttonRadius),
                     ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/reset_password_screen.dart';
+import 'screens/dev_menu_screen.dart';
 import 'services/auth_service.dart';
 import 'services/app_strings.dart';
 
@@ -27,6 +28,10 @@ class StoryFunTimeApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
       title: 'StoryFunTime',
+      // TEMPORARY: dev-only deep link for QA, see dev_menu_screen.dart.
+      routes: {
+        '/debug': (context) => const DevMenuScreen(),
+      },
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,

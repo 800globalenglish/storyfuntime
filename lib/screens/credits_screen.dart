@@ -15,6 +15,9 @@ class _CreditsScreenState extends State<CreditsScreen> {
   final _apiService = ApiService();
   String? _loadingProduct;
 
+  static const _buttonRadius = BorderRadius.all(Radius.circular(10));
+  static const _buttonHeight = 71.0;
+
   Future<void> _buy(String product) async {
     setState(() => _loadingProduct = product);
     try {
@@ -55,9 +58,17 @@ class _CreditsScreenState extends State<CreditsScreen> {
           height: 20,
           child: CircularProgressIndicator(strokeWidth: 2),
         )
-            : ElevatedButton(
-          onPressed: () => _buy(product),
-          child: Text(priceLabel),
+            : SizedBox(
+          height: _buttonHeight,
+          child: ElevatedButton(
+            onPressed: () => _buy(product),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+            ),
+            child: Text(priceLabel, style: const TextStyle(fontSize: 22)),
+          ),
         ),
       ),
     );

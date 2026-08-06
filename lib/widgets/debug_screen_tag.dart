@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Flip to false to hide every screen-file tag in one shot without
-/// touching the ~27 screens that reference DebugScreenTag. To remove
-/// the feature entirely later: delete this file, then delete each
-/// `bottomNavigationBar: const DebugScreenTag('...'),` line.
+/// touching the ~28 screens that reference DebugScreenTag.
 const bool kShowDebugScreenTags = true;
 
 /// Dev-only label pinned to the bottom of a screen showing which file

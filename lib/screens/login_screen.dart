@@ -26,6 +26,9 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isSubmitting = false;
   String? _errorMessage;
 
+  static const _buttonRadius = BorderRadius.all(Radius.circular(10));
+  static const _buttonHeight = 71.0;
+
   @override
   void initState() {
     super.initState();
@@ -51,6 +54,13 @@ class _LoginScreenState extends State<LoginScreen> {
     _referredByController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  String _languageFlag() {
+    final code = AppStrings.languageCode.value;
+    return supportedLanguages
+        .firstWhere((language) => language.code == code, orElse: () => supportedLanguages.first)
+        .flag;
   }
 
   Future<void> _submit() async {
@@ -144,10 +154,9 @@ class _LoginScreenState extends State<LoginScreen> {
       bottomNavigationBar: const DebugScreenTag('login_screen.dart'),
       appBar: AppBar(
         centerTitle: true,
-        title: Text(AppStrings.t('app_title')),
         actions: [
           IconButton(
-            icon: const Icon(Icons.language),
+            icon: Text(_languageFlag(), style: const TextStyle(fontSize: 22)),
             tooltip: 'Language',
             onPressed: () {
               Navigator.push(
@@ -254,18 +263,23 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                   const SizedBox(height: 24),
                   SizedBox(
-                    height: 52,
+                    height: _buttonHeight,
                     child: ElevatedButton(
                       onPressed: _isSubmitting ? null : _submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                      ),
                       child: _isSubmitting
                           ? const SizedBox(
                         width: 24,
                         height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2.5),
+                        child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
                       )
                           : Text(
                         _isSignupMode ? AppStrings.t('create_account_button') : AppStrings.t('log_in_button'),
-                        style: const TextStyle(fontSize: 18),
+                        style: const TextStyle(fontSize: 22),
                       ),
                     ),
                   ),

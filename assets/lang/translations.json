@@ -69,6 +69,7 @@
     "joined_prefix": "Joined",
 
     "please_fill_title_theme": "Please fill in both the title and theme.",
+    "please_fill_title": "Please fill in the title.",
     "failed_to_generate_story": "Failed to generate story:",
     "what_would_you_like_to_do": "What would you like to do?",
     "done": "Done",
@@ -124,6 +125,7 @@
     "generate_scene": "Generate scene",
     "voice_recorded": "Voice recorded",
     "record_voice": "Record voice",
+    "transcribing_please_wait": "Please wait, transcribing your voice...",
     "view_scene_tooltip": "View scene",
     "revert_scene_tooltip": "Revert to previous scene",
 
@@ -258,6 +260,7 @@
     "joined_prefix": "Se unió el",
 
     "please_fill_title_theme": "Por favor completa el título y el tema.",
+    "please_fill_title": "Por favor completa el título.",
     "failed_to_generate_story": "Error al generar la historia:",
     "what_would_you_like_to_do": "¿Qué te gustaría hacer?",
     "done": "Listo",
@@ -313,6 +316,7 @@
     "generate_scene": "Generar escena",
     "voice_recorded": "Voz grabada",
     "record_voice": "Grabar voz",
+    "transcribing_please_wait": "Espera, transcribiendo tu voz...",
     "view_scene_tooltip": "Ver escena",
     "revert_scene_tooltip": "Revertir a la escena anterior",
 
@@ -447,6 +451,7 @@
     "joined_prefix": "加入于",
 
     "please_fill_title_theme": "请填写标题和主题。",
+    "please_fill_title": "请填写标题。",
     "failed_to_generate_story": "生成故事失败：",
     "what_would_you_like_to_do": "您想做什么？",
     "done": "完成",
@@ -502,6 +507,7 @@
     "generate_scene": "生成场景",
     "voice_recorded": "已录音",
     "record_voice": "录音",
+    "transcribing_please_wait": "请稍候，正在转录您的语音...",
     "view_scene_tooltip": "查看场景",
     "revert_scene_tooltip": "恢复上一个场景",
 

@@ -5,6 +5,7 @@ import 'template_page_editor_screen.dart';
 import '../utils/fade_route.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../widgets/voice_text_field.dart';
 
 class TemplateAdminScreen extends StatefulWidget {
   const TemplateAdminScreen({super.key});
@@ -44,12 +45,12 @@ class _TemplateAdminScreenState extends State<TemplateAdminScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
+            VoiceTextField(
               controller: titleController,
               decoration: const InputDecoration(labelText: 'Title', hintText: 'e.g. David and Goliath'),
             ),
             const SizedBox(height: 12),
-            TextField(
+            VoiceTextField(
               controller: themeController,
               decoration: const InputDecoration(labelText: 'Theme', hintText: 'e.g. Bible story'),
             ),

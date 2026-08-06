@@ -4,11 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
 import '../services/app_strings.dart';
-import 'package:record/record.dart';
-import 'package:http/http.dart' as http;
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
-import '../widgets/audio_meter.dart';
+import '../widgets/voice_text_field.dart';
 import '../theme/app_theme.dart';
 import '../theme/theme_controller.dart';
 
@@ -37,9 +35,6 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
   final _picker = ImagePicker();
   final _nameController = TextEditingController();
   final _instructionsController = TextEditingController();
-  final _audioRecorder = AudioRecorder();
-  bool _isRecording = false;
-  bool _isTranscribing = false;
 
   final List<_AgeStage> _ageStages = const [
     _AgeStage(label: 'Infant', ageRange: '0-1', isChild: true),
@@ -80,7 +75,6 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
 
   @override
   void dispose() {
-    _audioRecorder.dispose();
     AppStrings.languageCode.removeListener(_onLanguageChanged);
     super.dispose();
   }
@@ -118,47 +112,6 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
       });
     }
   }
-
-  Future<void> _toggleRecording() async {
-    if (_isRecording) {
-      // Stop recording and send for transcription
-      final path = await _audioRecorder.stop();
-      setState(() => _isRecording = false);
-
-      if (path == null) return;
-
-      setState(() {
-        _isTranscribing = true;
-        _errorMessage = null;
-      });
-
-      try {
-        // On web, `path` is a blob URL — fetch its bytes first.
-        final response = await http.get(Uri.parse(path));
-        final audioBytes = response.bodyBytes;
-
-        final transcript = await _apiService.transcribeAudio(audioBytes);
-
-        setState(() {
-          final existing = _instructionsController.text.trim();
-          _instructionsController.text =
-          existing.isEmpty ? transcript : '$existing $transcript';
-        });
-      } catch (e) {
-        setState(() => _errorMessage = 'Could not transcribe audio: $e');
-      } finally {
-        setState(() => _isTranscribing = false);
-      }
-    } else {
-      try {
-        await _audioRecorder.start(const RecordConfig(), path: 'instructions_audio');
-        setState(() => _isRecording = true);
-      } catch (e) {
-        setState(() => _errorMessage = 'Could not start recording. Please allow microphone access: $e');
-      }
-    }
-  }
-
 
   Future<void> _generate() async {
     if (_avatarUrl == null) {
@@ -336,13 +289,14 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                 ),
               ],
               const SizedBox(height: 16),
-              TextField(
+              VoiceTextField(
                 controller: _nameController,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 22),
+                micColor: themeData.primary,
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
-                  hintText: AppStrings.t('Character Name'),
+                  hintText: AppStrings.t('name_label'),
                   hintStyle: const TextStyle(fontSize: 22),
                 ),
               ),
@@ -424,40 +378,19 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
               ),
               const SizedBox(height: 16),
             ],
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                TextField(
-                  controller: _instructionsController,
-                  maxLines: 2,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 22),
-                  decoration: InputDecoration(
-                    hintText: _avatarUrl == null
-                        ? AppStrings.t('optional_instructions')
-                        : AppStrings.t('instructions_for_next_try'),
-                    hintStyle: const TextStyle(fontSize: 22),
-                    border: const OutlineInputBorder(),
-                    suffixIcon: _isTranscribing
-                        ? const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
-                    )
-                        : IconButton(
-                      icon: Icon(
-                        _isRecording ? Icons.stop_circle : Icons.mic,
-                        color: themeData.accent,
-                        size: _isRecording ? 20 : null,
-                      ),
-                      onPressed: _toggleRecording,
-                    ),
-                  ),
-                ),
-                if (_isRecording) ...[
-                  const SizedBox(height: 8),
-                  AudioMeter(recorder: _audioRecorder),
-                ],
-              ],
+            VoiceTextField(
+              controller: _instructionsController,
+              maxLines: 2,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 22),
+              micColor: themeData.accent,
+              decoration: InputDecoration(
+                hintText: _avatarUrl == null
+                    ? AppStrings.t('optional_instructions')
+                    : AppStrings.t('instructions_for_next_try'),
+                hintStyle: const TextStyle(fontSize: 22),
+                border: const OutlineInputBorder(),
+              ),
             ),
             const SizedBox(height: 16),
             if (_isSaving)

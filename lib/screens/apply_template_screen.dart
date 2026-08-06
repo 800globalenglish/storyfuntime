@@ -25,6 +25,9 @@ class _ApplyTemplateScreenState extends State<ApplyTemplateScreen> {
   final Map<String, String> _roleToCharacterId = {};
   bool _isSubmitting = false;
 
+  static const _buttonRadius = BorderRadius.all(Radius.circular(10));
+  static const _buttonHeight = 71.0;
+
   @override
   void initState() {
     super.initState();
@@ -181,15 +184,23 @@ class _ApplyTemplateScreenState extends State<ApplyTemplateScreen> {
                         }).toList(),
                       ),
                     ),
-                    ElevatedButton(
-                      onPressed: _isSubmitting ? null : _apply,
-                      child: _isSubmitting
-                          ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                          : Text(AppStrings.t('apply_template')),
+                    SizedBox(
+                      height: _buttonHeight,
+                      child: ElevatedButton(
+                        onPressed: _isSubmitting ? null : _apply,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                        ),
+                        child: _isSubmitting
+                            ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                            : Text(AppStrings.t('apply_template'), style: const TextStyle(fontSize: 22)),
+                      ),
                     ),
                   ],
                 ),

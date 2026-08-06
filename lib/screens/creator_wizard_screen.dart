@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../widgets/voice_text_field.dart';
 import '../theme/app_theme.dart';
 import '../theme/scene_border_colors.dart';
 import '../theme/theme_controller.dart';
@@ -35,6 +36,8 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
   String? _regeneratingTextPageId;
   bool _isGeneratingVideo = false;
   bool _instructionsHidden = false;
+  int? _pollingPageNumber;
+  int? _lastRecordedPageNumber; // TEMP - for [TIMING] instrumentation only
 
   // NEW - lets someone listen to a page's already-recorded audio right from
   // this list, without opening the recorder screen.
@@ -66,7 +69,11 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
   }
 
   void _loadBook() {
-    _bookFuture = _apiService.getBook(id: widget.bookId);
+    debugPrint('[TIMING] _loadBook getBook requested at ${DateTime.now()}');
+    _bookFuture = _apiService.getBook(id: widget.bookId).then((book) {
+      debugPrint('[TIMING] _loadBook getBook resolved at ${DateTime.now()}');
+      return book;
+    });
   }
 
   void _refresh() {
@@ -193,6 +200,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
   }
 
   Future<void> _goToRecordVoice(String pageId, int pageNumber, String scriptText) async {
+    final originalScriptText = scriptText;
     final saved = await Navigator.push(
       context,
       FadeRoute(
@@ -203,20 +211,57 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
         ),
       ),
     );
+    debugPrint('[TIMING] RecordVoiceScreen popped for page $pageNumber at ${DateTime.now()}, saved=$saved');
     if (saved != true) return;
 
+    _lastRecordedPageNumber = pageNumber;
+    debugPrint('[TIMING] calling EARLY _refresh() for page $pageNumber at ${DateTime.now()}');
     _refresh();
 
     // Chain straight into the next page that still needs a voice recording,
     // instead of dropping back to the main screen after every single save.
     if (!mounted) return;
-    final freshBook = await _apiService.getBook(id: widget.bookId);
+    debugPrint('[TIMING] remaining-check getBook requested for page $pageNumber at ${DateTime.now()}');
+    var freshBook = await _apiService.getBook(id: widget.bookId);
+    var thisPage = freshBook.pages.firstWhere((p) => p.pageNumber == pageNumber);
+    debugPrint('[TIMING] remaining-check getBook resolved for page $pageNumber at ${DateTime.now()}, audioUrl=${thisPage.audioUrl}');
     final remaining = freshBook.pages
         .where((p) => p.pageNumber > pageNumber && p.audioUrl == null)
         .toList();
     if (remaining.isNotEmpty && mounted) {
       final next = remaining.first;
       await _goToRecordVoice(next.id, next.pageNumber, next.scriptText);
+      return;
+    }
+
+    // This was the last page in the chain - there's no next recording
+    // screen to naturally give its upload (including server-side
+    // transcription, which can take several seconds) time to land. Poll
+    // for a while instead of trusting a single immediate check.
+    debugPrint('[TIMING] setting _pollingPageNumber=$pageNumber at ${DateTime.now()}');
+    setState(() => _pollingPageNumber = pageNumber);
+    const maxAttempts = 10;
+    const pollDelay = Duration(seconds: 2);
+    var attempt = 0;
+    var audioUrlRefreshed = thisPage.audioUrl != null;
+    while (thisPage.scriptText == originalScriptText && attempt < maxAttempts && mounted) {
+      attempt++;
+      debugPrint('[TIMING] polling for page $pageNumber audioUrl, attempt $attempt at ${DateTime.now()}');
+      await Future.delayed(pollDelay);
+      if (!mounted) return;
+      freshBook = await _apiService.getBook(id: widget.bookId);
+      thisPage = freshBook.pages.firstWhere((p) => p.pageNumber == pageNumber);
+      debugPrint('[TIMING] poll attempt $attempt resolved at ${DateTime.now()}, audioUrl=${thisPage.audioUrl}');
+      if (!audioUrlRefreshed && thisPage.audioUrl != null) {
+        audioUrlRefreshed = true;
+        debugPrint('[TIMING] audioUrl now set mid-poll, refreshing early at ${DateTime.now()}');
+        _refresh();
+      }
+    }
+    if (mounted) {
+      setState(() => _pollingPageNumber = null);
+      debugPrint('[TIMING] calling END-OF-POLL _refresh() for page $pageNumber at ${DateTime.now()}');
+      _refresh();
     }
   }
 
@@ -226,7 +271,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(AppStrings.t('edit_page_text_title')),
-        content: TextField(
+        content: VoiceTextField(
           controller: controller,
           maxLines: null,
           autofocus: true,
@@ -264,7 +309,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(AppStrings.t('regenerate_text_title')),
-        content: TextField(
+        content: VoiceTextField(
           controller: instructionsController,
           autofocus: true,
           maxLines: 3,
@@ -410,7 +455,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
               ),
               const SizedBox(height: 16),
             ],
-            TextField(
+            VoiceTextField(
               controller: instructionsController,
               autofocus: true,
               maxLines: 3,
@@ -470,18 +515,40 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Rename Story'),
-        content: TextField(
+        content: VoiceTextField(
           controller: titleController,
           decoration: const InputDecoration(labelText: 'Title'),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Save'),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                height: _buttonHeight,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                  ),
+                  child: const Text('Cancel', style: TextStyle(fontSize: 22)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              SizedBox(
+                height: _buttonHeight,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                  ),
+                  child: const Text('Save', style: TextStyle(fontSize: 22)),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -510,6 +577,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
       future: _bookFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
+          debugPrint('[TIMING] FutureBuilder WAITING at ${DateTime.now()}');
           return Scaffold(
             bottomNavigationBar: const DebugScreenTag('creator_wizard_screen.dart'),
             appBar: AppBar(
@@ -538,6 +606,12 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
           );
         }
         final book = snapshot.data!;
+        if (_lastRecordedPageNumber != null) {
+          final tracked = book.pages.where((p) => p.pageNumber == _lastRecordedPageNumber);
+          if (tracked.isNotEmpty) {
+            debugPrint('[TIMING] FutureBuilder rebuilt with DATA at ${DateTime.now()}, page $_lastRecordedPageNumber audioUrl=${tracked.first.audioUrl}');
+          }
+        }
         final allComplete = book.pages.isNotEmpty &&
             book.pages.every((p) => p.cartoonImageUrl != null && p.audioUrl != null);
         // A book from "Record Your Story" already has audio on every page before
@@ -821,7 +895,10 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                                     )
                                         : null,
                                     child: TextButton.icon(
-                                      onPressed: () => _goToRecordVoice(page.id, page.pageNumber, page.scriptText),
+                                      onPressed: () {
+                                        debugPrint('[TIMING] starting record flow for page ${page.pageNumber}, current audioUrl=${page.audioUrl} at ${DateTime.now()}');
+                                        _goToRecordVoice(page.id, page.pageNumber, page.scriptText);
+                                      },
                                       icon: Icon(
                                         hasAudio ? Icons.check_circle : Icons.mic_none,
                                         color: hasAudio ? Colors.green : (isFirstRecordPrompt ? const Color(0xFF7CB342) : null),
@@ -852,6 +929,23 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                                     ),
                                 ],
                               ),
+                              if (_pollingPageNumber == page.pageNumber) ...[
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    const SizedBox(
+                                      width: 14,
+                                      height: 14,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      AppStrings.t('transcribing_please_wait'),
+                                      style: const TextStyle(fontSize: 12, color: Colors.grey, fontStyle: FontStyle.italic),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ],
                           ),
                         ),

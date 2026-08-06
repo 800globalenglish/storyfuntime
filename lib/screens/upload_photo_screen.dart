@@ -22,6 +22,9 @@ class _UploadPhotoScreenState extends State<UploadPhotoScreen> {
   final _apiService = ApiService();
   final _picker = ImagePicker();
 
+  static const _buttonRadius = BorderRadius.all(Radius.circular(10));
+  static const _buttonHeight = 71.0;
+
   XFile? _pickedImage;
   bool _isUploading = false;
   String? _errorMessage;
@@ -84,10 +87,18 @@ class _UploadPhotoScreenState extends State<UploadPhotoScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (_pickedImage == null && _cartoonImageUrl == null)
-              ElevatedButton.icon(
-                onPressed: _pickImage,
-                icon: const Icon(Icons.photo_library),
-                label: const Text('Choose a Photo'),
+              SizedBox(
+                height: _buttonHeight,
+                child: ElevatedButton.icon(
+                  onPressed: _pickImage,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                  ),
+                  icon: const Icon(Icons.photo_library, size: 32),
+                  label: const Text('Choose a Photo', style: TextStyle(fontSize: 22)),
+                ),
               ),
             if (_pickedImage != null && _cartoonImageUrl == null) ...[
               Text('Selected: ${_pickedImage!.name}'),
@@ -104,16 +115,32 @@ class _UploadPhotoScreenState extends State<UploadPhotoScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: OutlinedButton(
-                        onPressed: _pickImage,
-                        child: const Text('Choose Different Photo'),
+                      child: SizedBox(
+                        height: _buttonHeight,
+                        child: ElevatedButton(
+                          onPressed: _pickImage,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                          ),
+                          child: const Text('Choose Different Photo', style: TextStyle(fontSize: 22)),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: ElevatedButton(
-                        onPressed: _uploadAndCartoonize,
-                        child: const Text('Cartoonize It'),
+                      child: SizedBox(
+                        height: _buttonHeight,
+                        child: ElevatedButton(
+                          onPressed: _uploadAndCartoonize,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF7F50B2),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                          ),
+                          child: const Text('Cartoonize It', style: TextStyle(fontSize: 22)),
+                        ),
                       ),
                     ),
                   ],
@@ -138,9 +165,18 @@ class _UploadPhotoScreenState extends State<UploadPhotoScreen> {
             if (_cartoonImageUrl != null)
               Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: const Text('Done'),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: _buttonHeight,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                    ),
+                    child: const Text('Done', style: TextStyle(fontSize: 22)),
+                  ),
                 ),
               ),
             const DebugScreenTag('upload_photo_screen.dart'),

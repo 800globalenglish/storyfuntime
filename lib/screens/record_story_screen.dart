@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'creator_wizard_screen.dart'; // adjust this import path if creator_wizard_screen.dart lives elsewhere
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../widgets/voice_text_field.dart';
 import '../widgets/audio_meter.dart';
 
 class RecordStoryScreen extends StatefulWidget {
@@ -161,7 +162,7 @@ class _RecordStoryScreenState extends State<RecordStoryScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
+            VoiceTextField(
               controller: _titleController,
               decoration: const InputDecoration(
                 labelText: 'Book Title',
@@ -169,7 +170,7 @@ class _RecordStoryScreenState extends State<RecordStoryScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            TextField(
+            VoiceTextField(
               controller: _themeController,
               decoration: const InputDecoration(
                 labelText: 'Theme',

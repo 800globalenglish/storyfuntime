@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../widgets/voice_text_field.dart';
 
 class TemplatePageEditorScreen extends StatefulWidget {
   final String templateId;
@@ -62,7 +63,7 @@ class _TemplatePageEditorScreenState extends State<TemplatePageEditorScreen> {
                 decoration: const InputDecoration(labelText: 'Page Number'),
               ),
             const SizedBox(height: 12),
-            TextField(
+            VoiceTextField(
               controller: textController,
               maxLines: 4,
               decoration: const InputDecoration(

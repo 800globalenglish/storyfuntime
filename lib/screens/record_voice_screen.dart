@@ -105,24 +105,38 @@ class _RecordVoiceScreenState extends State<RecordVoiceScreen> {
     });
   }
 
-  void _saveRecording() {
+  Future<void> _saveRecording() async {
     if (_recordingPath == null) return;
     final path = _recordingPath!;
     final pageId = widget.pageId;
 
-    // Upload happens in the background so the person can move on right
-    // away instead of waiting on the network - there's no screen left to
-    // show an upload failure on, so just log it.
+    // Read the bytes into memory NOW, before this screen (and its blob
+    // URL) can go away - this is a fast local blob read, not a network
+    // call, so it doesn't delay the instant-return feel.
+    List<int> audioBytes;
+    try {
+      final response = await http.get(Uri.parse(path));
+      audioBytes = response.bodyBytes;
+    } catch (e) {
+      if (mounted) setState(() => _errorMessage = 'Could not read recording: $e');
+      return;
+    }
+
+    if (!mounted) return;
+    debugPrint('[TIMING] pop page ${widget.pageNumber} at ${DateTime.now()}');
+    Navigator.pop(context, true);
+
+    // Upload in the background using the already-captured bytes - no
+    // dependency on the blob URL or this screen still being alive.
     () async {
+      debugPrint('[TIMING] upload START page ${widget.pageNumber} at ${DateTime.now()}, bytes=${audioBytes.length}');
       try {
-        final response = await http.get(Uri.parse(path));
-        await _apiService.uploadAudio(pageId: pageId, audioBytes: response.bodyBytes);
+        await _apiService.uploadAudio(pageId: pageId, audioBytes: audioBytes);
+        debugPrint('[TIMING] upload DONE page ${widget.pageNumber} at ${DateTime.now()}');
       } catch (e) {
-        debugPrint('Failed to save recording in background: $e');
+        debugPrint('[TIMING] upload FAILED page ${widget.pageNumber} at ${DateTime.now()}: $e');
       }
     }();
-
-    Navigator.pop(context, true);
   }
 
   @override

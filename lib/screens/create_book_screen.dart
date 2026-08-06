@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../models/story_type.dart';
-import 'characters_step_screen.dart';
 import 'book_detail_screen.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../widgets/voice_text_field.dart';
 
 class CreateBookScreen extends StatefulWidget {
   final List<String>? preSelectedCharacterIds;
@@ -21,6 +21,9 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
   final _apiService = ApiService();
   bool _isSubmitting = false;
   String? _resultMessage;
+
+  static const _buttonRadius = BorderRadius.all(Radius.circular(10));
+  static const _buttonHeight = 71.0;
 
   @override
   void initState() {
@@ -87,19 +90,12 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
           bookId: book.id,
           characterIds: preSelected,
         );
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => BookDetailScreen(bookId: book.id)),
-          );
-        }
-      } else {
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => CharactersStepScreen(bookId: book.id)),
-          );
-        }
+      }
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => BookDetailScreen(bookId: book.id)),
+        );
       }
       return;
     } catch (e) {
@@ -135,7 +131,7 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
+            VoiceTextField(
               controller: _titleController,
               decoration: const InputDecoration(
                 labelText: 'Book Title',
@@ -144,7 +140,7 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            TextField(
+            VoiceTextField(
               controller: _themeController,
               decoration: const InputDecoration(
                 labelText: 'Theme',
@@ -153,11 +149,20 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _isSubmitting ? null : _submit,
-              child: _isSubmitting
-                  ? const CircularProgressIndicator()
-                  : const Text('Create Book'),
+            SizedBox(
+              width: double.infinity,
+              height: _buttonHeight,
+              child: ElevatedButton(
+                onPressed: _isSubmitting ? null : _submit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                ),
+                child: _isSubmitting
+                    ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : const Text('Create Book', style: TextStyle(fontSize: 22)),
+              ),
             ),
             const SizedBox(height: 24),
             if (_resultMessage != null)

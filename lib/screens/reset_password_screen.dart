@@ -24,6 +24,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   bool _isSubmitting = false;
   String? _errorMessage;
 
+  static const _buttonRadius = BorderRadius.all(Radius.circular(10));
+  static const _buttonHeight = 71.0;
+
   @override
   void initState() {
     super.initState();
@@ -127,16 +130,21 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   ],
                   const SizedBox(height: 24),
                   SizedBox(
-                    height: 52,
+                    height: _buttonHeight,
                     child: ElevatedButton(
                       onPressed: _isSubmitting ? null : _submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                      ),
                       child: _isSubmitting
                           ? const SizedBox(
                               width: 24,
                               height: 24,
-                              child: CircularProgressIndicator(strokeWidth: 2.5),
+                              child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
                             )
-                          : Text(AppStrings.t('reset_password_button'), style: const TextStyle(fontSize: 18)),
+                          : Text(AppStrings.t('reset_password_button'), style: const TextStyle(fontSize: 22)),
                     ),
                   ),
                   const SizedBox(height: 16),

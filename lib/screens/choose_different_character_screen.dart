@@ -24,6 +24,9 @@ class _ChooseDifferentCharacterScreenState extends State<ChooseDifferentCharacte
   String? _selectedId;
   bool _isSubmitting = false;
 
+  static const _buttonRadius = BorderRadius.all(Radius.circular(10));
+  static const _buttonHeight = 71.0;
+
   @override
   void initState() {
     super.initState();
@@ -157,15 +160,24 @@ class _ChooseDifferentCharacterScreenState extends State<ChooseDifferentCharacte
           children: [
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton(
-                onPressed: (_selectedId == null || _isSubmitting) ? null : _swap,
-                child: _isSubmitting
-                    ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-                    : const Text('Swap Character'),
+              child: SizedBox(
+                width: double.infinity,
+                height: _buttonHeight,
+                child: ElevatedButton(
+                  onPressed: (_selectedId == null || _isSubmitting) ? null : _swap,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _selectedId != null ? Colors.green : null,
+                    foregroundColor: _selectedId != null ? Colors.white : null,
+                    shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                  ),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  )
+                      : const Text('Swap Character', style: TextStyle(fontSize: 22)),
+                ),
               ),
             ),
             const DebugScreenTag('choose_different_character_screen.dart'),

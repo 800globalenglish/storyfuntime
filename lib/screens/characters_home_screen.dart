@@ -218,8 +218,8 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
 
           return GridView.builder(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: groups.length > 4 ? 3 : 2,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
               childAspectRatio: 0.8,
