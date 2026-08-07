@@ -3,6 +3,8 @@ import '../services/auth_service.dart';
 import '../services/app_strings.dart';
 import 'login_screen.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../theme/app_theme.dart';
+import '../theme/theme_controller.dart';
 
 /// Shown when someone opens a password reset link (storyfuntime.com/go/?resetToken=...).
 /// Lets them set a new password, then sends them to Login.
@@ -74,8 +76,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: const DebugScreenTag('reset_password_screen.dart'),
+    return AnimatedBuilder(
+      animation: ThemeController.instance.listenable,
+      builder: (context, _) => Scaffold(
+        backgroundColor: ThemeController.instance.backgroundData.color,
+        bottomNavigationBar: const DebugScreenTag('reset_password_screen.dart'),
       appBar: AppBar(centerTitle: true, title: Text(AppStrings.t('reset_password_title'))),
       body: Center(
         child: SingleChildScrollView(
@@ -90,7 +95,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   Text(
                     AppStrings.t('enter_new_password_instruction'),
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyLarge,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: ThemeController.instance.backgroundData.bodyTextColor,
+                    ),
                   ),
                   const SizedBox(height: 24),
                   TextFormField(
@@ -98,6 +105,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     obscureText: true,
                     decoration: InputDecoration(
                       labelText: AppStrings.t('new_password_label'),
+                      filled: true,
+                      fillColor: Colors.white,
                       border: const OutlineInputBorder(),
                     ),
                     validator: (value) {
@@ -112,6 +121,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     obscureText: true,
                     decoration: InputDecoration(
                       labelText: AppStrings.t('confirm_password_label'),
+                      filled: true,
+                      fillColor: Colors.white,
                       border: const OutlineInputBorder(),
                     ),
                     validator: (value) {
@@ -134,8 +145,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     child: ElevatedButton(
                       onPressed: _isSubmitting ? null : _submit,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
+                        backgroundColor: ThemeController.instance.buttonColor(ButtonRole.primary),
+                        foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.primary),
                         shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                       ),
                       child: _isSubmitting
@@ -164,6 +175,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../theme/theme_controller.dart';
 
 class CreditsScreen extends StatefulWidget {
   const CreditsScreen({super.key});
@@ -76,8 +77,11 @@ class _CreditsScreenState extends State<CreditsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: const DebugScreenTag('credits_screen.dart'),
+    return AnimatedBuilder(
+      animation: ThemeController.instance.listenable,
+      builder: (context, _) => Scaffold(
+        backgroundColor: ThemeController.instance.backgroundData.color,
+        bottomNavigationBar: const DebugScreenTag('credits_screen.dart'),
       appBar: AppBar(
         centerTitle: true,
         title: const Text('Buy Credits'),
@@ -105,6 +109,7 @@ class _CreditsScreenState extends State<CreditsScreen> {
             description: '350 credits',
           ),
         ],
+      ),
       ),
     );
   }

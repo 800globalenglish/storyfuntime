@@ -111,7 +111,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
             child: Text('$number', style: const TextStyle(color: Colors.white, fontSize: 12)),
           ),
           const SizedBox(width: 12),
-          Text(text),
+          Text(text, style: TextStyle(color: ThemeController.instance.backgroundData.bodyTextColor)),
           if (trailingIcon != null) ...[
             const SizedBox(width: 6),
             Icon(trailingIcon, size: 18),
@@ -573,12 +573,15 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Book>(
+    return AnimatedBuilder(
+      animation: ThemeController.instance.listenable,
+      builder: (context, _) => FutureBuilder<Book>(
       future: _bookFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           debugPrint('[TIMING] FutureBuilder WAITING at ${DateTime.now()}');
           return Scaffold(
+            backgroundColor: ThemeController.instance.backgroundData.color,
             bottomNavigationBar: const DebugScreenTag('creator_wizard_screen.dart'),
             appBar: AppBar(
               centerTitle: true,
@@ -593,6 +596,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
         }
         if (snapshot.hasError) {
           return Scaffold(
+            backgroundColor: ThemeController.instance.backgroundData.color,
             bottomNavigationBar: const DebugScreenTag('creator_wizard_screen.dart'),
             appBar: AppBar(
               centerTitle: true,
@@ -627,6 +631,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
         final showTimeToRecordBanner = _showTimeToRecord && !hasAnyAudioRecorded;
 
         return Scaffold(
+          backgroundColor: ThemeController.instance.backgroundData.color,
           bottomNavigationBar: const DebugScreenTag('creator_wizard_screen.dart'),
           appBar: AppBar(
             centerTitle: true,
@@ -647,11 +652,9 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
               const SizedBox(width: 8),
             ],
           ),
-          body: ValueListenableBuilder<AppThemeKey>(
-            valueListenable: ThemeController.instance.current,
-            builder: (context, themeKey, _) {
-              final themeData = kAppThemes[themeKey]!;
-              final sceneColors = sceneBorderColors(themeData);
+          body: Builder(
+            builder: (context) {
+              final sceneColors = sceneBorderColors(ThemeController.instance.data);
               return Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
@@ -666,8 +669,8 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                           child: ElevatedButton.icon(
                             onPressed: _goToReadBook,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: themeData.primary,
-                              foregroundColor: Colors.white,
+                              backgroundColor: ThemeController.instance.buttonColor(ButtonRole.primary),
+                              foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.primary),
                               shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                             ),
                             icon: const Icon(Icons.menu_book, size: 32),
@@ -716,8 +719,8 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                               : ElevatedButton.icon(
                             onPressed: _generateVideo,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: themeData.secondary,
-                              foregroundColor: Colors.white,
+                              backgroundColor: ThemeController.instance.buttonColor(ButtonRole.secondary),
+                              foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.secondary),
                               shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                             ),
                             icon: const Icon(Icons.movie_creation_outlined, size: 32),
@@ -752,8 +755,8 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                                 ? null
                                 : () => _generateAllScenes(book.pages),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: themeData.accent,
-                              foregroundColor: Colors.white,
+                              backgroundColor: ThemeController.instance.buttonColor(ButtonRole.accent),
+                              foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.accent),
                               shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                             ),
                             icon: const Icon(Icons.auto_fix_high, size: 32),
@@ -814,7 +817,10 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
                   ),
                 Expanded(
                   child: book.pages.isEmpty
-                      ? Text(AppStrings.t('no_pages_yet'))
+                      ? Text(
+                          AppStrings.t('no_pages_yet'),
+                          style: TextStyle(color: ThemeController.instance.backgroundData.bodyTextColor),
+                        )
                       : ListView.builder(
                     itemCount: book.pages.length,
                     itemBuilder: (context, index) {
@@ -960,6 +966,7 @@ class _CreatorWizardScreenState extends State<CreatorWizardScreen> {
           ),
         );
       },
+    ),
     );
   }
 }

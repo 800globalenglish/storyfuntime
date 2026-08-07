@@ -3,19 +3,10 @@ import '../models/character.dart';
 import '../services/api_service.dart';
 import '../services/app_strings.dart';
 import 'book_detail_screen.dart';
+import '../utils/character_grouping.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
-
-// NEW - one entry per unique avatar. If the same person appears in several
-// books, count reflects how many, and representative is whichever Character
-// record we show/select (any of them clones the same name/avatar into the
-// target book via copyCharactersToBook, so it doesn't matter which one).
-class _CharacterGroup {
-  final Character representative;
-  final int count;
-
-  _CharacterGroup({required this.representative, required this.count});
-}
+import '../theme/theme_controller.dart';
 
 class CharacterPickerScreen extends StatefulWidget {
   final String bookId;
@@ -50,20 +41,6 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
   void dispose() {
     AppStrings.languageCode.removeListener(_onLanguageChanged);
     super.dispose();
-  }
-
-  // NEW - groups characters that share the same cartoon avatar (same person,
-  // reused across multiple books). Characters with no avatar yet are never
-  // grouped together with each other.
-  List<_CharacterGroup> _groupCharacters(List<Character> characters) {
-    final Map<String, List<Character>> groups = {};
-    for (final c in characters) {
-      final key = c.cartoonAvatarUrl ?? 'ungrouped-${c.id}';
-      groups.putIfAbsent(key, () => []).add(c);
-    }
-    return groups.values
-        .map((group) => _CharacterGroup(representative: group.first, count: group.length))
-        .toList();
   }
 
   void _toggle(String id) {
@@ -113,12 +90,15 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(AppStrings.t('choose_characters_title')),
-        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
-      ),
+    return AnimatedBuilder(
+      animation: ThemeController.instance.listenable,
+      builder: (context, _) => Scaffold(
+        backgroundColor: ThemeController.instance.backgroundData.color,
+        appBar: AppBar(
+          centerTitle: true,
+          title: Text(AppStrings.t('choose_characters_title')),
+          actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+        ),
       body: FutureBuilder<List<Character>>(
         future: _charactersFuture,
         builder: (context, snapshot) {
@@ -131,11 +111,14 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
           final characters = snapshot.data ?? [];
           if (characters.isEmpty) {
             return Center(
-              child: Text(AppStrings.t('no_characters_yet_hint')),
+              child: Text(
+                AppStrings.t('no_characters_yet_hint'),
+                style: TextStyle(color: ThemeController.instance.backgroundData.bodyTextColor),
+              ),
             );
           }
 
-          final groups = _groupCharacters(characters);
+          final groups = groupCharacters(characters);
 
           return GridView.builder(
             padding: const EdgeInsets.all(16),
@@ -193,16 +176,16 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
                           if (group.count > 1)
                             Positioned(
                               bottom: 6,
-                              left: 6,
+                              right: 6,
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
-                                  color: Colors.black54,
-                                  borderRadius: BorderRadius.circular(12),
+                                  color: Colors.deepPurple,
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Text(
-                                  'In ${group.count} stories',
-                                  style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                                  AppStrings.t('in_n_stories').replaceFirst('{count}', '${group.count}'),
+                                  style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
                                 ),
                               ),
                             ),
@@ -210,7 +193,10 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(character.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      character.name,
+                      style: TextStyle(fontWeight: FontWeight.bold, color: ThemeController.instance.backgroundData.bodyTextColor),
+                    ),
                   ],
                 ),
               );
@@ -250,6 +236,7 @@ class _CharacterPickerScreenState extends State<CharacterPickerScreen> {
             const DebugScreenTag('character_picker_screen.dart'),
           ],
         ),
+      ),
       ),
     );
   }

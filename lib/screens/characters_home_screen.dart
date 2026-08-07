@@ -5,8 +5,11 @@ import '../services/app_strings.dart';
 import 'add_character_screen.dart';
 import 'create_book_screen.dart';
 import '../utils/fade_route.dart';
+import '../utils/character_grouping.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../theme/app_theme.dart';
+import '../theme/theme_controller.dart';
 
 class CharactersHomeScreen extends StatefulWidget {
   const CharactersHomeScreen({super.key});
@@ -58,18 +61,6 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
         _selectedIds.add(id);
       }
     });
-  }
-
-  /// Groups characters that share the exact same avatar image (i.e. copies
-  /// of the same person) into one tile, so the same face doesn't show
-  /// multiple times just because it's used in several books.
-  List<List<Character>> _groupCharacters(List<Character> characters) {
-    final Map<String, List<Character>> groups = {};
-    for (final character in characters) {
-      final key = character.cartoonAvatarUrl ?? 'no-avatar-${character.id}';
-      groups.putIfAbsent(key, () => []).add(character);
-    }
-    return groups.values.toList();
   }
 
   Future<void> _takePhoto() async {
@@ -162,12 +153,15 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(AppStrings.t('characters_title')),
-        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
-      ),
+    return AnimatedBuilder(
+      animation: ThemeController.instance.listenable,
+      builder: (context, _) => Scaffold(
+        backgroundColor: ThemeController.instance.backgroundData.color,
+        appBar: AppBar(
+          centerTitle: true,
+          title: Text(AppStrings.t('characters_title')),
+          actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+        ),
       body: Column(
         children: [
           Padding(
@@ -178,8 +172,8 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
               child: ElevatedButton.icon(
                 onPressed: _takePhoto,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF7F50B2),
-                  foregroundColor: Colors.white,
+                  backgroundColor: ThemeController.instance.buttonColor(ButtonRole.accent),
+                  foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.accent),
                   shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                 ),
                 icon: const Icon(Icons.camera_alt, size: 32),
@@ -207,14 +201,14 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
                 padding: const EdgeInsets.all(32.0),
                 child: Text(
                   AppStrings.t('no_characters_yet'),
-                  style: const TextStyle(fontSize: 18),
+                  style: TextStyle(fontSize: 18, color: ThemeController.instance.backgroundData.bodyTextColor),
                   textAlign: TextAlign.center,
                 ),
               ),
             );
           }
 
-          final groups = _groupCharacters(characters);
+          final groups = groupCharacters(characters);
 
           return GridView.builder(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
@@ -227,8 +221,8 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
             itemCount: groups.length,
             itemBuilder: (context, index) {
               final group = groups[index];
-              final character = group.first;
-              final storyCount = group.length;
+              final character = group.representative;
+              final storyCount = group.count;
               final isSelected = _selectedIds.contains(character.id);
 
               return GestureDetector(
@@ -300,7 +294,10 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(character.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      character.name,
+                      style: TextStyle(fontWeight: FontWeight.bold, color: ThemeController.instance.backgroundData.bodyTextColor),
+                    ),
                   ],
                 ),
               );
@@ -345,6 +342,7 @@ class _CharactersHomeScreenState extends State<CharactersHomeScreen> {
             ),
           );
         },
+      ),
       ),
     );
   }

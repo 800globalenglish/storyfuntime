@@ -205,8 +205,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: const DebugScreenTag('home_screen.dart'),
+    return AnimatedBuilder(
+      animation: ThemeController.instance.listenable,
+      builder: (context, _) => Scaffold(
+        backgroundColor: ThemeController.instance.backgroundData.color,
+        bottomNavigationBar: const DebugScreenTag('home_screen.dart'),
       appBar: AppBar(
         actions: [
           IconButton(
@@ -277,10 +280,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                     const SizedBox(height: 24),
-                    ValueListenableBuilder<AppThemeKey>(
-                      valueListenable: ThemeController.instance.current,
-                      builder: (context, themeKey, _) {
-                        final themeData = kAppThemes[themeKey]!;
+                    AnimatedBuilder(
+                      animation: ThemeController.instance.listenable,
+                      builder: (context, _) {
                         if (_hasBooks == null || _hasCharacters == null) {
                           return const CircularProgressIndicator();
                         } else if (_hasBooks == false && _hasCharacters == false) {
@@ -290,8 +292,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: ElevatedButton(
                               onPressed: _goToCreateFirstCharacter,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: themeData.secondary,
-                                foregroundColor: Colors.white,
+                                backgroundColor: ThemeController.instance.buttonColor(ButtonRole.secondary),
+                                foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.secondary),
                                 shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                               ),
                               child: Text(
@@ -308,8 +310,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: ElevatedButton(
                               onPressed: _goToNewStory,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: themeData.secondary,
-                                foregroundColor: Colors.white,
+                                backgroundColor: ThemeController.instance.buttonColor(ButtonRole.secondary),
+                                foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.secondary),
                                 shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                               ),
                               child: Text(
@@ -333,8 +335,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   );
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: themeData.primary,
-                                  foregroundColor: Colors.white,
+                                  backgroundColor: ThemeController.instance.buttonColor(ButtonRole.primary),
+                                  foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.primary),
                                   shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                                 ),
                                 icon: const Icon(Icons.menu_book, size: 32),
@@ -348,8 +350,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: ElevatedButton.icon(
                                 onPressed: _goToNewStory,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: themeData.secondary,
-                                  foregroundColor: Colors.white,
+                                  backgroundColor: ThemeController.instance.buttonColor(ButtonRole.secondary),
+                                  foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.secondary),
                                   shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                                 ),
                                 icon: const Icon(Icons.people, size: 32),
@@ -363,8 +365,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: ElevatedButton.icon(
                                 onPressed: _goToMyCharacters,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: themeData.accent,
-                                  foregroundColor: Colors.white,
+                                  backgroundColor: ThemeController.instance.buttonColor(ButtonRole.accent),
+                                  foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.accent),
                                   shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                                 ),
                                 icon: const Icon(Icons.face, size: 32),
@@ -407,6 +409,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

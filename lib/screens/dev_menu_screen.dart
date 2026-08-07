@@ -29,7 +29,7 @@ import 'video_player_screen.dart';
 import 'credits_screen.dart';
 import 'my_invites_screen.dart';
 import 'language_settings_screen.dart';
-import 'theme_picker_screen.dart';
+import 'appearance_settings_screen.dart';
 
 /// TEMPORARY dev-only screen. Reachable at http://localhost:8765/#/debug so
 /// you can jump straight to any screen while testing, instead of clicking
@@ -171,7 +171,7 @@ class _DevMenuScreenState extends State<DevMenuScreen> {
                     _tile('My Invites', 'my_invites_screen.dart', () => _goTo(const MyInvitesScreen())),
                     _tile('My Stories', 'stories_list_screen.dart', () => _goTo(const StoriesListScreen())),
                     _tile('Manage Story Templates', 'template_admin_screen.dart', () => _goTo(const TemplateAdminScreen())),
-                    _tile('Theme Picker', 'theme_picker_screen.dart', () => _goTo(const ThemePickerScreen())),
+                    _tile('Appearance Settings', 'appearance_settings_screen.dart', () => _goTo(const AppearanceSettingsScreen())),
                     _section('Needs a book (bookId)'),
                     _tile('Add Character', 'add_character_screen.dart', _anyBook == null ? null : () => _goTo(AddCharacterScreen(bookId: _anyBook!.id))),
                     _tile('Apply Template', 'apply_template_screen.dart', _anyBook == null ? null : () => _goTo(ApplyTemplateScreen(bookId: _anyBook!.id))),
@@ -259,7 +259,9 @@ class _DevMenuScreenState extends State<DevMenuScreen> {
         children: [
           Text(fileName, style: TextStyle(color: onTap == null ? Colors.grey : Colors.grey.shade700)),
           const SizedBox(width: 8),
-          Text(label, style: TextStyle(color: onTap == null ? Colors.grey : null)),
+          Expanded(
+            child: Text(label, style: TextStyle(color: onTap == null ? Colors.grey : null)),
+          ),
         ],
       ),
       trailing: onTap == null ? const Text('no test data', style: TextStyle(fontSize: 11, color: Colors.grey)) : const Icon(Icons.chevron_right),

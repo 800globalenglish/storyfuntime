@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'avatar_gallery_screen.dart';
 import 'choose_different_character_screen.dart';
 import 'character_picker_screen.dart';
 import 'apply_template_screen.dart';
@@ -13,6 +12,8 @@ import '../utils/fade_route.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
 import '../widgets/voice_text_field.dart';
+import '../theme/app_theme.dart';
+import '../theme/theme_controller.dart';
 
 /// Screen 1 of the book flow: setup. Shown for a book that has no pages
 /// yet. Lets the person add characters, then either generate a story
@@ -37,10 +38,19 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   bool _showGenerateForm = false;
   bool _formFieldsInitialized = false;
   final _titleController = TextEditingController();
+  final _themeController = TextEditingController();
   int _sceneCount = 5;
   StoryType _selectedStoryType = StoryType.bedtime;
   bool _isGenerating = false;
   String? _generateError;
+  bool _showTextForm = false;
+  final _userTextController = TextEditingController();
+  bool _isGeneratingFromText = false;
+  String? _textGenerateError;
+  static const _storyTextMaxLength = 5000;
+  static const _storyTextWarningThreshold = 200;
+  bool _exactText = false;
+  int? _selectedPageCount;
 
   @override
   void initState() {
@@ -57,6 +67,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   void dispose() {
     AppStrings.languageCode.removeListener(_onLanguageChanged);
     _titleController.dispose();
+    _themeController.dispose();
+    _userTextController.dispose();
     super.dispose();
   }
 
@@ -100,8 +112,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   }
 
   Future<void> _generateStory() async {
-    if (_titleController.text.trim().isEmpty) {
-      setState(() => _generateError = AppStrings.t('please_fill_title'));
+    if (_titleController.text.trim().isEmpty || _themeController.text.trim().isEmpty) {
+      setState(() => _generateError = AppStrings.t('please_fill_title_theme'));
       return;
     }
 
@@ -114,7 +126,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       await _apiService.updateBook(
         bookId: widget.bookId,
         title: _titleController.text.trim(),
-        theme: _titleController.text.trim(),
+        theme: _themeController.text.trim(),
       );
 
       final pages = await _apiService.generateScript(
@@ -143,27 +155,67 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     }
   }
 
+  int _wordCountOf(String text) {
+    final trimmed = text.trim();
+    return trimmed.isEmpty ? 0 : trimmed.split(RegExp(r'\s+')).length;
+  }
+
+  int _minPagesForWordCount(int wordCount) => wordCount <= 0 ? 1 : (wordCount / 75).ceil();
+  int _maxPagesForWordCount(int wordCount) => wordCount <= 0 ? 1 : (wordCount / 25).ceil();
+
+  Future<void> _generateStoryFromText() async {
+    if (_userTextController.text.trim().isEmpty) {
+      setState(() => _textGenerateError = AppStrings.t('please_enter_story_text'));
+      return;
+    }
+
+    setState(() {
+      _isGeneratingFromText = true;
+      _textGenerateError = null;
+    });
+
+    try {
+      final wordCount = _wordCountOf(_userTextController.text);
+      final minPages = _minPagesForWordCount(wordCount);
+      final maxPages = _maxPagesForWordCount(wordCount);
+      final pageCount = (_selectedPageCount ?? ((minPages + maxPages) / 2).round()).clamp(minPages, maxPages);
+      final pages = await _apiService.generateScriptFromText(
+        bookId: widget.bookId,
+        userText: _userTextController.text.trim(),
+        exactText: _exactText,
+        pageCount: pageCount,
+      );
+      for (int i = 0; i < pages.length; i++) {
+        await _apiService.addPage(
+          bookId: widget.bookId,
+          pageNumber: i + 1,
+          scriptText: pages[i],
+        );
+      }
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => CreatorWizardScreen(bookId: widget.bookId)),
+        );
+      }
+    } catch (e) {
+      setState(() => _textGenerateError = '${AppStrings.t('failed_to_generate_story')} $e');
+    } finally {
+      if (mounted) setState(() => _isGeneratingFromText = false);
+    }
+  }
+
   Future<void> _showRenameDialog(Book book) async {
     final titleController = TextEditingController(text: book.title);
-    final themeController = TextEditingController(text: book.theme);
 
     final saved = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Rename Story'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            VoiceTextField(
-              controller: titleController,
-              decoration: const InputDecoration(labelText: 'Title'),
-            ),
-            const SizedBox(height: 12),
-            VoiceTextField(
-              controller: themeController,
-              decoration: const InputDecoration(labelText: 'Theme'),
-            ),
-          ],
+        content: VoiceTextField(
+          controller: titleController,
+          decoration: const InputDecoration(labelText: 'Title'),
         ),
         actions: [
           Row(
@@ -202,11 +254,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
     if (saved == true) {
       final newTitle = titleController.text.trim();
-      final newTheme = themeController.text.trim();
-      if (newTitle.isEmpty || newTheme.isEmpty) return;
+      if (newTitle.isEmpty) return;
 
       try {
-        await _apiService.updateBook(bookId: widget.bookId, title: newTitle, theme: newTheme);
+        await _apiService.updateBook(bookId: widget.bookId, title: newTitle, theme: book.theme);
         _refresh();
       } catch (e) {
         if (mounted) {
@@ -218,10 +269,74 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     }
 
     titleController.dispose();
-    themeController.dispose();
   }
 
-  Future<void> _showCharacterOptions(String characterId, String name, String? cartoonAvatarUrl, String userId, {String? currentAvatarUrl}) async {
+  Future<void> _showRenameCharacterDialog(String characterId, String currentName) async {
+    final nameController = TextEditingController(text: currentName);
+
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Rename Character'),
+        content: VoiceTextField(
+          controller: nameController,
+          decoration: const InputDecoration(labelText: 'Name'),
+        ),
+        actions: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                height: _buttonHeight,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                  ),
+                  child: const Text('Cancel', style: TextStyle(fontSize: 22)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              SizedBox(
+                height: _buttonHeight,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                  ),
+                  child: const Text('Save', style: TextStyle(fontSize: 22)),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    if (saved == true) {
+      final newName = nameController.text.trim();
+      if (newName.isEmpty) return;
+
+      try {
+        await _apiService.renameCharacter(characterId: characterId, name: newName);
+        _refresh();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to rename: $e')),
+          );
+        }
+      }
+    }
+
+    nameController.dispose();
+  }
+
+  Future<void> _showCharacterOptions(String characterId, String name, String? cartoonAvatarUrl, String userId) async {
     final bookId = widget.bookId;
     final action = await showDialog<String>(
       context: context,
@@ -237,25 +352,71 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         )
             : Text(AppStrings.t('what_would_you_like_to_do')),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, 'cancel'),
-            child: Text(AppStrings.t('done')),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, 'regenerate'),
-            child: Text(AppStrings.t('regenerate_character')),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, 'gallery'),
-            child: Text(AppStrings.t('view_characters')),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, 'swap'),
-            child: Text(AppStrings.t('choose_different')),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, 'delete'),
-            child: Text(AppStrings.t('delete'), style: const TextStyle(color: Colors.red)),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: _buttonHeight,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context, 'swap'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ThemeController.instance.buttonColor(ButtonRole.secondary),
+                        foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.secondary),
+                        shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                      ),
+                      child: Text(AppStrings.t('replace'), style: const TextStyle(fontSize: 18)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    height: _buttonHeight,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context, 'regenerate'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ThemeController.instance.buttonColor(ButtonRole.accent),
+                        foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.accent),
+                        shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                      ),
+                      child: Text(AppStrings.t('regenerate'), style: const TextStyle(fontSize: 18)),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: _buttonHeight,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context, 'delete'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                      ),
+                      child: Text(AppStrings.t('remove'), style: const TextStyle(fontSize: 18)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    height: _buttonHeight,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context, 'cancel'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                      ),
+                      child: Text(AppStrings.t('close'), style: const TextStyle(fontSize: 18)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ],
       ),
@@ -343,21 +504,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           });
         }
       }
-    } else if (action == 'gallery') {
-      final selected = await Navigator.push<bool>(
-        context,
-        FadeRoute(
-          page: AvatarGalleryScreen(
-            characterId: characterId,
-            characterName: name,
-            currentAvatarUrl: currentAvatarUrl ?? cartoonAvatarUrl,
-            bookId: bookId,
-          ),
-        ),
-      );
-      if (selected == true) {
-        _refresh();
-      }
     } else if (action == 'swap') {
       final swapped = await Navigator.push<bool>(
         context,
@@ -390,11 +536,14 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Book>(
+    return AnimatedBuilder(
+      animation: ThemeController.instance.listenable,
+      builder: (context, _) => FutureBuilder<Book>(
       future: _bookFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
+            backgroundColor: ThemeController.instance.backgroundData.color,
             bottomNavigationBar: const DebugScreenTag('book_detail_screen.dart'),
             appBar: AppBar(
               centerTitle: true,
@@ -406,6 +555,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         }
         if (snapshot.hasError) {
           return Scaffold(
+            backgroundColor: ThemeController.instance.backgroundData.color,
             bottomNavigationBar: const DebugScreenTag('book_detail_screen.dart'),
             appBar: AppBar(
               centerTitle: true,
@@ -418,9 +568,11 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         final book = snapshot.data!;
         if (!_formFieldsInitialized) {
           _titleController.text = book.title == 'My Story' ? '' : book.title;
+          _themeController.text = book.theme == 'draft' ? '' : book.theme;
           _formFieldsInitialized = true;
         }
         return Scaffold(
+          backgroundColor: ThemeController.instance.backgroundData.color,
           bottomNavigationBar: const DebugScreenTag('book_detail_screen.dart'),
           appBar: AppBar(
             centerTitle: true,
@@ -438,9 +590,14 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(AppStrings.t('characters_title'), style: Theme.of(context).textTheme.titleMedium),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                Text(
+                  AppStrings.t('characters_title'),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: ThemeController.instance.backgroundData.titleTextColor,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 GridView.builder(
                   shrinkWrap: true,
@@ -513,52 +670,116 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Text(character.name, style: Theme.of(context).textTheme.bodySmall),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  character.name,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: ThemeController.instance.backgroundData.bodyTextColor,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 2),
+                              GestureDetector(
+                                onTap: () => _showRenameCharacterDialog(character.id, character.name),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8),
+                                  child: Icon(
+                                    Icons.edit,
+                                    size: 12,
+                                    color: ThemeController.instance.backgroundData.bodyTextColor,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     );
                   },
                 ),
                 const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  height: _buttonHeight,
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: ElevatedButton.icon(
-                          onPressed: _showGenerateForm
-                              ? null
-                              : () => setState(() => _showGenerateForm = true),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            foregroundColor: Colors.white,
-                            disabledBackgroundColor: Colors.blue,
-                            disabledForegroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
-                          ),
-                          icon: const Icon(Icons.auto_awesome, size: 32),
-                          label: Text(
-                            AppStrings.t('generate_story'),
-                            style: const TextStyle(fontSize: 28),
-                          ),
-                        ),
-                      ),
-                      if (_showGenerateForm)
-                        Positioned(
-                          right: 8,
-                          top: 0,
-                          bottom: 0,
-                          child: IconButton(
-                            icon: const Icon(Icons.arrow_back, color: Colors.white, size: 32),
-                            tooltip: 'Back',
-                            onPressed: () => setState(() => _showGenerateForm = false),
+                if (!_showTextForm) ...[
+                  SizedBox(
+                    width: double.infinity,
+                    height: _buttonHeight,
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: ElevatedButton.icon(
+                            onPressed: _showGenerateForm ? null : () => setState(() => _showGenerateForm = true),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: ThemeController.instance.buttonColor(ButtonRole.primary),
+                              foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.primary),
+                              disabledBackgroundColor: ThemeController.instance.buttonColor(ButtonRole.primary),
+                              disabledForegroundColor: ThemeController.instance.buttonTextColor(ButtonRole.primary),
+                              shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                            ),
+                            icon: const Icon(Icons.auto_awesome, size: 32),
+                            label: Text(
+                              AppStrings.t('generate_story'),
+                              style: const TextStyle(fontSize: 28),
+                            ),
                           ),
                         ),
-                    ],
+                        if (_showGenerateForm)
+                          Positioned(
+                            right: 8,
+                            top: 0,
+                            bottom: 0,
+                            child: IconButton(
+                              icon: Icon(Icons.arrow_back, color: ThemeController.instance.buttonTextColor(ButtonRole.primary), size: 32),
+                              tooltip: 'Back',
+                              onPressed: () => setState(() => _showGenerateForm = false),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
+                ],
+                if (!_showGenerateForm && !_showTextForm) const SizedBox(height: 16),
                 if (!_showGenerateForm) ...[
+                  SizedBox(
+                    width: double.infinity,
+                    height: _buttonHeight,
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: ElevatedButton.icon(
+                            onPressed: _showTextForm ? null : () => setState(() => _showTextForm = true),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: ThemeController.instance.buttonColor(ButtonRole.accent),
+                              foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.accent),
+                              disabledBackgroundColor: ThemeController.instance.buttonColor(ButtonRole.accent),
+                              disabledForegroundColor: ThemeController.instance.buttonTextColor(ButtonRole.accent),
+                              shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                            ),
+                            icon: const Icon(Icons.text_snippet, size: 32),
+                            label: Text(
+                              AppStrings.t('story_from_text_button'),
+                              style: const TextStyle(fontSize: 28),
+                            ),
+                          ),
+                        ),
+                        if (_showTextForm)
+                          Positioned(
+                            right: 8,
+                            top: 0,
+                            bottom: 0,
+                            child: IconButton(
+                              icon: Icon(Icons.arrow_back, color: ThemeController.instance.buttonTextColor(ButtonRole.accent), size: 32),
+                              tooltip: 'Back',
+                              onPressed: () => setState(() => _showTextForm = false),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+                if (!_showGenerateForm && !_showTextForm) ...[
                   const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
@@ -566,8 +787,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     child: ElevatedButton.icon(
                       onPressed: _goToApplyTemplate,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
+                        backgroundColor: ThemeController.instance.buttonColor(ButtonRole.secondary),
+                        foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.secondary),
                         shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                       ),
                       icon: const Icon(Icons.auto_stories, size: 32),
@@ -604,40 +825,63 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 if (_showGenerateForm) ...[
                   const SizedBox(height: 16),
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Expanded(
-                        child: DropdownButtonFormField<StoryType>(
-                          value: _selectedStoryType,
-                          style: const TextStyle(fontSize: 18, color: Colors.black),
-                          decoration: InputDecoration(
-                            labelText: AppStrings.t('story_type_label'),
-                            border: OutlineInputBorder(borderRadius: _buttonRadius),
-                            isDense: true,
-                          ),
-                          items: [
-                            for (final type in StoryType.values)
-                              DropdownMenuItem(
-                                value: type,
-                                child: Text(type.label, style: const TextStyle(fontSize: 16)),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              AppStrings.t('story_type_label'),
+                              style: TextStyle(fontSize: 13, color: ThemeController.instance.backgroundData.bodyTextColor),
+                            ),
+                            const SizedBox(height: 4),
+                            DropdownButtonFormField<StoryType>(
+                              value: _selectedStoryType,
+                              style: const TextStyle(fontSize: 18, color: Colors.black),
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(borderRadius: _buttonRadius),
+                                isDense: true,
                               ),
+                              items: [
+                                for (final type in StoryType.values)
+                                  DropdownMenuItem(
+                                    value: type,
+                                    child: Text(type.label, style: const TextStyle(fontSize: 16)),
+                                  ),
+                              ],
+                              onChanged: _isGenerating
+                                  ? null
+                                  : (value) => setState(() => _selectedStoryType = value ?? StoryType.bedtime),
+                            ),
                           ],
-                          onChanged: _isGenerating
-                              ? null
-                              : (value) => setState(() => _selectedStoryType = value ?? StoryType.bedtime),
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Text(AppStrings.t('num_scenes_label'), style: const TextStyle(fontSize: 18)),
+                      Text(
+                        AppStrings.t('num_scenes_label'),
+                        style: TextStyle(fontSize: 18, color: ThemeController.instance.backgroundData.bodyTextColor),
+                      ),
                       const SizedBox(width: 8),
-                      DropdownButton<int>(
-                        value: _sceneCount,
-                        style: const TextStyle(fontSize: 18, color: Colors.black),
-                        items: [
-                          for (int i = 1; i <= 10; i++)
-                            DropdownMenuItem(value: i, child: Text('$i', style: const TextStyle(fontSize: 18))),
-                        ],
-                        onChanged: _isGenerating ? null : (value) => setState(() => _sceneCount = value ?? 5),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: _buttonRadius,
+                          border: Border.all(color: Colors.grey.shade400),
+                        ),
+                        child: DropdownButton<int>(
+                          value: _sceneCount,
+                          underline: const SizedBox(),
+                          style: const TextStyle(fontSize: 18, color: Colors.black),
+                          items: [
+                            for (int i = 1; i <= 10; i++)
+                              DropdownMenuItem(value: i, child: Text('$i', style: const TextStyle(fontSize: 18))),
+                          ],
+                          onChanged: _isGenerating ? null : (value) => setState(() => _sceneCount = value ?? 5),
+                        ),
                       ),
                     ],
                   ),
@@ -648,6 +892,17 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     style: const TextStyle(fontSize: 22),
                     decoration: InputDecoration(
                       labelText: AppStrings.t('book_title_label'),
+                      floatingLabelAlignment: FloatingLabelAlignment.center,
+                      border: OutlineInputBorder(borderRadius: _buttonRadius),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  VoiceTextField(
+                    controller: _themeController,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 22),
+                    decoration: InputDecoration(
+                      labelText: AppStrings.t('theme_label'),
                       floatingLabelAlignment: FloatingLabelAlignment.center,
                       border: OutlineInputBorder(borderRadius: _buttonRadius),
                     ),
@@ -684,11 +939,115 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     ),
                   ),
                 ],
-              ],
-            ),
+                if (_showTextForm) ...[
+                  const SizedBox(height: 16),
+                  SegmentedButton<bool>(
+                    segments: [
+                      ButtonSegment(value: true, label: Text(AppStrings.t('exact_text_mode'))),
+                      ButtonSegment(value: false, label: Text(AppStrings.t('ai_magic_mode'))),
+                    ],
+                    selected: {_exactText},
+                    onSelectionChanged: (selection) => setState(() => _exactText = selection.first),
+                  ),
+                  const SizedBox(height: 16),
+                  AnimatedBuilder(
+                    animation: _userTextController,
+                    builder: (context, child) {
+                      final storyTextRemaining = _storyTextMaxLength - _userTextController.text.length;
+                      final storyTextNearLimit = storyTextRemaining <= _storyTextWarningThreshold;
+                      final storyTextWarningColor = storyTextRemaining <= 0 ? Colors.red : Colors.orange;
+                      final wordCount = _wordCountOf(_userTextController.text);
+                      final minPages = _minPagesForWordCount(wordCount);
+                      final maxPages = _maxPagesForWordCount(wordCount);
+                      final showPagePicker = wordCount > 0;
+                      final pageCount = (_selectedPageCount ?? ((minPages + maxPages) / 2).round()).clamp(minPages, maxPages);
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          VoiceTextField(
+                            controller: _userTextController,
+                            maxLines: 8,
+                            maxLength: _storyTextMaxLength,
+                            decoration: InputDecoration(
+                              labelText: AppStrings.t('your_story_label'),
+                              hintText: AppStrings.t('paste_or_type_story_hint'),
+                              border: const OutlineInputBorder(),
+                              alignLabelWithHint: true,
+                              counterStyle: storyTextNearLimit ? TextStyle(color: storyTextWarningColor) : null,
+                            ),
+                          ),
+                          if (storyTextNearLimit) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              AppStrings.t('approaching_character_limit').replaceFirst('{remaining}', '$storyTextRemaining'),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: storyTextWarningColor, fontWeight: FontWeight.bold, fontSize: 13),
+                            ),
+                          ],
+                          if (showPagePicker) ...[
+                            const SizedBox(height: 16),
+                            Text(
+                              AppStrings.t('potential_pages_label')
+                                  .replaceFirst('{min}', '$minPages')
+                                  .replaceFirst('{max}', '$maxPages'),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: ThemeController.instance.backgroundData.bodyTextColor),
+                            ),
+                            if (maxPages > minPages)
+                              Slider(
+                                value: pageCount.toDouble(),
+                                min: minPages.toDouble(),
+                                max: maxPages.toDouble(),
+                                divisions: maxPages - minPages,
+                                label: '$pageCount',
+                                onChanged: (value) => setState(() => _selectedPageCount = value.round()),
+                              ),
+                            Text(
+                              '$pageCount',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: ThemeController.instance.backgroundData.bodyTextColor),
+                            ),
+                          ],
+                        ],
+                      );
+                    },
+                  ),
+                  if (_textGenerateError != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      _textGenerateError!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.red, fontSize: 16),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    height: _buttonHeight,
+                    child: ElevatedButton.icon(
+                      onPressed: _isGeneratingFromText ? null : _generateStoryFromText,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ThemeController.instance.buttonColor(ButtonRole.accent),
+                        foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.accent),
+                        shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                      ),
+                      icon: _isGeneratingFromText
+                          ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                          : const Icon(Icons.auto_awesome, size: 32),
+                      label: Text(AppStrings.t('generate'), style: const TextStyle(fontSize: 22)),
+                    ),
+                  ),
+                ],
+                ],
+              ),
           ),
         );
       },
+    ),
     );
   }
 }

@@ -6,6 +6,7 @@ import '../utils/fade_route.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
 import '../widgets/voice_text_field.dart';
+import '../theme/theme_controller.dart';
 
 class TemplateAdminScreen extends StatefulWidget {
   const TemplateAdminScreen({super.key});
@@ -129,8 +130,11 @@ class _TemplateAdminScreenState extends State<TemplateAdminScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: const DebugScreenTag('template_admin_screen.dart'),
+    return AnimatedBuilder(
+      animation: ThemeController.instance.listenable,
+      builder: (context, _) => Scaffold(
+        backgroundColor: ThemeController.instance.backgroundData.color,
+        bottomNavigationBar: const DebugScreenTag('template_admin_screen.dart'),
       appBar: AppBar(
         centerTitle: true,
         title: const Text('Manage Story Templates'),
@@ -147,15 +151,23 @@ class _TemplateAdminScreenState extends State<TemplateAdminScreen> {
           }
           final templates = snapshot.data ?? [];
           if (templates.isEmpty) {
-            return const Center(child: Text('No templates yet. Tap + to create one.'));
+            return Center(
+              child: Text(
+                'No templates yet. Tap + to create one.',
+                style: TextStyle(color: ThemeController.instance.backgroundData.bodyTextColor),
+              ),
+            );
           }
           return ListView.builder(
             itemCount: templates.length,
             itemBuilder: (context, index) {
               final template = templates[index];
               return ListTile(
-                title: Text(template.title),
-                subtitle: Text('${template.theme} - ${template.pages.length} pages'),
+                title: Text(template.title, style: TextStyle(color: ThemeController.instance.backgroundData.titleTextColor)),
+                subtitle: Text(
+                  '${template.theme} - ${template.pages.length} pages',
+                  style: TextStyle(color: ThemeController.instance.backgroundData.bodyTextColor),
+                ),
                 leading: const Icon(Icons.auto_stories),
                 trailing: IconButton(
                   icon: const Icon(Icons.delete_outline),
@@ -176,6 +188,7 @@ class _TemplateAdminScreenState extends State<TemplateAdminScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: _createTemplate,
         child: const Icon(Icons.add),
+      ),
       ),
     );
   }

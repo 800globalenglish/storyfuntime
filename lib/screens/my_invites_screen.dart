@@ -5,6 +5,7 @@ import '../services/api_service.dart';
 import '../services/app_strings.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../theme/theme_controller.dart';
 
 class MyInvitesScreen extends StatefulWidget {
   const MyInvitesScreen({super.key});
@@ -60,8 +61,11 @@ class _MyInvitesScreenState extends State<MyInvitesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: const DebugScreenTag('my_invites_screen.dart'),
+    return AnimatedBuilder(
+      animation: ThemeController.instance.listenable,
+      builder: (context, _) => Scaffold(
+        backgroundColor: ThemeController.instance.backgroundData.color,
+        bottomNavigationBar: const DebugScreenTag('my_invites_screen.dart'),
       appBar: AppBar(
         centerTitle: true,
         title: Text(AppStrings.t('my_invites_title')),
@@ -135,12 +139,20 @@ class _MyInvitesScreenState extends State<MyInvitesScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                Text(AppStrings.t('friends_who_joined'), style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  AppStrings.t('friends_who_joined'),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: ThemeController.instance.backgroundData.titleTextColor,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 if (summary.referrals.isEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 24),
-                    child: Text(AppStrings.t('nobody_joined_yet')),
+                    child: Text(
+                      AppStrings.t('nobody_joined_yet'),
+                      style: TextStyle(color: ThemeController.instance.backgroundData.bodyTextColor),
+                    ),
                   )
                 else
                   for (final referral in summary.referrals)
@@ -156,6 +168,7 @@ class _MyInvitesScreenState extends State<MyInvitesScreen> {
             );
           },
         ),
+      ),
       ),
     );
   }

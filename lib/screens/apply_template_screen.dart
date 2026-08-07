@@ -6,6 +6,7 @@ import '../services/app_strings.dart';
 import 'book_detail_screen.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../theme/theme_controller.dart';
 
 class ApplyTemplateScreen extends StatefulWidget {
   final String bookId;
@@ -95,8 +96,11 @@ class _ApplyTemplateScreenState extends State<ApplyTemplateScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: const DebugScreenTag('apply_template_screen.dart'),
+    return AnimatedBuilder(
+      animation: ThemeController.instance.listenable,
+      builder: (context, _) => Scaffold(
+        backgroundColor: ThemeController.instance.backgroundData.color,
+        bottomNavigationBar: const DebugScreenTag('apply_template_screen.dart'),
       appBar: AppBar(
         centerTitle: true,
         title: Text(AppStrings.t('story_templates')),
@@ -113,7 +117,12 @@ class _ApplyTemplateScreenState extends State<ApplyTemplateScreen> {
           }
           final templates = templateSnapshot.data ?? [];
           if (templates.isEmpty) {
-            return Center(child: Text(AppStrings.t('no_story_templates_yet')));
+            return Center(
+              child: Text(
+                AppStrings.t('no_story_templates_yet'),
+                style: TextStyle(color: ThemeController.instance.backgroundData.bodyTextColor),
+              ),
+            );
           }
 
           if (_selectedTemplate == null) {
@@ -122,8 +131,11 @@ class _ApplyTemplateScreenState extends State<ApplyTemplateScreen> {
               itemBuilder: (context, index) {
                 final template = templates[index];
                 return ListTile(
-                  title: Text(template.title),
-                  subtitle: Text('${template.theme} - ${template.pages.length} ${AppStrings.t('pages_suffix')}'),
+                  title: Text(template.title, style: TextStyle(color: ThemeController.instance.backgroundData.titleTextColor)),
+                  subtitle: Text(
+                    '${template.theme} - ${template.pages.length} ${AppStrings.t('pages_suffix')}',
+                    style: TextStyle(color: ThemeController.instance.backgroundData.bodyTextColor),
+                  ),
                   leading: const Icon(Icons.auto_stories),
                   onTap: () => _selectTemplate(template),
                 );
@@ -149,14 +161,22 @@ class _ApplyTemplateScreenState extends State<ApplyTemplateScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(_selectedTemplate!.title, style: Theme.of(context).textTheme.titleLarge),
+                    Text(
+                      _selectedTemplate!.title,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: ThemeController.instance.backgroundData.titleTextColor,
+                      ),
+                    ),
                     const SizedBox(height: 4),
                     TextButton(
                       onPressed: () => setState(() => _selectedTemplate = null),
                       child: Text(AppStrings.t('choose_different_template')),
                     ),
                     const SizedBox(height: 16),
-                    Text(AppStrings.t('who_plays_each_role')),
+                    Text(
+                      AppStrings.t('who_plays_each_role'),
+                      style: TextStyle(color: ThemeController.instance.backgroundData.bodyTextColor),
+                    ),
                     const SizedBox(height: 12),
                     Expanded(
                       child: ListView(
@@ -167,6 +187,8 @@ class _ApplyTemplateScreenState extends State<ApplyTemplateScreen> {
                               initialValue: _roleToCharacterId[role],
                               decoration: InputDecoration(
                                 labelText: role,
+                                filled: true,
+                                fillColor: Colors.white,
                                 border: const OutlineInputBorder(),
                               ),
                               items: characters.map((c) {
@@ -208,6 +230,7 @@ class _ApplyTemplateScreenState extends State<ApplyTemplateScreen> {
             },
           );
         },
+      ),
       ),
     );
   }

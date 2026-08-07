@@ -5,6 +5,7 @@ import 'book_detail_screen.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
 import '../widgets/voice_text_field.dart';
+import '../theme/theme_controller.dart';
 
 class CreateBookScreen extends StatefulWidget {
   final List<String>? preSelectedCharacterIds;
@@ -114,23 +115,34 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
     final preSelected = widget.preSelectedCharacterIds;
     if (preSelected != null && preSelected.isNotEmpty) {
       // Auto-creating in the background - just show a spinner.
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: ThemeController.instance.backgroundData.color,
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
-    return Scaffold(
-      bottomNavigationBar: const DebugScreenTag('create_book_screen.dart'),
+    return AnimatedBuilder(
+      animation: ThemeController.instance.listenable,
+      builder: (context, _) => Scaffold(
+        backgroundColor: ThemeController.instance.backgroundData.color,
+        bottomNavigationBar: const DebugScreenTag('create_book_screen.dart'),
       appBar: AppBar(
         centerTitle: true,
         title: const Text('Create a Story Book'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Center(
+              child: Image.asset(
+                'assets/images/StoryFunTime_MainLogo.png',
+                height: 270,
+              ),
+            ),
+            const SizedBox(height: 12),
             VoiceTextField(
               controller: _titleController,
               decoration: const InputDecoration(
@@ -168,10 +180,11 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
             if (_resultMessage != null)
               Text(
                 _resultMessage!,
-                style: const TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: 16, color: ThemeController.instance.backgroundData.bodyTextColor),
               ),
           ],
         ),
+      ),
       ),
     );
   }

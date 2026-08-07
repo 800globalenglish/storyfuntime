@@ -8,6 +8,8 @@ import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
 import '../widgets/voice_text_field.dart';
 import '../widgets/audio_meter.dart';
+import '../theme/app_theme.dart';
+import '../theme/theme_controller.dart';
 
 class RecordStoryScreen extends StatefulWidget {
   final String bookId;
@@ -150,18 +152,28 @@ class _RecordStoryScreenState extends State<RecordStoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: const DebugScreenTag('record_story_screen.dart'),
+    return AnimatedBuilder(
+      animation: ThemeController.instance.listenable,
+      builder: (context, _) => Scaffold(
+        backgroundColor: ThemeController.instance.backgroundData.color,
+        bottomNavigationBar: const DebugScreenTag('record_story_screen.dart'),
       appBar: AppBar(
         centerTitle: true,
         title: const Text('Record Your Story'),
         actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Center(
+              child: Image.asset(
+                'assets/images/StoryFunTime_MainLogo.png',
+                height: 270,
+              ),
+            ),
+            const SizedBox(height: 12),
             VoiceTextField(
               controller: _titleController,
               decoration: const InputDecoration(
@@ -203,7 +215,10 @@ class _RecordStoryScreenState extends State<RecordStoryScreen> {
             ),
             const SizedBox(height: 16),
             Center(
-              child: Text(_isRecording ? 'Recording... tap to stop' : 'Tap to start telling your story'),
+              child: Text(
+                _isRecording ? 'Recording... tap to stop' : 'Tap to start telling your story',
+                style: TextStyle(color: ThemeController.instance.backgroundData.bodyTextColor),
+              ),
             ),
             if (_isRecording) ...[
               const SizedBox(height: 12),
@@ -211,67 +226,76 @@ class _RecordStoryScreenState extends State<RecordStoryScreen> {
             ],
             const SizedBox(height: 16),
             if (_hasRecording) ...[
-              const SizedBox(height: 32),
-              Row(
-                children: [
-                  Expanded(
-                    child: SizedBox(
+              AnimatedBuilder(
+                animation: ThemeController.instance.listenable,
+                builder: (context, _) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 32),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: _buttonHeight,
+                            child: ElevatedButton.icon(
+                              onPressed: _togglePlayback,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: ThemeController.instance.buttonColor(ButtonRole.primary),
+                                foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.primary),
+                                shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                              ),
+                              icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow, size: 32),
+                              label: Text(_isPlaying ? 'Pause' : 'Play Back', style: const TextStyle(fontSize: 22)),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: SizedBox(
+                            height: _buttonHeight,
+                            child: ElevatedButton.icon(
+                              onPressed: _startRecording,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: ThemeController.instance.buttonColor(ButtonRole.secondary),
+                                foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.secondary),
+                                shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                              ),
+                              icon: const Icon(Icons.mic, size: 32),
+                              label: const Text('Re-record', style: TextStyle(fontSize: 22)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
                       height: _buttonHeight,
                       child: ElevatedButton.icon(
-                        onPressed: _togglePlayback,
+                        onPressed: _isGenerating ? null : _generateBook,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
+                          backgroundColor: Colors.green,
                           foregroundColor: Colors.white,
+                          disabledBackgroundColor: Colors.green.shade800,
+                          disabledForegroundColor: Colors.white,
                           shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                         ),
-                        icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow, size: 32),
-                        label: Text(_isPlaying ? 'Pause' : 'Play Back', style: const TextStyle(fontSize: 22)),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: SizedBox(
-                      height: _buttonHeight,
-                      child: ElevatedButton.icon(
-                        onPressed: _startRecording,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+                        icon: _isGenerating
+                            ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                            : const Icon(Icons.auto_stories, size: 32),
+                        label: Text(
+                          _isGenerating ? 'Generating your book...' : 'Generate Book',
+                          style: const TextStyle(fontSize: 22),
                         ),
-                        icon: const Icon(Icons.mic, size: 32),
-                        label: const Text('Re-record', style: TextStyle(fontSize: 22)),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                height: _buttonHeight,
-                child: ElevatedButton.icon(
-                  onPressed: _isGenerating ? null : _generateBook,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: Colors.green.shade800,
-                    disabledForegroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
-                  ),
-                  icon: _isGenerating
-                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Icon(Icons.auto_stories, size: 32),
-                  label: Text(
-                    _isGenerating ? 'Generating your book...' : 'Generate Book',
-                    style: const TextStyle(fontSize: 22),
-                  ),
+                  ],
                 ),
               ),
             ],
           ],
         ),
+      ),
       ),
     );
   }

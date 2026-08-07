@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import '../models/character.dart';
 import '../services/api_service.dart';
+import '../services/app_strings.dart';
+import '../utils/character_grouping.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../theme/theme_controller.dart';
 
 class ChooseDifferentCharacterScreen extends StatefulWidget {
   final String bookId;
@@ -63,12 +66,15 @@ class _ChooseDifferentCharacterScreenState extends State<ChooseDifferentCharacte
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text('Choose Different Character'),
-        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
-      ),
+    return AnimatedBuilder(
+      animation: ThemeController.instance.listenable,
+      builder: (context, _) => Scaffold(
+        backgroundColor: ThemeController.instance.backgroundData.color,
+        appBar: AppBar(
+          centerTitle: true,
+          title: const Text('Choose Different Character'),
+          actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+        ),
       body: FutureBuilder<List<Character>>(
         future: _charactersFuture,
         builder: (context, snapshot) {
@@ -83,22 +89,28 @@ class _ChooseDifferentCharacterScreenState extends State<ChooseDifferentCharacte
               .toList();
 
           if (characters.isEmpty) {
-            return const Center(
-              child: Text('No other characters yet. Go to Characters > New Character to make one first.'),
+            return Center(
+              child: Text(
+                'No other characters yet. Go to Characters > New Character to make one first.',
+                style: TextStyle(color: ThemeController.instance.backgroundData.bodyTextColor),
+              ),
             );
           }
 
+          final groups = groupCharacters(characters);
+
           return GridView.builder(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: groups.length > 4 ? 3 : 2,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
               childAspectRatio: 0.8,
             ),
-            itemCount: characters.length,
+            itemCount: groups.length,
             itemBuilder: (context, index) {
-              final character = characters[index];
+              final group = groups[index];
+              final character = group.representative;
               final isSelected = _selectedId == character.id;
 
               return GestureDetector(
@@ -142,11 +154,30 @@ class _ChooseDifferentCharacterScreenState extends State<ChooseDifferentCharacte
                               size: 28,
                             ),
                           ),
+                          if (group.count > 1)
+                            Positioned(
+                              bottom: 6,
+                              right: 6,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: Colors.deepPurple,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  AppStrings.t('in_n_stories').replaceFirst('{count}', '${group.count}'),
+                                  style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(character.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      character.name,
+                      style: TextStyle(fontWeight: FontWeight.bold, color: ThemeController.instance.backgroundData.bodyTextColor),
+                    ),
                   ],
                 ),
               );
@@ -183,6 +214,7 @@ class _ChooseDifferentCharacterScreenState extends State<ChooseDifferentCharacte
             const DebugScreenTag('choose_different_character_screen.dart'),
           ],
         ),
+      ),
       ),
     );
   }

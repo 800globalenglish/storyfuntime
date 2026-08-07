@@ -141,10 +141,10 @@ class _RecordVoiceScreenState extends State<RecordVoiceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<AppThemeKey>(
-      valueListenable: ThemeController.instance.current,
-      builder: (context, themeKey, _) {
-        final sceneColors = sceneBorderColors(kAppThemes[themeKey]!);
+    return AnimatedBuilder(
+      animation: ThemeController.instance.listenable,
+      builder: (context, _) {
+        final sceneColors = sceneBorderColors(ThemeController.instance.data);
         final borderColor = sceneColors[(widget.pageNumber - 1) % sceneColors.length];
         return _buildScaffold(context, borderColor);
       },
@@ -153,6 +153,7 @@ class _RecordVoiceScreenState extends State<RecordVoiceScreen> {
 
   Widget _buildScaffold(BuildContext context, Color borderColor) {
     return Scaffold(
+      backgroundColor: ThemeController.instance.backgroundData.color,
       bottomNavigationBar: const DebugScreenTag('record_voice_screen.dart'),
       appBar: AppBar(
         centerTitle: true,
@@ -203,7 +204,10 @@ class _RecordVoiceScreenState extends State<RecordVoiceScreen> {
             ),
             const SizedBox(height: 16),
             Center(
-              child: Text(_isRecording ? 'Recording... tap to stop' : 'Tap to record'),
+              child: Text(
+                _isRecording ? 'Recording... tap to stop' : 'Tap to record',
+                style: TextStyle(color: ThemeController.instance.backgroundData.bodyTextColor),
+              ),
             ),
             if (_isRecording) ...[
               const SizedBox(height: 12),
@@ -219,8 +223,8 @@ class _RecordVoiceScreenState extends State<RecordVoiceScreen> {
                       child: ElevatedButton.icon(
                         onPressed: _togglePlayback,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          foregroundColor: Colors.white,
+                          backgroundColor: ThemeController.instance.buttonColor(ButtonRole.primary),
+                          foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.primary),
                           shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                         ),
                         icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow, size: 32),
@@ -235,8 +239,8 @@ class _RecordVoiceScreenState extends State<RecordVoiceScreen> {
                       child: ElevatedButton.icon(
                         onPressed: _startRecording,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
+                          backgroundColor: ThemeController.instance.buttonColor(ButtonRole.secondary),
+                          foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.secondary),
                           shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                         ),
                         icon: const Icon(Icons.mic, size: 32),

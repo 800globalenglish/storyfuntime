@@ -8,6 +8,7 @@ enum StoryType {
   spaceAdventure,
   animalFriends,
   learning,
+  ownTheme,
 }
 
 extension StoryTypeLabel on StoryType {
@@ -31,6 +32,8 @@ extension StoryTypeLabel on StoryType {
         return 'Animal Friends';
       case StoryType.learning:
         return 'Learning Story';
+      case StoryType.ownTheme:
+        return 'Your own theme';
     }
   }
 

@@ -2,14 +2,18 @@ import 'package:flutter/material.dart';
 import '../services/app_strings.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../theme/theme_controller.dart';
 
 class LanguageSettingsScreen extends StatelessWidget {
   const LanguageSettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: const DebugScreenTag('language_settings_screen.dart'),
+    return AnimatedBuilder(
+      animation: ThemeController.instance.listenable,
+      builder: (context, _) => Scaffold(
+        backgroundColor: ThemeController.instance.backgroundData.color,
+        bottomNavigationBar: const DebugScreenTag('language_settings_screen.dart'),
       appBar: AppBar(
         centerTitle: true,
         title: const Text('Language / Idioma / 语言'),
@@ -23,7 +27,10 @@ class LanguageSettingsScreen extends StatelessWidget {
               for (final language in supportedLanguages)
                 RadioListTile<String>(
                   secondary: Text(language.flag, style: const TextStyle(fontSize: 24)),
-                  title: Text(language.label, style: const TextStyle(fontSize: 18)),
+                  title: Text(
+                    language.label,
+                    style: TextStyle(fontSize: 18, color: ThemeController.instance.backgroundData.bodyTextColor),
+                  ),
                   value: language.code,
                   groupValue: currentCode,
                   onChanged: (code) {
@@ -35,6 +42,7 @@ class LanguageSettingsScreen extends StatelessWidget {
             ],
           );
         },
+      ),
       ),
     );
   }

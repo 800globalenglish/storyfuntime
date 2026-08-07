@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 enum AppThemeKey { ocean, sunset, grape }
 
+enum ButtonRole { primary, secondary, accent }
+
 class AppThemeData {
   final String label;
   final Color primary;

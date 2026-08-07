@@ -204,7 +204,11 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
           const SizedBox(height: 4),
           Text(
             label,
-            style: TextStyle(fontSize: 22, fontWeight: selected ? FontWeight.bold : FontWeight.normal),
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+              color: ThemeController.instance.backgroundData.bodyTextColor,
+            ),
           ),
         ],
       ),
@@ -215,6 +219,7 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: ThemeController.instance.backgroundData.color,
       bottomNavigationBar: const DebugScreenTag('add_character_screen.dart'),
       appBar: AppBar(
         centerTitle: true,
@@ -226,10 +231,9 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
-        child: ValueListenableBuilder<AppThemeKey>(
-          valueListenable: ThemeController.instance.current,
-          builder: (context, themeKey, _) {
-            final themeData = kAppThemes[themeKey]!;
+        child: AnimatedBuilder(
+          animation: ThemeController.instance.listenable,
+          builder: (context, _) {
             return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -242,8 +246,8 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                       child: ElevatedButton.icon(
                         onPressed: () => _pickImage(ImageSource.camera),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: themeData.primary,
-                          foregroundColor: Colors.white,
+                          backgroundColor: ThemeController.instance.buttonColor(ButtonRole.primary),
+                          foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.primary),
                           shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                         ),
                         icon: const Icon(Icons.camera_alt, size: 32),
@@ -261,8 +265,8 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                       child: ElevatedButton.icon(
                         onPressed: () => _pickImage(ImageSource.gallery),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: themeData.secondary,
-                          foregroundColor: Colors.white,
+                          backgroundColor: ThemeController.instance.buttonColor(ButtonRole.secondary),
+                          foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.secondary),
                           shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                         ),
                         icon: const Icon(Icons.photo_library, size: 32),
@@ -293,7 +297,7 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                 controller: _nameController,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 22),
-                micColor: themeData.primary,
+                micColor: ThemeController.instance.data.primary,
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
                   hintText: AppStrings.t('name_label'),
@@ -327,8 +331,8 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                   spacing: 24,
                   runSpacing: 16,
                   children: [
-                    _buildGenderOption('female', 'female.png', AppStrings.t('female'), themeData.primary, themeData.secondary),
-                    _buildGenderOption('male', 'male.png', AppStrings.t('male'), themeData.primary, themeData.secondary),
+                    _buildGenderOption('female', 'female.png', AppStrings.t('female'), ThemeController.instance.data.primary, ThemeController.instance.data.secondary),
+                    _buildGenderOption('male', 'male.png', AppStrings.t('male'), ThemeController.instance.data.primary, ThemeController.instance.data.secondary),
                     if (_characterType == 'Human')
                       SizedBox(
                         width: 130,
@@ -338,6 +342,8 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                           decoration: InputDecoration(
                             labelText: AppStrings.t('age_label'),
                             labelStyle: const TextStyle(fontSize: 22),
+                            filled: true,
+                            fillColor: Colors.white,
                             border: const OutlineInputBorder(),
                             isDense: true,
                           ),
@@ -362,7 +368,7 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
             if (_avatarUrl != null) ...[
               Text(
                 AppStrings.t('heres_your_character'),
-                style: const TextStyle(fontSize: 22),
+                style: TextStyle(fontSize: 22, color: ThemeController.instance.backgroundData.bodyTextColor),
               ),
               const SizedBox(height: 12),
               Center(
@@ -383,7 +389,7 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
               maxLines: 2,
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 22),
-              micColor: themeData.accent,
+              micColor: ThemeController.instance.data.accent,
               decoration: InputDecoration(
                 hintText: _avatarUrl == null
                     ? AppStrings.t('optional_instructions')
@@ -400,7 +406,7 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                   const SizedBox(height: 12),
                   Text(
                     AppStrings.t('working_on_it'),
-                    style: const TextStyle(fontSize: 22),
+                    style: TextStyle(fontSize: 22, color: ThemeController.instance.backgroundData.bodyTextColor),
                   ),
                 ],
               )
@@ -411,8 +417,8 @@ class _AddCharacterScreenState extends State<AddCharacterScreen> {
                 child: ElevatedButton.icon(
                   onPressed: _generate,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: themeData.accent,
-                    foregroundColor: Colors.white,
+                    backgroundColor: ThemeController.instance.buttonColor(ButtonRole.accent),
+                    foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.accent),
                     shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                   ),
                   icon: const Icon(Icons.auto_awesome, size: 28),

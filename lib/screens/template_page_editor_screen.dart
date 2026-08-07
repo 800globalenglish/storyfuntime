@@ -3,6 +3,7 @@ import '../services/api_service.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
 import '../widgets/voice_text_field.dart';
+import '../theme/theme_controller.dart';
 
 class TemplatePageEditorScreen extends StatefulWidget {
   final String templateId;
@@ -60,7 +61,7 @@ class _TemplatePageEditorScreenState extends State<TemplatePageEditorScreen> {
               TextField(
                 controller: numberController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Page Number'),
+                decoration: const InputDecoration(labelText: 'Page Number', filled: true, fillColor: Colors.white),
               ),
             const SizedBox(height: 12),
             VoiceTextField(
@@ -149,8 +150,11 @@ class _TemplatePageEditorScreenState extends State<TemplatePageEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: const DebugScreenTag('template_page_editor_screen.dart'),
+    return AnimatedBuilder(
+      animation: ThemeController.instance.listenable,
+      builder: (context, _) => Scaffold(
+        backgroundColor: ThemeController.instance.backgroundData.color,
+        bottomNavigationBar: const DebugScreenTag('template_page_editor_screen.dart'),
       appBar: AppBar(
         centerTitle: true,
         title: Text(widget.templateTitle),
@@ -167,7 +171,12 @@ class _TemplatePageEditorScreenState extends State<TemplatePageEditorScreen> {
           }
           final pages = snapshot.data ?? [];
           if (pages.isEmpty) {
-            return const Center(child: Text('No pages yet. Tap + to add one.'));
+            return Center(
+              child: Text(
+                'No pages yet. Tap + to add one.',
+                style: TextStyle(color: ThemeController.instance.backgroundData.bodyTextColor),
+              ),
+            );
           }
           return ListView.builder(
             itemCount: pages.length,
@@ -204,6 +213,7 @@ class _TemplatePageEditorScreenState extends State<TemplatePageEditorScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _addOrEditPage(),
         child: const Icon(Icons.add),
+      ),
       ),
     );
   }

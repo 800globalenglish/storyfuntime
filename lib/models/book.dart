@@ -8,6 +8,7 @@ class Book {
   final String theme;
   final String status;
   final String? videoUrl;
+  final String? pdfUrl;
   final List<BookPage> pages;
   final List<Character> characters;
 
@@ -18,6 +19,7 @@ class Book {
     required this.theme,
     required this.status,
     this.videoUrl,
+    this.pdfUrl,
     this.pages = const [],
     this.characters = const [],
   });
@@ -30,6 +32,7 @@ class Book {
       theme: json['theme'],
       status: json['status'],
       videoUrl: json['videoUrl'],
+      pdfUrl: json['pdfUrl'],
       pages: json['pages'] != null
           ? (json['pages'] as List)
           .map((p) => BookPage.fromJson(p))

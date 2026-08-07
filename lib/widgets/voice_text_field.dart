@@ -18,6 +18,7 @@ class VoiceTextField extends StatefulWidget {
   final TextStyle? style;
   final bool autofocus;
   final Color? micColor;
+  final int? maxLength;
 
   const VoiceTextField({
     super.key,
@@ -28,6 +29,7 @@ class VoiceTextField extends StatefulWidget {
     this.style,
     this.autofocus = false,
     this.micColor,
+    this.maxLength,
   });
 
   @override
@@ -91,6 +93,7 @@ class _VoiceTextFieldState extends State<VoiceTextField> {
   @override
   Widget build(BuildContext context) {
     final micColor = widget.micColor ?? Theme.of(context).colorScheme.primary;
+    final callerSpecifiedFill = widget.decoration.fillColor != null;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -98,10 +101,13 @@ class _VoiceTextFieldState extends State<VoiceTextField> {
         TextField(
           controller: widget.controller,
           maxLines: widget.maxLines,
+          maxLength: widget.maxLength,
           textAlign: widget.textAlign,
           style: widget.style,
           autofocus: widget.autofocus,
           decoration: widget.decoration.copyWith(
+            filled: callerSpecifiedFill ? null : true,
+            fillColor: callerSpecifiedFill ? null : Colors.white,
             suffixIcon: _isTranscribing
                 ? const Padding(
                     padding: EdgeInsets.all(12),

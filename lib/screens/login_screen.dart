@@ -6,6 +6,8 @@ import 'home_screen.dart';
 import 'language_settings_screen.dart';
 import '../utils/fade_route.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../theme/app_theme.dart';
+import '../theme/theme_controller.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -113,6 +115,8 @@ class _LoginScreenState extends State<LoginScreen> {
           autofocus: true,
           decoration: InputDecoration(
             labelText: AppStrings.t('email_or_username_label'),
+            filled: true,
+            fillColor: Colors.white,
             border: const OutlineInputBorder(),
           ),
         ),
@@ -150,8 +154,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: const DebugScreenTag('login_screen.dart'),
+    return AnimatedBuilder(
+      animation: ThemeController.instance.listenable,
+      builder: (context, _) => Scaffold(
+        backgroundColor: ThemeController.instance.backgroundData.color,
+        bottomNavigationBar: const DebugScreenTag('login_screen.dart'),
       appBar: AppBar(
         centerTitle: true,
         actions: [
@@ -185,7 +192,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     _isSignupMode ? AppStrings.t('create_account_title') : AppStrings.t('welcome_back'),
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headlineSmall,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: ThemeController.instance.backgroundData.titleTextColor,
+                    ),
                   ),
                   const SizedBox(height: 32),
                   TextFormField(
@@ -194,6 +203,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     autocorrect: false,
                     decoration: InputDecoration(
                       labelText: _isSignupMode ? AppStrings.t('email_label') : AppStrings.t('email_or_username_label'),
+                      filled: true,
+                      fillColor: Colors.white,
                       border: const OutlineInputBorder(),
                     ),
                     validator: (value) {
@@ -211,6 +222,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       autocorrect: false,
                       decoration: InputDecoration(
                         labelText: AppStrings.t('username_label'),
+                        filled: true,
+                        fillColor: Colors.white,
                         border: const OutlineInputBorder(),
                       ),
                       validator: (value) {
@@ -225,6 +238,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       decoration: InputDecoration(
                         labelText: AppStrings.t('invited_by_label'),
                         hintText: AppStrings.t('invited_by_hint'),
+                        filled: true,
+                        fillColor: Colors.white,
                         border: const OutlineInputBorder(),
                       ),
                     ),
@@ -235,6 +250,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     obscureText: true,
                     decoration: InputDecoration(
                       labelText: AppStrings.t('password_label'),
+                      filled: true,
+                      fillColor: Colors.white,
                       border: const OutlineInputBorder(),
                     ),
                     validator: (value) {
@@ -249,6 +266,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: _isSubmitting ? null : _showForgotPasswordDialog,
+                        style: TextButton.styleFrom(
+                          foregroundColor: ThemeController.instance.backgroundData.bodyTextColor,
+                        ),
                         child: Text(AppStrings.t('forgot_password_link')),
                       ),
                     ),
@@ -267,8 +287,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: ElevatedButton(
                       onPressed: _isSubmitting ? null : _submit,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
+                        backgroundColor: ThemeController.instance.buttonColor(ButtonRole.primary),
+                        foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.primary),
                         shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                       ),
                       child: _isSubmitting
@@ -293,6 +313,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         _errorMessage = null;
                       });
                     },
+                    style: TextButton.styleFrom(
+                      foregroundColor: ThemeController.instance.backgroundData.bodyTextColor,
+                    ),
                     child: Text(
                       _isSignupMode
                           ? AppStrings.t('already_have_account')
@@ -304,6 +327,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

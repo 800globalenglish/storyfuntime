@@ -161,6 +161,34 @@ class ApiService {
     }
   }
 
+  Future<List<String>> generateScriptFromText({
+    required String bookId,
+    required String userText,
+    String? title,
+    String? theme,
+    int? pageCount,
+    bool exactText = false,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/books/$bookId/generate-script-from-text'),
+      headers: await _authHeaders(),
+      body: jsonEncode({
+        'userText': userText,
+        if (title != null) 'title': title,
+        if (theme != null) 'theme': theme,
+        if (pageCount != null) 'pageCount': pageCount,
+        'exactText': exactText,
+      }),
+    );
+    _handleUnauthorized(response);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return List<String>.from(data['pages']);
+    } else {
+      throw Exception('Failed to generate script from text: ${response.statusCode}');
+    }
+  }
+
   Future<BookPage> addPage({
     required String bookId,
     required int pageNumber,
@@ -368,6 +396,20 @@ class ApiService {
       return Character.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('Failed to regenerate avatar: ${response.statusCode}');
+    }
+  }
+
+  Future<Character> renameCharacter({required String characterId, required String name}) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/characters/$characterId/rename'),
+      headers: await _authHeaders(),
+      body: jsonEncode({'name': name}),
+    );
+    _handleUnauthorized(response);
+    if (response.statusCode == 200) {
+      return Character.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to rename character: ${response.statusCode}');
     }
   }
 
@@ -587,6 +629,20 @@ class ApiService {
       return Book.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('Failed to generate video: ${response.statusCode} ${response.body}');
+    }
+  }
+
+  Future<String> generatePdf({required String bookId}) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/books/$bookId/generate-pdf'),
+      headers: await _authHeaders(),
+    );
+    _handleUnauthorized(response);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['pdfUrl'] as String;
+    } else {
+      throw Exception('Failed to generate PDF: ${response.statusCode} ${response.body}');
     }
   }
 

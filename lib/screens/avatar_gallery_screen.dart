@@ -4,6 +4,7 @@ import 'book_reader_screen.dart';
 import '../utils/fade_route.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../theme/theme_controller.dart';
 
 class AvatarGalleryScreen extends StatefulWidget {
   final String characterId;
@@ -113,8 +114,11 @@ class _AvatarGalleryScreenState extends State<AvatarGalleryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: const DebugScreenTag('avatar_gallery_screen.dart'),
+    return AnimatedBuilder(
+      animation: ThemeController.instance.listenable,
+      builder: (context, _) => Scaffold(
+        backgroundColor: ThemeController.instance.backgroundData.color,
+        bottomNavigationBar: const DebugScreenTag('avatar_gallery_screen.dart'),
       appBar: AppBar(
         centerTitle: true,
         title: Text('${widget.characterName}\'s characters'),
@@ -132,7 +136,9 @@ class _AvatarGalleryScreenState extends State<AvatarGalleryScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Text(
                   'Total characters created: $created   \u2022   Total characters deleted: $deleted',
-                  style: Theme.of(context).textTheme.bodySmall,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: ThemeController.instance.backgroundData.bodyTextColor,
+                  ),
                 ),
               );
             },
@@ -149,7 +155,12 @@ class _AvatarGalleryScreenState extends State<AvatarGalleryScreen> {
                 }
                 final history = snapshot.data ?? [];
                 if (history.isEmpty) {
-                  return const Center(child: Text('No past characters yet.'));
+                  return Center(
+                    child: Text(
+                      'No past characters yet.',
+                      style: TextStyle(color: ThemeController.instance.backgroundData.bodyTextColor),
+                    ),
+                  );
                 }
 
                 return GridView.builder(
@@ -254,6 +265,7 @@ class _AvatarGalleryScreenState extends State<AvatarGalleryScreen> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

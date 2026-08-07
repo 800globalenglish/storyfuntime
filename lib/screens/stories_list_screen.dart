@@ -8,7 +8,6 @@ import 'book_summary_screen.dart';
 import '../utils/fade_route.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
-import '../theme/app_theme.dart';
 import '../theme/theme_controller.dart';
 import '../theme/scene_border_colors.dart';
 
@@ -114,10 +113,10 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<AppThemeKey>(
-      valueListenable: ThemeController.instance.current,
-      builder: (context, themeKey, _) {
-        final sceneColors = sceneBorderColors(kAppThemes[themeKey]!);
+    return AnimatedBuilder(
+      animation: ThemeController.instance.listenable,
+      builder: (context, _) {
+        final sceneColors = sceneBorderColors(ThemeController.instance.data);
         return _buildScaffold(context, sceneColors);
       },
     );
@@ -125,6 +124,7 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
 
   Widget _buildScaffold(BuildContext context, List<Color> sceneColors) {
     return Scaffold(
+      backgroundColor: ThemeController.instance.backgroundData.color,
       bottomNavigationBar: const DebugScreenTag('stories_list_screen.dart'),
       appBar: AppBar(
         centerTitle: true,
@@ -177,7 +177,7 @@ class _StoriesListScreenState extends State<StoriesListScreen> {
                               padding: const EdgeInsets.all(32.0),
                               child: Text(
                                 AppStrings.t('no_books_yet'),
-                                style: const TextStyle(fontSize: 18),
+                                style: TextStyle(fontSize: 18, color: ThemeController.instance.backgroundData.bodyTextColor),
                                 textAlign: TextAlign.center,
                               ),
                             ),

@@ -3,6 +3,8 @@ import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
 import '../widgets/app_nav_menu_button.dart';
 import '../widgets/debug_screen_tag.dart';
+import '../theme/app_theme.dart';
+import '../theme/theme_controller.dart';
 
 class UploadPhotoScreen extends StatefulWidget {
   final String pageId;
@@ -75,12 +77,15 @@ class _UploadPhotoScreenState extends State<UploadPhotoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text('Photo for Page ${widget.pageNumber}'),
-        actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
-      ),
+    return AnimatedBuilder(
+      animation: ThemeController.instance.listenable,
+      builder: (context, _) => Scaffold(
+        backgroundColor: ThemeController.instance.backgroundData.color,
+        appBar: AppBar(
+          centerTitle: true,
+          title: Text('Photo for Page ${widget.pageNumber}'),
+          actions: [const AppNavMenuButton(), const SizedBox(width: 8)],
+        ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -92,8 +97,8 @@ class _UploadPhotoScreenState extends State<UploadPhotoScreen> {
                 child: ElevatedButton.icon(
                   onPressed: _pickImage,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
+                    backgroundColor: ThemeController.instance.buttonColor(ButtonRole.primary),
+                    foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.primary),
                     shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                   ),
                   icon: const Icon(Icons.photo_library, size: 32),
@@ -101,7 +106,10 @@ class _UploadPhotoScreenState extends State<UploadPhotoScreen> {
                 ),
               ),
             if (_pickedImage != null && _cartoonImageUrl == null) ...[
-              Text('Selected: ${_pickedImage!.name}'),
+              Text(
+                'Selected: ${_pickedImage!.name}',
+                style: TextStyle(color: ThemeController.instance.backgroundData.bodyTextColor),
+              ),
               const SizedBox(height: 16),
               if (_isUploading)
                 const Column(
@@ -120,8 +128,8 @@ class _UploadPhotoScreenState extends State<UploadPhotoScreen> {
                         child: ElevatedButton(
                           onPressed: _pickImage,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            foregroundColor: Colors.white,
+                            backgroundColor: ThemeController.instance.buttonColor(ButtonRole.secondary),
+                            foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.secondary),
                             shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                           ),
                           child: const Text('Choose Different Photo', style: TextStyle(fontSize: 22)),
@@ -135,8 +143,8 @@ class _UploadPhotoScreenState extends State<UploadPhotoScreen> {
                         child: ElevatedButton(
                           onPressed: _uploadAndCartoonize,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF7F50B2),
-                            foregroundColor: Colors.white,
+                            backgroundColor: ThemeController.instance.buttonColor(ButtonRole.accent),
+                            foregroundColor: ThemeController.instance.buttonTextColor(ButtonRole.accent),
                             shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
                           ),
                           child: const Text('Cartoonize It', style: TextStyle(fontSize: 22)),
@@ -147,7 +155,10 @@ class _UploadPhotoScreenState extends State<UploadPhotoScreen> {
                 ),
             ],
             if (_cartoonImageUrl != null) ...[
-              const Text('Here\'s the cartoon version:'),
+              Text(
+                'Here\'s the cartoon version:',
+                style: TextStyle(color: ThemeController.instance.backgroundData.bodyTextColor),
+              ),
               const SizedBox(height: 12),
               Image.network('${ApiService.baseUrl}$_cartoonImageUrl'),
             ],
@@ -182,6 +193,7 @@ class _UploadPhotoScreenState extends State<UploadPhotoScreen> {
             const DebugScreenTag('upload_photo_screen.dart'),
           ],
         ),
+      ),
       ),
     );
   }
